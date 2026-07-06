@@ -1,0 +1,60 @@
+[
+  {
+    "ContainingType": "VGN_CRM_CORE.Controllers.ChatController",
+    "Method": "MarkAsRead",
+    "RelativePath": "api/Chat/markRead/{senderId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "senderId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "VGN_CRM_CORE.Controllers.ChatController",
+    "Method": "GetMessages",
+    "RelativePath": "api/Chat/messages/{otherUserId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "otherUserId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "VGN_CRM_CORE.Controllers.ChatController",
+    "Method": "GetOnlineUsers",
+    "RelativePath": "api/Chat/onlineUsers",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "VGN_CRM_CORE.Controllers.ChatController",
+    "Method": "SendMessage",
+    "RelativePath": "api/Chat/send",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "msg",
+        "Type": "VGN_CRM_CORE.Models.ChatMessage",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

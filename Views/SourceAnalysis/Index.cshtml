@@ -1,0 +1,579 @@
+@{
+    ViewBag.Title = "Source Lead Analysis Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Tailwind CSS Injection for this specific view -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        corePlugins: { preflight: false }, // Prevent Tailwind from overriding global layout styles
+        theme: {
+            extend: {
+                colors: {
+                    primary: 'var(--primary)',
+                }
+            }
+        }
+    }
+</script>
+
+<style>
+    /* ── Filter Card ── */
+    .sa-filter-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: .75rem 1.25rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,.05);
+        margin-bottom: .75rem;
+    }
+
+
+    /* ── Report type radio buttons ── */
+    .sa-radio-group {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .sa-radio-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: .85rem;
+        font-weight: 600;
+        color: var(--text);
+        cursor: pointer;
+    }
+
+        .sa-radio-item input[type=radio] {
+            accent-color: var(--primary);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+    /* ── Grid card ── */
+    .sa-grid-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0,0,0,.05);
+    }
+
+    /* ── Loader overlay ── */
+    .sa-loader-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.45);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+        .sa-loader-overlay.show {
+            display: flex;
+        }
+
+        .sa-loader-overlay .spinner-ring {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255,255,255,.25);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: sa-spin .8s linear infinite;
+        }
+
+        .sa-loader-overlay .msg {
+            color: #fff;
+            font-size: .92rem;
+            font-weight: 600;
+            letter-spacing: .3px;
+        }
+
+    @@keyframes sa-spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* ── DevExtreme overrides themed to --primary ── */
+    #sa-grid .dx-datagrid-headers {
+        background: var(--primary) !important;
+        color: #fff !important;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    #sa-grid .dx-datagrid-headers .dx-header-row td {
+        background: var(--primary) !important;
+        color: #fff !important;
+        border-color: rgba(255,255,255,.2) !important;
+    }
+
+    #sa-grid .dx-datagrid-headers .dx-header-row td:hover {
+        background: rgba(168,32,36,.85) !important;
+    }
+
+    #sa-grid .dx-datagrid-rowsview .dx-row:hover td {
+        background: rgba(168,32,36,.06) !important;
+    }
+
+    #sa-grid .dx-datagrid-rowsview .dx-selection td,
+    #sa-grid .dx-datagrid-rowsview .dx-selection:hover td {
+        background: rgba(168,32,36,.12) !important;
+        color: var(--text) !important;
+    }
+
+    #sa-grid .dx-datagrid-rowsview .dx-row:hover td:first-child {
+        border-left: 3px solid var(--primary);
+    }
+
+    #sa-grid .dx-toolbar {
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+    }
+
+    #sa-grid .dx-datagrid-total-footer {
+        background: var(--bg);
+        border-top: 2px solid var(--border);
+        font-weight: 700;
+        font-size: 11px;
+    }
+
+    #sa-grid .dx-datagrid-filter-row td {
+        background: var(--bg) !important;
+    }
+
+    #sa-grid .dx-scrollable-scroll-content {
+        background: var(--primary) !important;
+        border-radius: 4px;
+    }
+
+
+    /* Single-row filter alignment */
+    .sa-filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: .6rem;
+    }
+    .sa-filter-row .sa-col-project { flex: 0 0 220px; min-width: 160px; }
+    .sa-filter-row .sa-col-date    { flex: 0 0 150px; min-width: 120px; }
+    .sa-filter-row .sa-col-type   { flex: 0 0 auto; }
+    .sa-filter-row .sa-col-btn    { flex: 0 0 auto; margin-left: auto; }
+
+    /* ── Theme-aware filter labels ── */
+    .sa-filter-label {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .4px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        transition: color var(--trans);
+    }
+
+    /* ── Theme-aware date inputs ── */
+    .sa-date-input {
+        display: block;
+        width: 100%;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background-color: var(--surface);
+        color: var(--text);
+        padding: 5px 8px;
+        font-size: .85rem;
+        transition: border-color var(--trans), background-color var(--trans), color var(--trans);
+        outline: none;
+    }
+    .sa-date-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .18);
+    }
+    /* Make the calendar picker icon visible in dark mode */
+    [data-theme="dark"] .sa-date-input {
+        color-scheme: dark;
+    }
+
+    /* ── Theme-aware CLEAR button ── */
+    .sa-btn-clear {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9999px;
+        border: 1px solid var(--border);
+        background-color: var(--surface);
+        color: var(--text);
+        padding: 6px 16px;
+        font-size: .85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color var(--trans), color var(--trans), border-color var(--trans);
+    }
+    .sa-btn-clear:hover {
+        background-color: var(--bg);
+    }
+</style>
+
+<!-- Loader -->
+<div class="sa-loader-overlay" id="saLoader">
+    <div class="spinner-ring"></div>
+    <div class="msg">Loading data, please wait…</div>
+</div>
+
+<!-- Filter Card – single row -->
+<div class="sa-filter-card">
+    <div class="sa-filter-row">
+        <!-- Project filter -->
+        <div class="sa-col-project">
+            <label class="sa-filter-label">PROJECT NAME</label>
+            <select class="block w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary select2" id="dd_project_name" multiple="multiple"></select>
+        </div>
+
+        <!-- From Date -->
+        <div class="sa-col-date">
+            <label class="sa-filter-label">FROM DATE</label>
+            <input type="date" class="sa-date-input" id="sa_from_date">
+        </div>
+
+        <!-- To Date -->
+        <div class="sa-col-date">
+            <label class="sa-filter-label">TO DATE</label>
+            <input type="date" class="sa-date-input" id="sa_to_date">
+        </div>
+
+        <!-- Report Type -->
+        <div class="sa-col-type">
+            <label class="sa-filter-label">REPORT TYPE</label>
+            <div class="sa-radio-group">
+                <label class="sa-radio-item">
+                    <input type="radio" name="sa_report_type" id="sa_last_remarks" value="LRemarks" checked>
+                    Last Remarks
+                </label>
+                <label class="sa-radio-item">
+                    <input type="radio" name="sa_report_type" id="sa_full_remarks" value="FRemarks">
+                    Full Remarks
+                </label>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="sa-col-btn flex gap-2">
+            <button class="inline-flex items-center justify-center rounded-full bg-primary px-4 py-1.5 text-sm font-medium text-white transition-colors hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1" id="sa_btn_load">
+                <i class="bi bi-arrow-clockwise mr-1"></i> LOAD
+            </button>
+            <button class="sa-btn-clear" id="sa_btn_clear">
+                <i class="bi bi-eraser mr-1"></i> CLEAR
+            </button>
+        </div>
+
+
+    </div>
+</div>
+
+<!-- Grid Card – no header bar -->
+<div class="sa-grid-card">
+    <div id="sa-grid" style="width:100%;"></div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    'use strict';
+
+    // ── State ─────────────────────────────────────────────────
+    let gridInstance = null;
+
+    // ── Indian number format ──────────────────────────────────
+    function toIndianFormat(n) {
+        if (n === null || n === undefined || isNaN(n)) return '0';
+        n = Math.round(n);
+        let s = n.toString();
+        if (s.length <= 3) return s;
+        // last 3 digits, then groups of 2
+        let last3 = s.slice(-3);
+        let rest   = s.slice(0, -3);
+        let result = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+        return result + ',' + last3;
+    }
+
+    // ── Loader helpers ────────────────────────────────────────
+    function showLoader() { document.getElementById('saLoader').classList.add('show'); }
+    function hideLoader() { document.getElementById('saLoader').classList.remove('show'); }
+
+    // ── Date helpers ──────────────────────────────────────────
+    function today()    { return new Date().toISOString().slice(0, 10); }
+    function ago90()    { const d = new Date(); d.setDate(d.getDate() - 90); return d.toISOString().slice(0, 10); }
+    function toApiDate(v) {
+        if (!v) return '';
+        const d = new Date(v);
+        if (isNaN(d)) return '';
+        return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2) + '/' + d.getFullYear();
+    }
+
+    // ── Set default dates ─────────────────────────────────────
+    document.getElementById('sa_from_date').value = ago90();
+    document.getElementById('sa_to_date').value   = today();
+
+    // ── Load Projects dropdown ────────────────────────────────
+    $.ajax({
+        url: '/SourceAnalysis/LoadProjectName',
+        type: 'GET',
+        success: function (raw) {
+            const res = typeof raw === 'string' ? JSON.parse(raw) : raw;
+            if (res.msg === 'Success' && res.data?.Table?.length) {
+                const sel = document.getElementById('dd_project_name');
+                res.data.Table.forEach(p => {
+                    const o = document.createElement('option');
+                    o.value = p.Projectid || p.ProjectId || p.projectid || '';
+                    o.text  = p.ProjectName || '';
+                    sel.appendChild(o);
+                });
+
+                $('.select2').select2({
+                    placeholder: '--All Projects--',
+                    allowClear: true,
+                    width: '100%'
+                });
+            }
+        }
+    });
+
+    // ── Build grid ────────────────────────────────────────────
+    function buildGrid(data) {
+        data = data || [];
+
+        if (gridInstance) {
+            try { gridInstance.dispose(); } catch (_) {}
+        }
+
+        gridInstance = $('#sa-grid').dxDataGrid({
+            dataSource: {
+                store: {
+                    type: 'array',
+                    data: data,
+                    key: 'ClientId1'
+                }
+            },
+            height: 'calc(100vh - 180px)',
+            allowColumnReordering: true,
+            allowColumnResizing: true,
+            showBorders: true,
+            hoverStateEnabled: true,
+            wordWrapEnabled: false,
+
+            scrolling: {
+                mode: 'virtual',
+                rowRenderingMode: 'virtual',
+                useNative: false,
+                scrollByContent: true,
+                scrollByThumb: true,
+                showScrollbar: 'always'
+            },
+            paging: { pageSize: 200 },
+
+            filterRow:   { visible: false },
+            filterPanel: { visible: true },
+            headerFilter: { visible: true },
+            columnChooser: { enabled: true, mode: 'select' },
+            searchPanel: { visible: true, width: 220, placeholder: 'Search…' },
+
+            export: { enabled: true },
+            onExporting: function (e) {
+                // Prevent default ExcelJS export
+                e.cancel = true;
+
+                var columns = e.component.getVisibleColumns().filter(c => c.dataField);
+                var dataSource = e.component.getDataSource();
+                var options = dataSource.loadOptions() || {};
+                
+                // Remove pagination to get all filtered data
+                options.skip = undefined;
+                options.take = undefined;
+                options.requireTotalCount = false;
+
+                // Show loader if we have one
+                if (typeof showLoader === 'function') showLoader();
+
+                // Yield to the UI to render the loader, then process
+                setTimeout(function() {
+                    dataSource.store().load(options).then(function (data) {
+                        try {
+                            var chunks = [];
+                            // Add BOM for Excel UTF-8 compatibility
+                            chunks.push('\uFEFF');
+                            
+                            // Header
+                            var header = columns.map(c => `"${(c.caption || c.dataField).replace(/"/g, '""')}"`).join(',');
+                            chunks.push(header + '\n');
+
+                            // Body
+                            for (var i = 0; i < data.length; i++) {
+                                var row = [];
+                                for (var j = 0; j < columns.length; j++) {
+                                    var col = columns[j];
+                                    var val = data[i][col.dataField];
+
+                                    if (val === null || val === undefined) {
+                                        val = '';
+                                    } else if (typeof col.customizeText === 'function') {
+                                        val = col.customizeText({ value: val, valueText: String(val) });
+                                    } else if (col.dataType === 'datetime' || col.dataType === 'date') {
+                                        var d = new Date(val);
+                                        if (!isNaN(d)) {
+                                            var day = ('0' + d.getDate()).slice(-2);
+                                            var month = ('0' + (d.getMonth() + 1)).slice(-2);
+                                            var year = d.getFullYear();
+                                            val = day + '/' + month + '/' + year;
+                                            if (col.format && col.format.includes('hh:mm')) {
+                                                var hrs = d.getHours();
+                                                var mins = ('0' + d.getMinutes()).slice(-2);
+                                                var ampm = hrs >= 12 ? 'PM' : 'AM';
+                                                hrs = hrs % 12;
+                                                hrs = hrs ? hrs : 12;
+                                                val += ' ' + ('0' + hrs).slice(-2) + ':' + mins + ' ' + ampm;
+                                            }
+                                        }
+                                    }
+                                    
+                                    var str = String(val).replace(/"/g, '""');
+                                    // Remove any newline characters to keep CSV format strict
+                                    str = str.replace(/\r?\n|\r/g, ' '); 
+                                    row.push(`"${str}"`);
+                                }
+                                chunks.push(row.join(',') + '\n');
+                            }
+
+                            var blob = new Blob(chunks, { type: 'text/csv;charset=utf-8;' });
+                            var link = document.createElement("a");
+                            var url = URL.createObjectURL(blob);
+                            link.setAttribute("href", url);
+                            link.setAttribute("download", "SourceAnalysis.csv");
+                            link.style.visibility = 'hidden';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        } finally {
+                            if (typeof hideLoader === 'function') hideLoader();
+                        }
+                    });
+                }, 50);
+            },
+
+
+            columns: [
+                { dataField: 'LastCallScore',   caption: 'LAST CALL SCORE',     width: 120, alignment: 'center', headerFilter: { allowSearch: true } },
+                { dataField: 'OverallScore',    caption: 'OVERALL SCORE',       width: 120, alignment: 'center', headerFilter: { allowSearch: true } },
+                { dataField: 'trajectory',      caption: 'TRAJECTORY',           width: 130, alignment: 'center', headerFilter: { allowSearch: true } },
+                { dataField: 'final_summary',   caption: 'AI TRANSCRIPT',        width: 260, headerFilter: { allowSearch: true } },
+                { dataField: 'Clientname',      caption: 'CLIENT NAME',          width: 150, headerFilter: { allowSearch: true } },
+                { dataField: 'Mobile1',         caption: 'MOBILE',               width: 130, headerFilter: { allowSearch: true } },
+                { dataField: 'Mode',            caption: 'MODE',                 width: 130, headerFilter: { allowSearch: true } },
+                { dataField: 'Source_Group',    caption: 'SOURCE GROUP',         width: 140, headerFilter: { allowSearch: true } },
+                { dataField: 'Source_Enquiry',  caption: 'SOURCE OF ENQUIRY',    width: 160, headerFilter: { allowSearch: true } },
+                { dataField: 'SubSource_Enquiry', caption: 'SUB SOURCE',         width: 180, headerFilter: { allowSearch: true } },
+                { dataField: 'ProjectName',     caption: 'PROJECT NAME',         width: 160, headerFilter: { allowSearch: true } },
+                { dataField: 'STAGE',           caption: 'STAGE',                width: 130, headerFilter: { allowSearch: true } },
+                { dataField: 'Lead_Status',     caption: 'STATUS',               width: 120, headerFilter: { allowSearch: true } },
+                { dataField: 'LeadHOT',         caption: 'LEAD STATUS',          width: 120, headerFilter: { allowSearch: true } },
+                { dataField: 'NextFollowupDate', caption: 'NEXT FOLLOW DATE',    width: 140, dataType: 'datetime', format: 'dd/MM/yyyy', headerFilter: { allowSearch: true } },
+                { dataField: 'LastUpdatedDate', caption: 'LAST UPDATE DATE',     width: 140, dataType: 'datetime', format: 'dd/MM/yyyy', headerFilter: { allowSearch: true } },
+                { dataField: 'SalesRemarks',    caption: 'LAST REMARKS',         width: 380, headerFilter: { allowSearch: true } },
+                { dataField: 'NoofFollowup',    caption: 'NO OF FLWUP',          width: 100, headerFilter: { allowSearch: true } },
+                { dataField: 'TLRemarks',       caption: 'TL REMARKS',           width: 380, headerFilter: { allowSearch: true } },
+                { dataField: 'EnqDate',         caption: 'ENQUIRY DATE',         width: 150, dataType: 'datetime', format: 'dd/MM/yyyy hh:mm a', headerFilter: { allowSearch: true } },
+                {
+                    dataField: 'EnqDate', caption: 'ENQUIRY MONTH', width: 130,
+                    dataType: 'datetime',
+                    customizeText: function (c) {
+                        if (!c.value) return '';
+                        const d = new Date(c.value);
+                        return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()] + '-' + d.getFullYear();
+                    },
+                    headerFilter: { allowSearch: true }
+                },
+                { dataField: 'EmailId1',        caption: 'EMAIL',                width: 160, headerFilter: { allowSearch: true } },
+                { dataField: 'SalesType',       caption: 'SALES TYPE',           width: 130, headerFilter: { allowSearch: true } },
+                { dataField: 'Executive',       caption: 'EXECUTIVE',            width: 150, headerFilter: { allowSearch: true } },
+                { dataField: 'TeamLeader',      caption: 'TEAM LEADER',          width: 150, headerFilter: { allowSearch: true } },
+                { dataField: 'AssignedDate',    caption: 'ASSIGNED DATE',        width: 130, dataType: 'datetime', format: 'dd/MM/yyyy', headerFilter: { allowSearch: true } },
+                { dataField: 'EnqId',           caption: 'ENQUIRY ID',           width: 110, headerFilter: { allowSearch: true } }
+            ]
+        }).dxDataGrid('instance');
+    }
+
+    // ── Initial empty grid ────────────────────────────────────
+    buildGrid([]);
+
+    // ── Get common request payload ────────────────────────────
+    function getPayload() {
+        const f    = document.getElementById('sa_from_date').value;
+        const t    = document.getElementById('sa_to_date').value;
+        const type = document.querySelector('input[name="sa_report_type"]:checked')?.value;
+
+        if (!f) { alert('Please select From Date.'); return null; }
+        if (!t) { alert('Please select To Date.'); return null; }
+
+        const selOpts = $('#dd_project_name').val() || [];
+
+        return {
+            FromDate:     toApiDate(f),
+            ToDate:       toApiDate(t),
+            DepartmentID: '',
+            UserType:     '',
+            ReportFlag:   type,
+            ProjectID:    selOpts.length ? selOpts : ['0']
+        };
+    }
+
+    // ── LOAD button ───────────────────────────────────────────
+    document.getElementById('sa_btn_load').addEventListener('click', function () {
+        const payload = getPayload();
+        if (!payload) return;
+
+        const reportType = document.querySelector('input[name="sa_report_type"]:checked')?.value;
+        const url = reportType === 'FRemarks'
+            ? '/SourceAnalysis/LoadLeadsFullRemarks'
+            : '/SourceAnalysis/LoadLeads';
+
+        showLoader();
+
+        $.ajax({
+            url:         url,
+            type:        'POST',
+            contentType: 'application/json; charset=UTF-8',
+            data:        JSON.stringify(payload),
+            success: function (raw) {
+                hideLoader();
+                const res = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                if (res.msg === 'Success' && res.data?.Table?.length > 0) {
+                    buildGrid(res.data.Table);
+                } else {
+                    buildGrid([]);
+                    alert('No Records Found');
+                }
+            },
+            error: function () {
+                hideLoader();
+                alert('Error loading data. Please try again.');
+            }
+        });
+    });
+
+    // ── CLEAR button ──────────────────────────────────────────
+    document.getElementById('sa_btn_clear').addEventListener('click', function () {
+        document.getElementById('sa_from_date').value = ago90();
+        document.getElementById('sa_to_date').value   = today();
+        document.getElementById('sa_last_remarks').checked = true;
+        $('#dd_project_name').val(null).trigger('change');
+        buildGrid([]);
+    });
+
+})();
+</script>
+}

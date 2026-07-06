@@ -1,0 +1,391 @@
+@{
+    ViewBag.Title     = "Dashboard";
+    ViewBag.ActiveMenu = "Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var userRole = ViewBag.UserRole as string ?? "";
+}
+
+<style>
+    /* Premium Dashboard Animations & Styles */
+    .dashboard-section {
+        transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), margin 0.4s ease;
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        max-height: 1800px;
+        overflow: visible;
+    }
+    
+    .dashboard-section.hidden-section {
+        opacity: 0;
+        transform: scale(0.96) translateY(-15px);
+        max-height: 0;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .view-pill {
+        border-radius: 20px;
+        padding: 0.4rem 1.2rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        color: var(--text-muted);
+        transition: all 0.25s ease;
+        cursor: pointer;
+    }
+
+    .view-pill:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    .view-pill.active {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.25);
+    }
+
+    .glass-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .glass-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), #8f75ff);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .glass-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .glass-card:hover::before {
+        opacity: 1;
+    }
+</style>
+
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div>
+        <h1 class="page-title">Dashboard</h1>
+        <nav aria-label="breadcrumb" class="page-breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item active">Home</li>
+                <li class="breadcrumb-item active">Dashboard</li>
+            </ol>
+        </nav>
+    </div>
+    
+    <!-- Premium View Switcher -->
+    <div class="d-flex align-items-center gap-2 bg-light p-1 rounded-pill border" style="background:var(--bg) !important;">
+        <button class="view-pill active" data-view="all" onclick="filterDashboard('all', this)">Full View</button>
+        <button class="view-pill" data-view="sales" onclick="filterDashboard('sales', this)">Sales &amp; Revenue</button>
+        <button class="view-pill" data-view="operations" onclick="filterDashboard('operations', this)">Ops &amp; Stock</button>
+    </div>
+</div>
+
+<!-- Session Info Banner -->
+<div class="erp-card mb-4 d-flex align-items-center gap-3 flex-wrap" style="background:linear-gradient(135deg,var(--primary),#6c47ff);color:#fff;border:none;border-radius: 16px;box-shadow: 0 6px 20px rgba(var(--primary-rgb),0.3)">
+    <i class="bi bi-shield-check fs-2"></i>
+    <div>
+        <div class="fw-semibold">Secure Session Active</div>
+        <div class="small opacity-75">
+            IP: <strong>@ViewBag.IPAddress</strong> &nbsp;|&nbsp;
+            Host: <strong>@ViewBag.HostName</strong> &nbsp;|&nbsp;
+            Logged in: <strong>@ViewBag.LoginTime</strong> &nbsp;|&nbsp;
+            Role: <strong>@(string.IsNullOrEmpty(userRole) ? "General User" : userRole)</strong>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+     SECTION 1: SALES & REVENUE KPI CARDS 
+     ============================================ -->
+<div class="dashboard-section" id="sales-kpis">
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-md-6 col-xl-6">
+            <div class="glass-card h-100 d-flex align-items-center gap-3">
+                <div style="width:52px;height:52px;border-radius:14px;background:#eef3ff;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <i class="bi bi-cart-check fs-4" style="color:#4680FF"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div style="font-size:.8rem;color:var(--text-muted)">Total Orders</div>
+                    <div style="font-size:1.5rem;font-weight:700;line-height:1.2;color:var(--text)">1,284</div>
+                    <div style="font-size:.78rem;color:#10b981">
+                        <i class="bi bi-arrow-up-right-circle-fill"></i> +12.4% vs last month
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-6 col-xl-6">
+            <div class="glass-card h-100 d-flex align-items-center gap-3">
+                <div style="width:52px;height:52px;border-radius:14px;background:#ecfdf5;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <i class="bi bi-cash-stack fs-4" style="color:#10b981"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div style="font-size:.8rem;color:var(--text-muted)">Revenue</div>
+                    <div style="font-size:1.5rem;font-weight:700;line-height:1.2;color:var(--text)">₹8.4 L</div>
+                    <div style="font-size:.78rem;color:#10b981">
+                        <i class="bi bi-arrow-up-right-circle-fill"></i> +8.7% vs last month
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+     SECTION 2: OPERATIONS & GENERAL KPI CARDS
+     ============================================ -->
+<div class="dashboard-section" id="ops-kpis">
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-md-6 col-xl-6">
+            <div class="glass-card h-100 d-flex align-items-center gap-3">
+                <div style="width:52px;height:52px;border-radius:14px;background:#fff7ed;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <i class="bi bi-box-seam fs-4" style="color:#f97316"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div style="font-size:.8rem;color:var(--text-muted)">Stock Items</div>
+                    <div style="font-size:1.5rem;font-weight:700;line-height:1.2;color:var(--text)">3,920</div>
+                    <div style="font-size:.78rem;color:#ef4444">
+                        <i class="bi bi-arrow-down-right-circle-fill"></i> -2.1% vs last month
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-6 col-xl-6">
+            <div class="glass-card h-100 d-flex align-items-center gap-3">
+                <div style="width:52px;height:52px;border-radius:14px;background:#f5f3ff;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                    <i class="bi bi-people fs-4" style="color:#7c3aed"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div style="font-size:.8rem;color:var(--text-muted)">Active Users</div>
+                    <div style="font-size:1.5rem;font-weight:700;line-height:1.2;color:var(--text)">47</div>
+                    <div style="font-size:.78rem;color:#10b981">
+                        <i class="bi bi-arrow-up-right-circle-fill"></i> +5 active today
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+     SECTION 3: CHARTS & ANALYTICS
+     ============================================ -->
+<div class="row g-3 mb-4">
+    <!-- Sales/Revenue Chart (Left) -->
+    <div class="col-lg-8 dashboard-section" id="sales-chart">
+        <div class="glass-card h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="fw-semibold" style="color:var(--text)">Monthly Revenue</div>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-secondary active-chart-btn" onclick="switchChart('monthly',this)">Monthly</button>
+                    <button class="btn btn-outline-secondary" onclick="switchChart('weekly',this)">Weekly</button>
+                </div>
+            </div>
+            <canvas id="revenueChart" height="120"></canvas>
+        </div>
+    </div>
+    
+    <!-- Operations Doughnut Chart (Right) -->
+    <div class="col-lg-4 dashboard-section" id="ops-chart">
+        <div class="glass-card h-100">
+            <div class="fw-semibold mb-3" style="color:var(--text)">Sales by Category</div>
+            <canvas id="categoryChart" height="180"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+     SECTION 4: DATA TABLES & AUDIT DETAILS
+     ============================================ -->
+<div class="row g-3 mb-4">
+    <!-- Recent Orders (Sales Panel) -->
+    <div class="col-lg-6 dashboard-section" id="sales-orders">
+        <div class="glass-card h-100">
+            <div class="fw-semibold mb-3" style="color:var(--text)"><i class="bi bi-clock-history me-2 text-primary"></i>Recent Orders</div>
+            <div class="table-responsive">
+                <table class="table table-hover table-sm mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr><th>#</th><th>Customer</th><th>Amount</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var orders = new[] {
+                                new { Id="1084", Cust="Rajan Traders",  Amt="₹12,400", Status="Delivered", Color="success" },
+                                new { Id="1083", Cust="Sri Murugan Co", Amt="₹8,200",  Status="Pending",   Color="warning" },
+                                new { Id="1082", Cust="ABC Stores",     Amt="₹3,600",  Status="Processing",Color="info"    },
+                                new { Id="1081", Cust="XYZ Ltd",        Amt="₹22,000", Status="Cancelled", Color="danger"  },
+                            };
+                        }
+                        @foreach (var o in orders)
+                        {
+                            <tr>
+                                <td><span class="text-muted small">#@o.Id</span></td>
+                                <td style="color:var(--text)">@o.Cust</td>
+                                <td class="fw-semibold" style="color:var(--text)">@o.Amt</td>
+                                <td><span class="badge bg-@o.Color bg-opacity-15 text-@o.Color rounded-pill px-2">@o.Status</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Session Info & Audit Logs (Ops Panel) -->
+    <div class="col-lg-6 dashboard-section" id="ops-audit">
+        <div class="glass-card h-100">
+            <div class="fw-semibold mb-3" style="color:var(--text)"><i class="bi bi-geo-alt me-2 text-primary"></i>Session Info &amp; Audit</div>
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <div class="p-2 rounded-3" style="background:var(--bg)">
+                        <div class="small text-muted">IP Address</div>
+                        <div class="fw-semibold small" style="color:var(--text)">@ViewBag.IPAddress</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-2 rounded-3" style="background:var(--bg)">
+                        <div class="small text-muted">Hostname</div>
+                        <div class="fw-semibold small text-truncate" style="color:var(--text)">@ViewBag.HostName</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-2 rounded-3" style="background:var(--bg)">
+                        <div class="small text-muted">Login Time</div>
+                        <div class="fw-semibold small" style="color:var(--text)">@ViewBag.LoginTime</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-2 rounded-3" style="background:var(--bg)">
+                        <div class="small text-muted">User</div>
+                        <div class="fw-semibold small" style="color:var(--text)">@ViewBag.UserName</div>
+                    </div>
+                </div>
+            </div>
+            <a href="#" class="btn btn-sm btn-outline-primary w-100">
+                <i class="bi bi-card-list me-1"></i>View Full Audit Log
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script>
+    /* Dashboard Filter Logic */
+    function filterDashboard(view, btn) {
+        // Toggle view pills active state
+        document.querySelectorAll('.view-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Target specific section DOM nodes
+        const salesElements = [
+            document.getElementById('sales-kpis'),
+            document.getElementById('sales-chart'),
+            document.getElementById('sales-orders')
+        ];
+        
+        const opsElements = [
+            document.getElementById('ops-kpis'),
+            document.getElementById('ops-chart'),
+            document.getElementById('ops-audit')
+        ];
+
+        // Apply hide/show classes with transitions
+        if (view === 'sales') {
+            salesElements.forEach(el => el.classList.remove('hidden-section'));
+            opsElements.forEach(el => el.classList.add('hidden-section'));
+        } else if (view === 'operations') {
+            salesElements.forEach(el => el.classList.add('hidden-section'));
+            opsElements.forEach(el => el.classList.remove('hidden-section'));
+        } else {
+            salesElements.forEach(el => el.classList.remove('hidden-section'));
+            opsElements.forEach(el => el.classList.remove('hidden-section'));
+        }
+    }
+
+    // Auto-detect role to default pre-filter dashboard view on load
+    document.addEventListener('DOMContentLoaded', () => {
+        const userRole = '@userRole'.toLowerCase();
+        let targetView = 'all';
+
+        if (userRole.includes('sales') || userRole.includes('marketing')) {
+            targetView = 'sales';
+        } else if (userRole.includes('hr') || userRole.includes('admin') || userRole.includes('inventory') || userRole.includes('ops')) {
+            targetView = 'operations';
+        }
+
+        const defaultBtn = document.querySelector(`.view-pill[data-view="${targetView}"]`) || document.querySelector('.view-pill[data-view="all"]');
+        if (defaultBtn) {
+            filterDashboard(targetView, defaultBtn);
+        }
+    });
+
+    /* Charts Configuration */
+    const months  = ['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
+    const revenue = [42, 58, 51, 74, 68, 83, 77, 95, 88, 102, 91, 115];
+    const expenses= [30, 40, 38, 50, 45, 55, 48, 60, 52, 65, 58, 72];
+    const getText = () => getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() || '#6c757d';
+
+    const ctxRev = document.getElementById('revenueChart').getContext('2d');
+    const revChart = new Chart(ctxRev, {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [
+                { label:'Revenue (₹K)', data: revenue,  backgroundColor: 'rgba(70,128,255,.75)', borderRadius: 6, borderSkipped: false },
+                { label:'Expenses (₹K)',data: expenses, backgroundColor: 'rgba(239,68,68,.55)',  borderRadius: 6, borderSkipped: false }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: true,
+            plugins: { legend: { labels: { boxWidth: 10, padding: 16, color: getText() } } },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: getText() } },
+                y: { grid: { color: 'rgba(200,200,200,.15)' }, ticks: { color: getText() } }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('categoryChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Sales','Inventory','Purchase','HR'],
+            datasets: [{ data: [38,28,20,14], backgroundColor: ['#4680FF','#10b981','#f97316','#7c3aed'], borderWidth: 0, hoverOffset: 8 }]
+        },
+        options: {
+            cutout: '68%',
+            plugins: { legend: { position:'bottom', labels: { padding: 12, boxWidth: 10, color: getText() } } }
+        }
+    });
+
+    function switchChart(period, btn) {
+        document.querySelectorAll('.active-chart-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const weekly = [11,15,13,18,16,21,19,24,22,26,23,29];
+        revChart.data.datasets[0].data = period === 'weekly' ? weekly : revenue;
+        revChart.update();
+    }
+</script>
+}

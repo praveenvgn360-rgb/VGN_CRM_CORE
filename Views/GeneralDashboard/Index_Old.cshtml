@@ -1,0 +1,2188 @@
+@{
+    ViewBag.Title = "General Dashboard";
+    ViewBag.ActiveMenu = "Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var userId = ViewBag.UserId as string ?? "";
+    var userRole = ViewBag.UserRole as string ?? "";
+    var departmentId = ViewBag.DepartmentId as string ?? "";
+}
+
+
+
+<style>
+
+    /* ── Compact Attendance Calendar ───────────────────── */
+    .att-cal-wrap {
+        background: var(--bg-card, var(--surface));
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 1rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,.05);
+    }
+
+    .att-cal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: .6rem;
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    .att-cal-title {
+        font-size: .92rem;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .att-cal-nav {
+        display: flex;
+        gap: 6px;
+    }
+
+        .att-cal-nav button {
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            font-size: .85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .15s;
+        }
+
+            .att-cal-nav button:hover {
+                background: var(--primary);
+                color: #fff;
+                border-color: var(--primary);
+            }
+
+    /* 7-column compact grid */
+    .att-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 3px;
+    }
+
+    .att-grid-head {
+        text-align: center;
+        font-size: .68rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        padding: 3px 0;
+        letter-spacing: .4px;
+    }
+
+    .att-day-cell {
+        border-radius: 7px;
+        padding: 4px 3px 3px;
+        min-height: 52px;
+        font-size: .65rem;
+        border: 1px solid transparent;
+        position: relative;
+        cursor: default;
+        transition: transform .15s, box-shadow .15s;
+    }
+
+        .att-day-cell:hover {
+            transform: scale(1.06);
+            box-shadow: 0 3px 10px rgba(0,0,0,.12);
+            z-index: 2;
+        }
+
+        .att-day-cell.empty {
+            background: transparent;
+            border: none;
+        }
+
+        .att-day-cell.no-data {
+            background: var(--bg);
+            border-color: var(--border);
+        }
+
+        .att-day-cell.on-time {
+            background: #d1fae5;
+            border-color: #6ee7b7;
+        }
+
+        .att-day-cell.slight-late {
+            background: #fef9c3;
+            border-color: #fde047;
+        }
+
+        .att-day-cell.late {
+            background: #fee2e2;
+            border-color: #fca5a5;
+        }
+
+        .att-day-cell.today {
+            border-color: var(--primary) !important;
+            border-width: 2px !important;
+        }
+
+    .att-day-num {
+        font-weight: 700;
+        color: var(--text);
+        font-size: .72rem;
+    }
+
+    .att-day-name {
+        float: right;
+        color: var(--text-muted);
+        font-size: .6rem;
+    }
+
+    .att-day-cell.on-time .att-day-num,
+    .att-day-cell.slight-late .att-day-num,
+    .att-day-cell.late .att-day-num {
+        color: #1e293b !important;
+    }
+
+    .att-day-cell.on-time .att-day-name,
+    .att-day-cell.slight-late .att-day-name,
+    .att-day-cell.late .att-day-name {
+        color: #475569 !important;
+    }
+
+    .att-punch {
+        margin-top: 2px;
+        line-height: 1.3;
+    }
+
+        .att-punch span {
+            display: block;
+            font-size: .6rem;
+            white-space: nowrap;
+        }
+
+    .att-in {
+        color: #059669;
+    }
+
+    .att-out {
+        color: #6b7280;
+    }
+
+    /* Legend */
+    .att-legend {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: .6rem;
+    }
+
+        .att-legend span {
+            font-size: .68rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+        }
+
+            .att-legend span i {
+                width: 10px;
+                height: 10px;
+                border-radius: 3px;
+                display: inline-block;
+            }
+
+    .leg-green {
+        background: #6ee7b7;
+    }
+
+    .leg-yellow {
+        background: #fde047;
+    }
+
+    .leg-red {
+        background: #fca5a5;
+    }
+
+    .leg-empty {
+        background: var(--border);
+    }
+
+    /* Summary badges */
+    .att-summary {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: .6rem;
+    }
+
+    .att-sum-pill {
+        font-size: .7rem;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+
+    /* ── Glass card ──────────────────── */
+    .gdash-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 1.25rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,.04);
+        height: 100%;
+    }
+
+    .gdash-card-title {
+        font-size: .82rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        margin-bottom: .75rem;
+    }
+
+    /* ── Dept section show/hide ────────────────────────── */
+    .dept-section {
+        transition: opacity .35s ease, max-height .35s ease;
+        overflow: hidden;
+    }
+
+        .dept-section.d-section-hidden {
+            opacity: 0;
+            max-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+    /* ── Grid Tables ─────────────────────────────────── */
+    .grid-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+
+        .grid-table thead th {
+            background: rgba(70,128,255,.08);
+            color: var(--text);
+            font-weight: 700;
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.4px;
+        }
+
+        .grid-table tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s ease;
+        }
+
+            .grid-table tbody tr:hover {
+                background: rgba(70,128,255,.04);
+            }
+
+        .grid-table tbody td {
+            padding: 0.75rem;
+            color: var(--text);
+        }
+
+        .grid-table .text-center {
+            text-align: center;
+        }
+
+        .grid-table .text-right {
+            text-align: right;
+        }
+
+        .grid-table .action-btn {
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.15s ease;
+        }
+
+            .grid-table .action-btn:hover {
+                background: var(--primary);
+                color: #fff;
+                border-color: var(--primary);
+            }
+
+    .grid-empty {
+        text-align: center;
+        padding: 2rem;
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+</style>
+
+<!-- Page Header -->
+@*<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 class="page-title">General Dashboard</h1>
+            <nav aria-label="breadcrumb" class="page-breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item active">General Dashboard</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge rounded-pill px-3 py-2"
+                  style="background:rgba(var(--primary-rgb),.12);color:var(--primary);font-size:.78rem;">
+                <i class="bi bi-person-circle me-1"></i>@ViewBag.UserName
+            </span>
+            <span class="badge rounded-pill px-3 py-2"
+                  style="background:rgba(16,185,129,.12);color:#059669;font-size:.78rem;">
+                <i class="bi bi-shield-check me-1"></i>@(string.IsNullOrEmpty(userRole) ? "General" : userRole)
+            </span>
+        </div>
+    </div>*@
+
+<div class="row g-3 mb-3">
+
+    <!-- Quick KPI Cards (col-lg-4) -->
+    @if (!userRole.ToUpper().Contains("CHANNEL") && !userId.ToUpper().StartsWith("MP") && userId.ToUpper() != "CHANNELPARTNER" && userId.ToUpper() != "MD" && userId.ToUpper() != "CEO" && userId.ToUpper() != "D001" && userId.ToUpper() != "TEST")
+    {
+        <div class="col-lg-4">
+            <div class="gdash-card d-flex flex-column gap-3">
+                <div class="gdash-card-title"><i class="bi bi-lightning-charge me-1 text-warning"></i>Today's Snapshot</div>
+
+                <!-- Today InTime / OutTime -->
+                <div class="d-flex gap-2">
+                    <div class="flex-fill p-3 rounded-3 text-center" style="background:#d1fae5;">
+                        <div style="font-size:.7rem;color:#059669;font-weight:600">IN TIME</div>
+                        <div id="kpi_intime" style="font-size:1.1rem;font-weight:800;color:#065f46;">--:-- --</div>
+                    </div>
+                    <div class="flex-fill p-3 rounded-3 text-center" style="background:#fee2e2;">
+                        <div style="font-size:.7rem;color:#dc2626;font-weight:600">LAST OUT</div>
+                        <div id="kpi_outtime" style="font-size:1.1rem;font-weight:800;color:#7f1d1d;">--:-- --</div>
+                    </div>
+                </div>
+
+                <!-- Month summary pills -->
+                <div class="att-summary" id="att-summary-pills">
+                    <span class="att-sum-pill" style="background:#d1fae5;color:#065f46;" id="pill_ontime">🟢 On Time: <span id="cnt_ontime">0</span></span>
+                    <span class="att-sum-pill" style="background:#fef9c3;color:#854d0e;" id="pill_late">🟠 Slight Late: <span id="cnt_slightlate">0</span></span>
+                    <span class="att-sum-pill" style="background:#fee2e2;color:#7f1d1d;" id="pill_vlate">🔴 Late: <span id="cnt_late">0</span></span>
+                    <span class="att-sum-pill" style="background:var(--bg);color:var(--text-muted);" id="pill_absent">⬜ No Punch: <span id="cnt_absent">0</span></span>
+                </div>
+
+                <!-- Session Info -->
+                <div class="row g-2 mt-auto">
+                    <div class="col-6">
+                        <div class="p-2 rounded-3" style="background:var(--bg)">
+                            <div class="small" style="font-size:.68rem;color:var(--text-muted)">IP Address</div>
+                            <div class="fw-semibold" style="font-size:.75rem;color:var(--text)">@ViewBag.IPAddress</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 rounded-3" style="background:var(--bg)">
+                            <div class="small" style="font-size:.68rem;color:var(--text-muted)">Login Time</div>
+                            <div class="fw-semibold" style="font-size:.75rem;color:var(--text)">@ViewBag.LoginTime</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Attendance Calendar (col-lg-8) -->
+    @if (userId.ToUpper() != "MD" && userId.ToUpper() != "CEO" && userId.ToUpper() != "D001" && userId.ToUpper() != "TEST" && !userRole.ToUpper().Contains("CHANNEL") && !userId.ToUpper().StartsWith("MP") && userId.ToUpper() != "CHANNELPARTNER")
+    {
+        <div class="col-lg-8">
+            <div class="att-cal-wrap">
+                <div class="att-cal-header">
+                    <div class="att-cal-title"><i class="bi bi-calendar3 me-1" style="color:var(--primary)"></i>Attendance Calendar</div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="att-cal-nav">
+                            <button id="cal_prev" title="Previous Month">&#8249;</button>
+                            <button id="cal_next" title="Next Month">&#8250;</button>
+                        </div>
+                        <span id="cal_month_label" class="fw-semibold" style="font-size:.85rem;color:var(--text);min-width:90px;text-align:center"></span>
+                        <button class="btn btn-sm" id="cal_export"
+                                style="font-size:.72rem;padding:3px 10px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;">
+                            <i class="bi bi-download me-1"></i>CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="att-grid" id="att_grid_head">
+                    @foreach (var d in new[] { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" })
+                    {
+                        <div class="att-grid-head">@d</div>
+                    }
+                </div>
+
+                <div class="att-grid" id="att_grid_body" style="margin-top:3px;"></div>
+
+                <div class="att-legend">
+                    <span><i class="leg-green"></i> On Time (≤9:30)</span>
+                    <span><i class="leg-yellow"></i> 9:31–9:45</span>
+                    <span><i class="leg-red"></i> After 9:45</span>
+                    <span><i class="leg-empty"></i> No Punch</span>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (userId.ToUpper() == "MD" || userId.ToUpper() == "CEO" || userId.ToUpper() == "D001")
+{
+    <!-- CMD Specific Cards -->
+    <div class="row g-3 mb-3">
+        <div class="col-12">
+            <div class="gdash-card">
+                <div class="gdash-card-title"><i class="bi bi-person-badge text-primary me-1"></i>CMD Dashboard</div>
+                <div class="row text-center mt-3">
+                    <div class="col-md-3"><div class="p-3 bg-light rounded border"><div class="fs-4 text-success fw-bold">COM</div><small>Completed</small></div></div>
+                    <div class="col-md-3"><div class="p-3 bg-light rounded border"><div class="fs-4 text-warning fw-bold">IN</div><small>In Progress</small></div></div>
+                    <div class="col-md-3"><div class="p-3 bg-light rounded border"><div class="fs-4 text-info fw-bold">EX</div><small>Extension</small></div></div>
+                    <div class="col-md-3"><div class="p-3 bg-light rounded border"><div class="fs-4 text-danger fw-bold">CAN</div><small>Cancelled</small></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (userRole.ToUpper().Contains("CHANNEL") || userId.ToUpper().StartsWith("MP") || userId.ToUpper() == "CHANNELPARTNER")
+{
+    <!-- Channel Partner Specific Cards -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <div class="gdash-card">
+                <div class="gdash-card-title"><i class="bi bi-person-plus text-success me-1"></i>New Lead / Enquiry</div>
+                <div class="row g-2">
+                    <div class="col-12">
+                        <label class="form-label" style="font-size:11px;">CUSTOMER NAME</label>
+                        <input class="form-control form-control-sm" type="text" id="txtCUSTOMERNAME">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" style="font-size:11px;">COUNTRY CODE</label>
+                        <select class="form-select form-select-sm" id="countryCode_1">
+                            <option value="+91">+91 (India)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label" style="font-size:11px;">MOBILE NO 1 <span class="text-danger">*</span></label>
+                        <input class="form-control form-control-sm" type="text" id="txtMOBILENO" placeholder="Enter phone number">
+                        <p id="PtxtMOBILENO" class="validate_errupb75" style="        color: red;"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" style="font-size:11px;">PROJECT CATEGORY <span class="text-danger">*</span></label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="EnquiryType" id="inlineRadio1" value="FLAT" checked>
+                                <label class="form-check-label" style="font-size:11px;" for="inlineRadio1">FLAT</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="EnquiryType" id="inlineRadio2" value="PLOT">
+                                <label class="form-check-label" style="font-size:11px;" for="inlineRadio2">PLOT</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="EnquiryType" id="inlineRadio3" value="VILLA">
+                                <label class="form-check-label" style="font-size:11px;" for="inlineRadio3">VILLA</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" style="font-size:11px;">PROJECT NAME <span class="text-danger">*</span></label>
+                        <select class="form-select form-select-sm" id="dd_ProjectLayout"></select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" style="font-size:11px;">SOURCE OF ENQUIRY <span class="text-danger">*</span></label>
+                        <select class="form-select form-select-sm" id="dd_SourceOfEnquiry"></select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" style="font-size:11px;">SUB SOURCE <span class="text-danger">*</span></label>
+                        <select class="form-select form-select-sm" id="dd_SubSource"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="gdash-card d-flex flex-column h-100">
+                <div class="gdash-card-title"><i class="bi bi-info-circle text-primary me-1"></i>Additional Details</div>
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <label class="form-label" style="font-size:11px;">EMAIL ID</label>
+                        <input class="form-control form-control-sm" type="email" id="txt_EMAIL">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" style="font-size:11px;">LOCATION</label>
+                        <input class="form-control form-control-sm" type="text" id="txt_LOCATION">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" style="font-size:11px;">PAN NO</label>
+                        <input class="form-control form-control-sm" type="text" id="txt_PANNO">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" style="font-size:11px;">AADHAR NO</label>
+                        <input class="form-control form-control-sm" type="text" id="txt_Adr">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" style="font-size:11px;">REMARKS</label>
+                        <textarea class="form-control form-control-sm" rows="2" id="txt_Remarks"></textarea>
+                    </div>
+                </div>
+                <div class="mt-auto pt-3 d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" id="btnEnquiry_clear"><i class="bi bi-eraser me-1"></i> CLEAR</button>
+                    <button type="button" class="btn btn-sm btn-primary rounded-pill" id="btnEnquiry_save"><i class="bi bi-save me-1"></i> SAVE</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="gdash-card">
+                <div class="gdash-card-title"><i class="bi bi-list-ul text-info me-1"></i>My Leads</div>
+                <div id="grid_enq_upd">
+                    <div id="gridContainer_cp" style="min-height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (!userRole.ToUpper().Contains("CHANNEL") && !userId.ToUpper().StartsWith("MP") && userId.ToUpper() != "CHANNELPARTNER" && userId.ToUpper() != "MD" && userId.ToUpper() != "CEO" && userId.ToUpper() != "D001")
+{
+    @if (departmentId == "DEPT-5")
+    {
+        <!-- General Sales Dashboard Specific Cards -->
+        <div class="row g-3 mb-3">
+            <div class="col-12">
+                <div class="gdash-card">
+                    <div class="gdash-card-title"><i class="bi bi-graph-up-arrow text-success me-1"></i>General Sales Dashboard</div>
+                    <p class="text-muted small">Sales overview and metrics.</p>
+                </div>
+            </div>
+        </div>
+    }
+    else if (departmentId == "DEPT-28" || departmentId == "DEPT-31")
+    {
+        <!-- Presales Dashboard Specific Cards -->
+        <div class="row g-3 mb-3">
+            <div class="col-12">
+                <div class="gdash-card">
+                    <div class="gdash-card-title"><i class="bi bi-telephone-inbound text-primary me-1"></i>Presales Dashboard</div>
+                    <p class="text-muted small">Presales calls and leads.</p>
+                </div>
+            </div>
+        </div>
+    }
+    else if (departmentId == "DEPT-23")
+    {
+        <!-- CRM Executive Dashboard Specific Cards -->
+        <div class="row g-3 mb-3">
+            <div class="col-12">
+                <div class="gdash-card">
+                    <div class="gdash-card-title"><i class="bi bi-headset text-info me-1"></i>CRM Executive Dashboard</div>
+                    <p class="text-muted small">Customer relationships and follow-ups.</p>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- General Dashboard Specific Grids -->
+        <!-- Daybook Grid Section -->
+        <div class="row g-3 mb-3">
+            <div class="col-12">
+                <div class="gdash-card">
+                    <div class="gdash-card-title"><i class="bi bi-book me-1 text-info"></i>Daybook</div>
+                    <div style="overflow-x: auto; width: 100%;">
+                        <div id="gridContainer1" style="min-height: 400px; width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assignment Extension Grid Section -->
+        <div class="row g-3 mb-3">
+            <div class="col-12">
+                <div class="gdash-card">
+                    <div class="gdash-card-title"><i class="bi bi-briefcase me-1 text-warning"></i>Assignment Extension</div>
+                    <div style="overflow-x: auto; width: 100%;">
+                        <div id="gridContainer2" style="min-height: 400px; width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: HR -->
+        <div class="dept-section row g-3 mb-3" id="section-general" data-dept="ALL">
+            <div class="col-12">
+                <div class="gdash-card">
+                    <div class="gdash-card-title"><i class="bi bi-grid-1x2 me-1 text-primary"></i>General Section</div>
+                    <div style="font-size:.82rem;color:var(--text-muted)">
+                        This is the General Dashboard. Department-specific cards will appear here based on your role.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dept-section row g-3 mb-3 d-section-hidden" id="section-hr" data-dept="DEPT-HR">
+            <div class="col-12">
+                <div class="gdash-card">
+                    <div class="gdash-card-title"><i class="bi bi-people me-1 text-success"></i>HR Section</div>
+                    <p class="small mb-0" style="color:var(--text-muted)">HR-specific widgets will load here.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="dept-section row g-3 mb-3 d-section-hidden" id="section-sales" data-dept="DEPT-SALES DEPT-CRM">
+            <div class="col-12">
+                <div class="gdash-card">
+                    <div class="gdash-card-title"><i class="bi bi-graph-up-arrow me-1 text-warning"></i>Sales Section</div>
+                    <p class="small mb-0" style="color:var(--text-muted)">Sales-specific widgets will load here.</p>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@section Scripts {
+    <script>
+(function () {
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+    let currentDate = new Date();
+    let calData     = [];
+
+    function monthLabel(d) { return MONTHS[d.getMonth()] + '-' + d.getFullYear(); }
+
+    function timeToMinutes(t) {
+        if (!t) return -1;
+        const m = t.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        if (!m) return -1;
+        let h = parseInt(m[1]), mn = parseInt(m[2]);
+        if (m[3].toUpperCase() === 'PM' && h !== 12) h += 12;
+        if (m[3].toUpperCase() === 'AM' && h === 12) h = 0;
+        return h * 60 + mn;
+    }
+
+    function classifyInTime(t) {
+        const mins = timeToMinutes(t);
+        if (mins < 0)   return 'no-data';
+        if (mins <= 570) return 'on-time';      // ≤ 9:30
+        if (mins <= 585) return 'slight-late';  // 9:31–9:45
+        return 'late';
+    }
+
+    function renderCalendar() {
+        const grid  = document.getElementById('att_grid_body');
+        const label = document.getElementById('cal_month_label');
+        grid.innerHTML = '';
+        label.textContent = monthLabel(currentDate);
+
+        const year  = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        const first = new Date(year, month, 1).getDay();
+        const total = new Date(year, month + 1, 0).getDate();
+        const today = new Date();
+        const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+
+        for (let i = 0; i < first; i++) {
+            const blank = document.createElement('div');
+            blank.className = 'att-day-cell empty';
+            grid.appendChild(blank);
+        }
+
+        let cntOn = 0, cntSlight = 0, cntLate = 0, cntAbsent = 0;
+        let todayIn = '', todayOut = '';
+
+        for (let d = 1; d <= total; d++) {
+            const dayData = calData.find(x => x.day === d) || {};
+            const cls     = classifyInTime(dayData.inTime);
+            const dayOfW  = new Date(year, month, d).getDay();
+            const isToday = isCurrentMonth && d === today.getDate();
+
+            if (cls === 'on-time')     cntOn++;
+            else if (cls === 'slight-late') cntSlight++;
+            else if (cls === 'late')   cntLate++;
+            else if (d <= (isCurrentMonth ? today.getDate() : total) && dayOfW !== 0 && dayOfW !== 6)
+                cntAbsent++;
+
+            if (isToday) { todayIn = dayData.inTime || ''; todayOut = dayData.outTime || ''; }
+
+            let dur = dayData.duration || dayData.Duration;
+            let sts = dayData.status || dayData.Status;
+
+            let durStr = (dur !== undefined && dur !== null && String(dur).trim() !== '' && String(dur).trim() !== '0' && String(dur).trim() !== '0.00') ? String(dur).trim() : '';
+            let stsStr = (sts !== undefined && sts !== null && String(sts).trim() !== '') ? String(sts).trim() : '';
+
+            let extraHtml = '';
+            if (durStr !== '' || stsStr !== '') {
+                extraHtml = `<div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px; font-size:.62rem;">
+                                <span class="att-sts" style="display:inline; color:var(--primary); font-weight:700;">${stsStr ? 'Sts: ' + stsStr : ''}</span>
+                                <span class="att-dur" style="display:inline; color:#334155; font-weight:700;">${durStr ? 'Hr: ' + durStr : ''}</span>
+                             </div>`;
+            }
+
+            const cell = document.createElement('div');
+            cell.className = 'att-day-cell ' + cls + (isToday ? ' today' : '');
+            cell.title     = `${d} ${monthLabel(currentDate)}\nIn: ${dayData.inTime||'--'}  Out: ${dayData.outTime||'--'}`;
+            cell.innerHTML = `
+                <div><span class="att-day-num">${d}</span><span class="att-day-name">${DAYS[dayOfW].substring(0,1)}</span></div>
+                <div class="att-punch">
+                    ${dayData.inTime  ? `<span class="att-in">▲ ${dayData.inTime}</span>` : ''}
+                    ${dayData.outTime ? `<span class="att-out">▼ ${dayData.outTime}</span>` : ''}
+                    ${extraHtml}
+                </div>`;
+            grid.appendChild(cell);
+        }
+
+        document.getElementById('cnt_ontime').textContent    = cntOn;
+        document.getElementById('cnt_slightlate').textContent = cntSlight;
+        document.getElementById('cnt_late').textContent      = cntLate;
+        document.getElementById('cnt_absent').textContent    = cntAbsent;
+
+        if (isCurrentMonth) {
+            document.getElementById('kpi_intime').textContent    = todayIn  || '--:-- --';
+            document.getElementById('kpi_outtime').textContent   = todayOut || '--:-- --';
+        }
+    }
+
+    function loadCalendar() {
+        const ml = monthLabel(currentDate);
+        fetch('/GeneralDashboard/LoadAttendanceCalendar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ Month: ml })
+        })
+        .then(r => r.json())
+        .then(res => {
+            calData = (res.status && res.data) ? res.data : [];
+            renderCalendar();
+        })
+        .catch(() => { calData = []; renderCalendar(); });
+    }
+
+    //document.getElementById('cal_prev').addEventListener('click', function () {
+    //    currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+    //    loadCalendar();
+    //});
+
+    const calPrev = document.getElementById('cal_prev');
+if (calPrev) {
+    calPrev.addEventListener('click', function () {
+        currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+        loadCalendar();
+    });
+}
+
+
+    //document.getElementById('cal_next').addEventListener('click', function () {
+    //    const now = new Date();
+    //    const next = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+    //    if (next <= now) { currentDate = next; loadCalendar(); }
+    //});
+
+    const calNext = document.getElementById('cal_next');
+if (calNext) {
+    calNext.addEventListener('click', function () {
+        const now = new Date();
+        const next = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+        if (next <= now) { currentDate = next; loadCalendar(); }
+    });
+}
+
+    //document.getElementById('cal_export').addEventListener('click', function () {
+    //    let csv = 'Day,Date,InTime,OutTime\n';
+    //    const year = currentDate.getFullYear(), month = currentDate.getMonth();
+    //    const total = new Date(year, month + 1, 0).getDate();
+    //    for (let d = 1; d <= total; d++) {
+    //        const row = calData.find(x => x.day === d) || {};
+    //        const dt  = new Date(year, month, d);
+    //        csv += `${DAYS[dt.getDay()]},${String(d).padStart(2,'0')}-${MONTHS[month]}-${year},"${row.inTime||''}","${row.outTime||''}"\n`;
+    //    }
+    //    const a   = document.createElement('a');
+    //    a.href    = 'data:text/csv,' + encodeURIComponent(csv);
+    //    a.download = 'Attendance_' + monthLabel(currentDate) + '.csv';
+    //    a.click();
+    //});
+
+        const calExport = document.getElementById('cal_export');
+if (calExport) {
+    calExport.addEventListener('click', function () {
+        let csv = 'Day,Date,InTime,OutTime\n';
+        const year = currentDate.getFullYear(), month = currentDate.getMonth();
+        const total = new Date(year, month + 1, 0).getDate();
+        for (let d = 1; d <= total; d++) {
+            const row = calData.find(x => x.day === d) || {};
+            const dt  = new Date(year, month, d);
+            csv += `${DAYS[dt.getDay()]},${String(d).padStart(2,'0')}-${MONTHS[month]}-${year},"${row.inTime||''}","${row.outTime||''}"\n`;
+        }
+        const a   = document.createElement('a');
+        a.href    = 'data:text/csv,' + encodeURIComponent(csv);
+        a.download = 'Attendance_' + monthLabel(currentDate) + '.csv';
+        a.click();
+    });
+}
+
+    function applyDeptSections() {
+        const role = '@userRole'.toUpperCase();
+        document.querySelectorAll('.dept-section').forEach(function (sec) {
+            const depts = (sec.dataset.dept || 'ALL').split(' ');
+            const visible = depts.includes('ALL') ||
+                            depts.some(d => role.includes(d));
+            if (visible) sec.classList.remove('d-section-hidden');
+            else         sec.classList.add('d-section-hidden');
+        });
+    }
+
+    $(function () {
+
+
+        
+        var userRole = '@Html.Raw(userRole)'.toUpperCase();
+
+
+        // CP-only initialisation
+        if (userRole.includes('CHANNEL') || userRole.includes('CHANNELPARTNER')) {
+            Project_Layout();
+            LoadClientId();
+            ParentSource_load();
+            LoadLeads();
+            CpLeadFunction(0);
+        }
+
+        else {
+
+            // Always load for all non-CP users
+            if (document.getElementById('att_grid_body')) {
+                loadCalendar();
+            }
+            applyDeptSections();
+
+            if (document.getElementById('gridContainer1')) {
+                loadDaybookGrid();
+            }
+            if (document.getElementById('gridContainer2')) {
+                loadAssignmentExtensionGrid();
+            }
+        }
+
+        
+       
+    });
+
+    function updateFooterText1(gridInstance, totalCount) {
+        var pageCount = gridInstance.pageCount();
+        var currentPage = gridInstance.pageIndex() + 1;
+        var pageSize = gridInstance.pageSize();
+        var startRowIndex = (currentPage - 1) * pageSize + 1;
+        var endRowIndex = Math.min(startRowIndex + pageSize - 1, totalCount);
+
+        var $footer = $("#gridContainer1").find(".dx-datagrid-total-footer");
+
+        if ($footer.length === 0) {
+            $footer = $("<div>")
+                .addClass("dx-datagrid-total-footer")
+                .appendTo($("#gridContainer1"));
+        }
+
+        $footer.text("Showing " + startRowIndex + " - " + endRowIndex + " of " + totalCount + " rows");
+    }
+
+    function GeneralJobUpdation(TitleId, AssignmentType, GeneralJobId, TitleName) {
+        var ProcessFlag = "GENERAL";
+        window.open("/AssignmentUpdationEntry?HeadTitleId=" + encodeURIComponent(TitleId) + "&Processflag=" + encodeURIComponent(ProcessFlag) + "&AssignmentType=" + encodeURIComponent(AssignmentType) + "&GeneralJobId=" + encodeURIComponent(GeneralJobId) + "&Title=" + encodeURIComponent(TitleName), "_blank", "noreferrer");
+    }
+
+    function Extension_update(TitleId, StageId, substageId, JobId, EmpId, SubTitleId, EmpJobId, JobExtensionApproveId, JobType) {
+        window.open("/ProjectProcessflow?HeadTitleId=" + encodeURIComponent(TitleId) + "&SubTitleID=" + encodeURIComponent(SubTitleId) + "&JobId=" + encodeURIComponent(JobId) + "&EmpJobId=" + encodeURIComponent(EmpJobId) + "&From=Crm_Dashboard", "_blank", "noreferrer");
+    }
+
+    function loadDaybookGrid() {
+        $.ajax({
+            type: 'GET',
+            url: '/GeneralDashboard/LoadDaybookData',
+            contentType: 'application/json; charset=UTF-8',
+            success: function (res) {
+                var orders = [];
+                if (res && res.status && res.data) {
+                    orders = res.data;
+                }
+
+                const dataGrid = $('#gridContainer1').dxDataGrid({
+                    dataSource: orders,
+                    keyExpr: 'TitleId',
+                    width: '100%',
+                    columnAutoWidth: false,
+                    columnMinWidth: 80,
+                    allowColumnReordering: true,
+                    allowColumnResizing: true,
+                    filterRow: { visible: false, applyFilter: 'auto' },
+                    filterPanel: { visible: true },
+                    headerFilter: { visible: true },
+                    filterBuilderPopup: {
+                        position: { of: window, at: 'top', my: 'top', offset: { y: 10 } },
+                    },
+                    showBorders: true,
+                    noDataText: "No data available",
+                    hoverStateEnabled: true,
+                    scrolling: {
+                        mode: "standard",
+                        useNative: true,
+                    },
+                    paging: {
+                        enabled: false,
+                    },
+                    columnChooser: {
+                        enabled: true,
+                        mode: 'select',
+                    },
+                    searchPanel: {
+                        visible: true,
+                        width: 240,
+                        placeholder: 'Search...',
+                    },
+                    export: {
+                        enabled: true,
+                    },
+                    onExporting(e) {
+                        if (typeof ExcelJS !== 'undefined') {
+                            const workbook = new ExcelJS.Workbook();
+                            const worksheet = workbook.addWorksheet('DayBook');
+
+                            DevExpress.excelExporter.exportDataGrid({
+                                component: e.component,
+                                worksheet,
+                                autoFilterEnabled: true,
+                            }).then(() => {
+                                workbook.xlsx.writeBuffer().then((buffer) => {
+                                    saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'DayBook.xlsx');
+                                });
+                            });
+                            e.cancel = true;
+                        }
+                    },
+                    columns: [{
+                        dataField: 'Sno',
+                        caption: 'SL.NO',
+                        width: 90,
+                        alignment: 'center',
+                        headerFilter: { allowSearch: true }
+                    },
+                    {
+                        dataField: 'Title',
+                        caption: 'TITLE',
+                        width: 200,
+                        alignment: 'left',
+                        headerFilter: { allowSearch: true }
+                    },
+                    {
+                        dataField: 'Assignmenttype',
+                        caption: 'ASSIGNMENT TYPE',
+                        width: 200,
+                        visible: true,
+                        headerFilter: { allowSearch: true }
+                    },
+                    {
+                        dataField: 'NoofJobs',
+                        caption: 'NO OF JOBS',
+                        width: 140,
+                        alignment: 'center',
+                        headerFilter: { allowSearch: true },
+                        cssClass: "Color1",
+                        cellTemplate: function (container, options) {
+                            $("<div>").text(options.value)
+                                .on('dxclick', function () {
+                                    GeneralJobUpdation(options.data.TitleId, options.data.Assignmenttype, options.data.GeneralJobId, options.data.TitleName);
+                                }).appendTo(container);
+                        },
+                    },
+                    {
+                        dataField: 'Followup',
+                        caption: 'FOLLOWUP JOBS',
+                        width: 140,
+                        alignment: 'center',
+                        headerFilter: { allowSearch: true },
+                        cssClass: "Color2",
+                        cellTemplate: function (container, options) {
+                            $("<div>").text(options.value)
+                                .on('dxclick', function () {
+                                    GeneralJobUpdation(options.data.TitleId, options.data.Assignmenttype, options.data.GeneralJobId, options.data.TitleName);
+                                }).appendTo(container);
+                        },
+                    },
+                    {
+                        dataField: 'Completed',
+                        caption: 'COMPLETED JOBS',
+                        width: 140,
+                        alignment: 'center',
+                        headerFilter: { allowSearch: true },
+                        cssClass: "Color3",
+                        cellTemplate: function (container, options) {
+                            $("<div>").text(options.value)
+                                .on('dxclick', function () {
+                                    GeneralJobUpdation(options.data.TitleId, options.data.Assignmenttype, options.data.GeneralJobId, options.data.TitleName);
+                                }).appendTo(container);
+                        },
+                    },
+                    {
+                        dataField: 'To_Start',
+                        caption: 'TO START JOBS',
+                        width: 140,
+                        alignment: 'center',
+                        headerFilter: { allowSearch: true },
+                        cellTemplate: function (container, options) {
+                            $('<button />', {
+                                class: 'btn font-16',
+                                html: '<i class="fas fa-edit" style="color:white !important;"></i>',
+                                click: function () {
+                                    GeneralJobUpdation(options.data.TitleId, options.data.Assignmenttype, options.data.GeneralJobId, options.data.TitleName);
+                                }
+                            }).appendTo(container).css({"background-color": "var(--primary)", "border": "none"});
+                        },
+                    },
+                    {
+                        dataField: 'TitleId',
+                        caption: 'TitleId',
+                        width: 140,
+                        visible: false,
+                        headerFilter: { allowSearch: true }
+                    },
+                    {
+                        dataField: 'TitleName',
+                        caption: 'TITLE NAME',
+                        width: 140,
+                        visible: false,
+                        headerFilter: { allowSearch: true }
+                    },
+                    {
+                        dataField: 'GeneralJobId',
+                        caption: 'GENERALJOBID',
+                        width: 140,
+                        visible: false,
+                        headerFilter: { allowSearch: true }
+                    }],
+                    onContentReady: function (e) {
+                        var totalCount = e.component.getDataSource().totalCount();
+                        updateFooterText1(e.component, totalCount);
+                    },
+                }).dxDataGrid('instance');
+            }
+        });
+    }
+
+    function updateFooterText2(gridInstance, totalCount) {
+        var pageCount = gridInstance.pageCount();
+        var currentPage = gridInstance.pageIndex() + 1;
+        var pageSize = gridInstance.pageSize();
+        var startRowIndex = (currentPage - 1) * pageSize + 1;
+        var endRowIndex = Math.min(startRowIndex + pageSize - 1, totalCount);
+
+        var $footer = $("#gridContainer2").find(".dx-datagrid-total-footer");
+
+        if ($footer.length === 0) {
+            $footer = $("<div>")
+                .addClass("dx-datagrid-total-footer")
+                .appendTo($("#gridContainer2"));
+        }
+
+        $footer.text("Showing " + startRowIndex + " - " + endRowIndex + " of " + totalCount + " rows");
+    }
+
+    function loadAssignmentExtensionGrid() {
+        $.ajax({
+            type: 'GET',
+            url: '/GeneralDashboard/LoadAssignmentExtensionData',
+            contentType: 'application/json; charset=UTF-8',
+            success: function (res) {
+                var orders = [];
+                if (res && res.status && res.data) {
+                    orders = res.data;
+                }
+
+                const dataGrid = $('#gridContainer2').dxDataGrid({
+                    dataSource: orders,
+                    keyExpr: 'TitleId',
+                    width: '100%',
+                    columnAutoWidth: false,
+                    columnMinWidth: 80,
+                    allowColumnReordering: true,
+                    allowColumnResizing: true,
+                    filterRow: { visible: false, applyFilter: 'auto' },
+                    filterPanel: { visible: true },
+                    headerFilter: { visible: true },
+                    filterBuilderPopup: {
+                        position: { of: window, at: 'top', my: 'top', offset: { y: 10 } },
+                    },
+                    showBorders: true,
+                    noDataText: "No data available",
+                    hoverStateEnabled: true,
+                    scrolling: {
+                        mode: "standard",
+                        useNative: true,
+                    },
+                    paging: {
+                        enabled: false,
+                    },
+                    columnChooser: {
+                        enabled: true,
+                        mode: 'select',
+                    },
+                    searchPanel: {
+                        visible: true,
+                        width: 240,
+                        placeholder: 'Search...',
+                    },
+                    export: {
+                        enabled: true,
+                    },
+                    onExporting(e) {
+                        if (typeof ExcelJS !== 'undefined') {
+                            const workbook = new ExcelJS.Workbook();
+                            const worksheet = workbook.addWorksheet('Assignment Extensions');
+
+                            DevExpress.excelExporter.exportDataGrid({
+                                component: e.component,
+                                worksheet,
+                                autoFilterEnabled: true,
+                            }).then(() => {
+                                workbook.xlsx.writeBuffer().then((buffer) => {
+                                    saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'Assignment Extensions.xlsx');
+                                });
+                            });
+                            e.cancel = true;
+                        }
+                    },
+                    columns: [{
+                        dataField: 'Sno',
+                        caption: 'SL.NO',
+                        width: 80,
+                        alignment: 'left',
+                        headerFilter: { allowSearch: true }
+                    },
+                    {
+                        dataField: 'JobType',
+                        caption: 'JOBTYPE',
+                        width: 100,
+                        alignment: 'center',
+                        headerFilter: { allowSearch: true }
+                    },
+                    {
+                        dataField: 'Title',
+                        caption: 'TITLE',
+                        width: 190,
+                        headerFilter: { allowSearch: true }
+                    },
+                    {
+                        dataField: 'SubTitle',
+                        caption: 'SUBTITLE',
+                        width: 280,
+                        headerFilter: { allowSearch: true }
+                    },
+                    {
+                        dataField: 'EmpName',
+                        caption: 'EMPLOYEE NAME',
+                        width: 140,
+                        alignment: 'center',
+                        headerFilter: { allowSearch: true }
+                    },
+                    {
+                        dataField: 'NoofExtension',
+                        caption: 'EXT.',
+                        width: 100,
+                        alignment: 'center',
+                        headerFilter: { allowSearch: true }
+                    },
+                    {
+                        dataField: 'Status',
+                        caption: 'STATUS',
+                        width: 110,
+                        alignment: 'center',
+                        headerFilter: { allowSearch: true }
+                    },
+                    {
+                        dataField: 'Flag',
+                        caption: 'UPDATE',
+                        width: 100,
+                        alignment: 'center',
+                        headerFilter: { allowSearch: true },
+                        cellTemplate: function (container, options) {
+                            $('<div />').dxButton({
+                                icon: 'edit',
+                                onClick: function (e) {
+                                    Extension_update(options.data.TitleId, options.data.StageId, options.data.substageId, options.data.JobId, options.data.EmpId, options.data.SubTitleId, options.data.EmpJobId, options.data.JobExtensionApproveId, options.data.JobType);
+                                }
+                            }).appendTo(container).css({"background-color": "var(--primary)", "color": "white", "border": "none"});
+                        },
+                    },
+                    {
+                        dataField: 'StageId',
+                        caption: 'StageId',
+                        width: 140,
+                        visible: false,
+                        headerFilter: { allowSearch: true }
+                    },
+                    {
+                        dataField: 'substageId',
+                        caption: 'substageId',
+                        width: 140,
+                        visible: false,
+                        headerFilter: { allowSearch: true }
+                    },
+                    {
+                        dataField: 'JobId',
+                        caption: 'JobId',
+                        width: 140,
+                        visible: false,
+                        headerFilter: { allowSearch: true }
+                    },
+                    {
+                        dataField: 'EmpId',
+                        caption: 'EmpId',
+                        width: 140,
+                        visible: false,
+                        headerFilter: { allowSearch: true }
+                    },
+                    {
+                        dataField: 'TitleId',
+                        caption: 'TitleId',
+                        width: 140,
+                        visible: false,
+                        headerFilter: { allowSearch: true }
+                    },
+                    {
+                        dataField: 'SubTitleId',
+                        caption: 'SubTitleId',
+                        width: 140,
+                        visible: false,
+                        headerFilter: { allowSearch: true }
+                    },
+                    {
+                        dataField: 'EmpJobId',
+                        caption: 'EmpJobid',
+                        width: 140,
+                        visible: false,
+                        headerFilter: { allowSearch: true }
+                    },
+                    {
+                        dataField: 'JobExtensionApproveId',
+                        caption: 'JobExtensionApproveId',
+                        width: 140,
+                        visible: false,
+                        headerFilter: { allowSearch: true }
+                    }],
+                    onContentReady: function (e) {
+                        var totalCount = e.component.getDataSource().totalCount();
+                        updateFooterText2(e.component, totalCount);
+                    },
+                }).dxDataGrid('instance');
+            }
+        });
+    }
+
+
+
+
+    ///////////////////////////// CHANNEL PARTNER //////////////////////////////////
+
+
+var _elMob = document.getElementById('txtMOBILENO');
+if (_elMob) {
+    _elMob.addEventListener('paste', function (e) {
+        e.preventDefault();
+        $('#PtxtMOBILENO').text('Pasting is not allowed').css('color', 'red');
+        setTimeout(function () { $('#PtxtMOBILENO').text(''); }, 2000);
+    });
+}
+
+var _elMob1 = document.getElementById('txtMOBILENO1');
+if (_elMob1) {
+    _elMob1.addEventListener('paste', function (e) {
+        e.preventDefault();
+        $('#PtxtMOBILENO1').text('Pasting is not allowed').css('color', 'red');
+        setTimeout(function () { $('#PtxtMOBILENO1').text(''); }, 2000);
+    });
+}
+
+
+
+
+function Project_Layout() {
+    Category = $("input[type=radio][name='EnquiryType']:checked").val();
+    $.ajax({
+        async: true,
+        type: 'GET',
+        url: '/GeneralDashboard/LoadProject',
+        contentType: 'application/json; charset=UTF-8',
+        data: { Category: Category },
+        success: function (data) {
+            // REMOVED: var data = JSON.parse(data);
+            $('#dd_ProjectLayout').empty();
+            if (data.msg == 'Success') {
+                if (!jQuery.isEmptyObject(data.data)) {
+                    var data1 = data.data.Table;
+                    var option = '';
+                    for (var i = 0; i < data1.length; i++) {
+                        option += '<option value=' + data1[i].Projectid + '>' + data1[i].ProjectName + '</option>';
+                    }
+                    $('#dd_ProjectLayout').append(option);
+                }
+            } else {
+                console.log(data);
+            }
+        }
+    });
+}
+
+function LoadClientId() {
+    $.ajax({
+        async: true,
+        type: 'GET',
+        url: '/GeneralDashboard/LoadAutoId',
+        contentType: 'application/json; charset=UTF-8',
+        success: function (data) {
+            // REMOVED: var data = JSON.parse(data);
+            if (data.msg == 'Success') {
+                if (!jQuery.isEmptyObject(data.data)) {
+                    var data1 = data.data.Table[0];
+                    var enquiryid = data1.ClientId;
+                    if (!enquiryid) {
+                        $('#txtautoclientid').val('CP-1');
+                    } else {
+                        $('#txtautoclientid').val('CP-' + data1.ClientId);
+                    }
+                }
+            } else {
+                console.log(data);
+            }
+        }
+    });
+}
+
+$('input[type=radio][name=EnquiryType]').change(function () {
+
+    Project_Layout();
+});
+
+
+//SOURCE OF ENQUIRY dropdown load
+
+function ParentSource_load() {
+    $.ajax({
+        async: true,
+        type: 'GET',
+        url: '/GeneralDashboard/LoadParentSource',
+        contentType: 'application/json; charset=UTF-8',
+        success: function (data) {
+            // REMOVED: var data = JSON.parse(data);
+            $('#dd_SourceOfEnquiry').empty();
+            if (data.msg == 'Success') {
+                if (!jQuery.isEmptyObject(data.data)) {
+                    var data1 = data.data.Table;
+                    var option = '';
+                    for (var i = 0; i < data1.length; i++) {
+                        option += '<option value=' + data1[i].PSrcTranid + '>' + data1[i].PSrcEnquiry + '</option>';
+                    }
+                    $('#dd_SourceOfEnquiry').append(option);
+                    $('#dd_Soure_Enquiry').append(option);
+                }
+            } else {
+                console.log(data);
+            }
+        }
+    });
+}
+
+function SubSource_load() {
+    var PSrcTranid = $("#dd_SourceOfEnquiry option:selected").val() == "" ? 0 : $("#dd_SourceOfEnquiry option:selected").val();
+    $.ajax({
+        async: true,
+        type: 'GET',
+        url: '/GeneralDashboard/LoadSubSource',
+        contentType: 'application/json; charset=UTF-8',
+        data: { PSrcTranid: PSrcTranid },
+        success: function (data) {
+            // REMOVED: var data = JSON.parse(data);
+            $('#dd_SubSource').empty();
+            if (data.msg == 'Success') {
+                if (!jQuery.isEmptyObject(data.data)) {
+                    var data1 = data.data.Table;
+                    var option = '';
+                    for (var i = 0; i < data1.length; i++) {
+                        option += '<option value=' + data1[i].SrcTranid + '>' + data1[i].SrcEnquiry + '</option>';
+                    }
+                    $('#dd_SubSource').append(option);
+                }
+            } else {
+                console.log(data);
+            }
+        }
+    });
+}
+
+$('#dd_SourceOfEnquiry').change(function () {
+    SubSource_load();
+});
+
+
+
+
+
+$('#btnEnquiry_clear').click(function () {
+
+    EnquiryClear();
+
+});
+
+function EnquiryClear() {
+
+
+    $('#txtCUSTOMERNAME').val('');
+    $('#txtMOBILENO').val('');
+    $('#txtMOBILENO1').val('');
+    $('#txtPHONENO').val('');
+    $('#dd_ProjectLayout').val('0');
+    $('#dd_SourceOfEnquiry').val('0');
+    $('#dd_SubSource').val('0');
+    $('#txt_LOCATION').val('');
+    $('#txt_Remarks').val('');
+    $('#txt_EMAIL').val('');
+    $('#txt_PANNO').val('');
+    $('#txt_Adr').val('');
+
+    LoadClientId();
+    LoadLeads();
+}
+
+
+function SaveEnquiry() {
+    if ($.trim($('#txtCUSTOMERNAME').val()) == "") {
+        $('#PtxtCUSTOMERNAME').show();
+        $('#PtxtCUSTOMERNAME').fadeOut(8000);
+        $('#PtxtCUSTOMERNAME').html('Enter Client Name');
+        $('#txtCUSTOMERNAME').focus();
+        $('#btnEnquiry_save').attr('disabled', false);
+        return false;
+    }
+
+    var mobileno_legth = $('#txtMOBILENO').val().length;
+    if (mobileno_legth < 5 || $.trim($('#txtMOBILENO').val()) == "") {
+        $('#PtxtMOBILENO').show();
+        $('#PtxtMOBILENO').fadeOut(8000);
+        $('#PtxtMOBILENO').html('Enter 5 Digits Number');
+        $('#txtMOBILENO').focus();
+        $('#btnEnquiry_save').attr('disabled', false);
+        return false;
+    }
+
+    if ($('#txtMOBILENO1').val() != "") {
+        var mobileno_legth = $('#txtMOBILENO1').val().length;
+        if (mobileno_legth < 5 || $.trim($('#txtMOBILENO1').val()) == "") {
+            $('#PtxtMOBILENO1').show();
+            $('#PtxtMOBILENO1').fadeOut(8000);
+            $('#PtxtMOBILENO1').html('Enter 5 Digits Number');
+            $('#txtMOBILENO1').focus();
+            $('#btnEnquiry_save').attr('disabled', false);
+            return false;
+        }
+    }
+
+    if ($.trim($('#txtMOBILENO').val()) == "") {
+        alert('Enter Mobile No')
+        $('#btnEnquiry_save').attr('disabled', false);
+        return;
+    }
+
+    if ($.trim($('#dd_ProjectLayout').val()) == "0") {
+        $('#Pdd_ProjectLayout').show();
+        $('#Pdd_ProjectLayout').fadeOut(8000);
+        $('#Pdd_ProjectLayout').html('Select Project');
+        $('#dd_ProjectLayout').focus();
+        $('#btnEnquiry_save').attr('disabled', false);
+        return false;
+    }
+    if ($.trim($('#dd_SourceOfEnquiry').val()) == "0") {
+        $('#Pdd_SourceOfEnquiry').show();
+        $('#Pdd_SourceOfEnquiry').fadeOut(8000);
+        $('#Pdd_SourceOfEnquiry').html('Select Source Of Enquiry');
+        $('#dd_SourceOfEnquiry').focus();
+        $('#btnEnquiry_save').attr('disabled', false);
+        return false;
+    }
+    if ($.trim($('#dd_SubSource').val()) == "0") {
+        $('#Pdd_SubSource').show();
+        $('#Pdd_SubSource').fadeOut(8000);
+        $('#Pdd_SubSource').html('Select SubSource Of Enquiry');
+        $('#dd_SubSource').focus();
+        $('#btnEnquiry_save').attr('disabled', false);
+        return false;
+    }
+
+    var Save_Leads = {
+        "ClientName": "", "Mobile1": "", "Category": "", "projectId": "", "SrcTranid": "", "SubSrcEnquiryId": "",
+        "EmailId1": "", "Location": "", "Panno": "", "AadharNo": "", "Remarks": "", "Mobile2": "", "CountryCode1": "", "CountryCode2": ""
+    }
+
+    Save_Leads.ClientName = $('#txtCUSTOMERNAME').val();
+    Save_Leads.Mobile1 = $("#txtMOBILENO").val();
+    Save_Leads.Mobile2 = $("#txtMOBILENO1").val();
+    Save_Leads.Category = $("input[name='EnquiryType']:checked").val();
+    Save_Leads.projectId = $("#dd_ProjectLayout option:selected").val() || "0";
+    Save_Leads.SrcTranid = $("#dd_SourceOfEnquiry option:selected").val() || "0";
+    Save_Leads.SubSrcEnquiryId = $("#dd_SubSource option:selected").val() || "0";
+    Save_Leads.Location = $("#txt_LOCATION").val();
+    Save_Leads.EmailId1 = $("#txt_EMAIL").val();
+    Save_Leads.Panno = $("#txt_PANNO").val();
+    Save_Leads.AadharNo = $("#txt_Adr").val();
+    Save_Leads.Remarks = $("#txt_Remarks").val();
+    Save_Leads.CountryCode1 = $('#countryCode_1').val().replace('+', '');
+    Save_Leads.CountryCode2 = $('#countryCode_2').val().replace('+', '');
+
+    $.ajax({
+        async: true,
+        type: 'POST',
+        url: '/GeneralDashboard/SaveLeads',
+        contentType: 'application/json; charset=UTF-8',
+        data: JSON.stringify(Save_Leads),
+        success: function (response) {
+            try {
+                var data = typeof response === 'string' ? JSON.parse(response) : response;
+
+                if (data.status === true) {
+                    if (data.msg == 'Success') {
+                        alert('Saved Successfully');
+                        $('#btnEnquiry_save').attr('disabled', false);
+                        EnquiryClear();
+                    } else {
+                        alert(data.msg);
+                        $('#btnEnquiry_save').attr('disabled', false);
+                    }
+                }
+                else if (data.status === false) {
+                    alert(data.msg);
+                    $('#btnEnquiry_save').attr('disabled', false);
+
+                    // Focus and clear relevant field
+                    if (data.msg.includes("Project")) {
+                        $('#dd_ProjectLayout').focus();
+                    } else if (data.msg.includes("Source of enquiry")) {
+                        $('#dd_SourceOfEnquiry').focus();
+                    } else if (data.msg.includes("Sub source")) {
+                        $('#dd_SubSource').focus();
+                    } else if (data.msg.includes("Client name")) {
+                        $('#txtCUSTOMERNAME').focus();
+                    } else if (data.msg.toLowerCase().includes("mobile")) {
+                        $('#txtMOBILENO').val('').focus();
+                    }
+                }
+                else {
+                    // Legacy format
+                    if (data.msg == 'Success') {
+                        EnquiryClear();
+                        alert('Saved Successfully');
+                        $('#btnEnquiry_save').attr('disabled', false);
+
+                    }
+                    else {
+                        alert(data.msg || 'Something went wrong');
+                        $('#btnEnquiry_save').attr('disabled', false);
+                    }
+                }
+            } catch (e) {
+                alert('Error parsing response: ' + e.message);
+                $('#btnEnquiry_save').attr('disabled', false);
+            }
+        },
+        error: function (xhr, status, error) {
+            alert('An error occurred: ' + error);
+            $('#btnEnquiry_save').attr('disabled', false);
+        }
+    });
+}
+
+$('#btnEnquiry_save').click(function () {
+    $('#btnEnquiry_save').attr('disabled', true);
+    var mobileno_legth = $('#txtMOBILENO').val().length;
+
+    if (mobileno_legth < 5 || $.trim($('#txtMOBILENO').val()) == "") {
+        $('#PtxtMOBILENO').show();
+        $('#PtxtMOBILENO').fadeOut(8000);
+        $('#PtxtMOBILENO').html('Enter 5 Digits Number');
+        $('#txtMOBILENO').focus();
+        $('#btnEnquiry_save').attr('disabled', false);
+        return false;
+    }
+
+    // First check Mobile1 duplication
+    var MobNo1 = $('#txtMOBILENO').val();
+    $.ajax({
+        async: true,
+        type: 'GET',
+        url: '/GeneralDashboard/FindDuplicateMobile',
+        contentType: 'application/json; charset=UTF-8',
+        data: { Mobile1: MobNo1 },
+        success: function (response, status, xhr) {
+            try {
+                var data = typeof response === 'string' ? JSON.parse(response) : response;
+
+                if (data.status === false && data.msg === "Session expired. Please login again.") {
+                    // Redirect to login page
+                    window.location.href = '/login';
+                    return;
+                }
+
+                if (data.msg == 'Success') {
+                    alert('Mobile No 1 already exists');
+                    $('#txtMOBILENO').val('').focus();
+                    $('#btnEnquiry_save').attr('disabled', false);
+                    return;
+                }
+
+                // Check Mobile2 if provided
+                var MobNo2 = $('#txtMOBILENO1').val();
+                if (MobNo2 && MobNo2.trim() !== "") {
+                    // Validate Mobile2 length
+                    if (MobNo2.length < 5) {
+                        $('#PtxtMOBILENO1').show();
+                        $('#PtxtMOBILENO1').fadeOut(8000);
+                        $('#PtxtMOBILENO1').html('Enter 5 Digits Number');
+                        $('#txtMOBILENO1').focus();
+                        $('#btnEnquiry_save').attr('disabled', false);
+                        return;
+                    }
+
+                    // Check Mobile2 duplication
+                    $.ajax({
+                        async: true,
+                        type: 'GET',
+                        url: '/GeneralDashboard/FindDuplicateMobile',
+                        contentType: 'application/json; charset=UTF-8',
+                        data: { Mobile1: MobNo2 },
+                        success: function (response2, status2, xhr2) {
+                            try {
+                                var data2 = typeof response2 === 'string' ? JSON.parse(response2) : response2;
+
+                                if (data2.status === false && data2.msg === "Session expired. Please login again.") {
+                                    // Redirect to login page
+                                    window.location.href = '/login';
+                                    return;
+                                }
+
+                                if (data2.msg == 'Success') {
+                                    alert('Mobile No 2 already exists');
+                                    $('#txtMOBILENO1').val('').focus();
+                                    $('#btnEnquiry_save').attr('disabled', false);
+                                    return;
+                                }
+
+                                // Both mobile numbers are unique, proceed to save
+                                SaveEnquiry();
+                            } catch (e) {
+                                console.error('Error checking mobile 2:', e);
+                                alert('Error checking mobile 2. Please try again.');
+                                $('#btnEnquiry_save').attr('disabled', false);
+                            }
+                        },
+                        error: function (xhr2, status2, error2) {
+                            console.error('AJAX Error checking mobile 2:', status2, error2);
+                            alert('Error checking mobile 2 duplication. Please try again.');
+                            $('#btnEnquiry_save').attr('disabled', false);
+                        }
+                    });
+                } else {
+                    // No Mobile2 provided, just save with Mobile1
+                    SaveEnquiry();
+                }
+            } catch (e) {
+                console.error('Error parsing mobile 1 response:', e);
+                alert('Error checking mobile 1. Please try again.');
+                $('#btnEnquiry_save').attr('disabled', false);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('AJAX Error checking mobile 1:', status, error);
+
+            // Check if it's a 500 error (server error)
+            if (xhr.status === 500) {
+                alert('Server error occurred. Please contact support.');
+            }
+            // Check if it's a 401 error (unauthorized)
+            else if (xhr.status === 401) {
+                window.location.href = '/login';
+            }
+            else {
+                alert('Error checking mobile 1 duplication. Please try again.');
+            }
+
+            $('#btnEnquiry_save').attr('disabled', false);
+        }
+    });
+});
+
+// Blur events remain the same
+$('#txtMOBILENO').on("blur", function () {
+    if ($.trim($('#txtMOBILENO').val()) != "") {
+        var MobNo1 = $('#txtMOBILENO').val();
+        $.ajax({
+            async: true,
+            type: 'GET',
+            url: '/GeneralDashboard/FindDuplicateMobile',
+            contentType: 'application/json; charset=UTF-8',
+            data: { Mobile1: MobNo1 },
+            success: function (data) {
+                try {
+                    var parsedData = typeof data === 'string' ? JSON.parse(data) : data;
+                    if (parsedData.msg == 'Success') {
+                        alert('Mobile No already exists');
+                        $('#txtMOBILENO').val('').focus();
+                    }
+                } catch (e) {
+                    console.log('Error parsing response:', e);
+                }
+            }
+        });
+    }
+});
+
+$('#txtMOBILENO1').on("blur", function () {
+    if ($.trim($('#txtMOBILENO1').val()) != "") {
+        var MobNo1 = $('#txtMOBILENO1').val();
+        $.ajax({
+            async: true,
+            type: 'GET',
+            url: '/GeneralDashboard/FindDuplicateMobile',
+            contentType: 'application/json; charset=UTF-8',
+            data: { Mobile1: MobNo1 },
+            success: function (data) {
+                try {
+                    var parsedData = typeof data === 'string' ? JSON.parse(data) : data;
+                    if (parsedData.msg == 'Success') {
+                        alert('Mobile No 2 already exists');
+                        $('#txtMOBILENO1').val('').focus();
+                    }
+                } catch (e) {
+                    console.log('Error parsing response:', e);
+                }
+            }
+        });
+    }
+});
+
+
+
+function LoadLeads() {
+    var obj_data = {
+        "FromDate": "", "ToDate": "", "LandCategory": "", "ZonalType": "", "OwnershipType": ""
+    }
+    $.ajax({
+        async: true,
+        type: 'POST',
+        url: '/GeneralDashboard/LoadLeads',
+        contentType: 'application/json; charset=UTF-8',
+        data: JSON.stringify(obj_data),
+        success: function (data) {
+
+            // REMOVED: var data = JSON.parse(data);  ← this was the bug
+
+            $('#tbl_SourceAnalysis tbody').empty();
+            $('#rowcount').html(0);
+            console.log(data);
+
+            if (data.msg == 'Success') {
+                if (jQuery.isEmptyObject(data.data)) {
+                    $('#tbl_SourceAnalysis').DataTable();
+                } else {
+                    var orders = data.data.Table;
+                    CpLeadFunction(orders);
+                }
+            } else {
+                $('#tbl_SourceAnalysis').DataTable();
+                console.log(data);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.log('LoadLeads error:', error);
+        }
+    });
+}
+
+function CpLeadFunction(data) {
+
+
+    var orders = [];
+    if (data != 0) {
+        orders = data;
+    }
+    $(function () {
+        const dataGrid = $('#gridContainer_cp').dxDataGrid({
+            dataSource: orders,
+            keyExpr: 'EnquiryID',
+            columnsAutoWidth: true,
+            showBorders: true,
+            onRowClick: function (e) {
+               // client_value(e.key);
+            },
+
+            allowColumnReordering: true,
+            allowColumnResizing: true,
+            filterRow: { visible: false, applyFilter: 'auto', },
+            filterPanel: { visible: true },
+            headerFilter: { visible: true },
+            filterBuilderPopup: {
+                position: {
+                    of: window, at: 'top', my: 'top', offset: { y: 10 },
+                },
+            },
+
+            showBorders: true,
+            hoverStateEnabled: true,
+
+
+            scrolling: {
+                mode: "standard",
+                useNative: true,
+            },
+
+            paging: {
+                enabled: false,
+            },
+
+            columnChooser: {
+                enabled: true,
+                mode: 'select',
+            },
+
+            searchPanel: {
+                visible: true,
+                width: 240,
+                placeholder: 'Search...',
+            },
+            export: {
+                enabled: true,
+
+            },
+            onExporting(e) {
+                const workbook = new ExcelJS.Workbook();
+                const worksheet = workbook.addWorksheet('Channel Partner Leads');
+
+                DevExpress.excelExporter.exportDataGrid({
+                    component: e.component,
+                    worksheet,
+                    autoFilterEnabled: true,
+                }).then(() => {
+                    workbook.xlsx.writeBuffer().then((buffer) => {
+                        saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'Channel Partner Leads.xlsx');
+                    });
+                });
+                e.cancel = true;
+            },
+
+
+            columns: [{
+                dataField: 'EnquiryID',
+                caption: 'ENQUIRY ID',
+                width: 80,
+                //format: 'M/d/yyyy, HH:mm',
+                headerFilter: {
+                    allowSearch: true
+
+                }
+            },
+
+                {
+                    dataField: 'LeadRemarks',
+                    caption: 'VGN REMARKS',
+                    width: 80,
+                    headerFilter: {
+                        allowSearch: false
+                    },
+
+
+
+                    cellTemplate: function (container, options) {
+                        $('<div />').dxButton({
+                            icon: 'fas fa-edit text-info font-12',
+                            // text: 'COST SHEET',
+                            onClick: function (e) {
+                                var a = options.data.LeadRemarks;
+                                LeadRemarks(a);
+                            }
+                        }).appendTo(container).css("background-color", "NavajoWhite");
+                    },
+
+
+                },
+
+            {
+                dataField: 'CreatedDate',
+                caption: 'CREATED DATE',
+                width: 140,
+                headerFilter: {
+                    allowSearch: true
+
+                }
+
+            },
+            {
+                dataField: 'CustomerName',
+                caption: 'CLIENT NAME',
+                width: 140,
+                headerFilter: {
+                    allowSearch: true
+                }
+            },
+            {
+                dataField: 'Mobile1',
+                caption: 'MOBILE',
+                width: 140,
+                headerFilter: {
+                    allowSearch: true
+                }
+            },
+            {
+                dataField: 'Email',
+                caption: 'EMAIL ID',
+                width: 140,
+                headerFilter: {
+                    allowSearch: true
+                }
+            },
+            {
+                dataField: 'AgentName',
+                caption: 'AGENT NAME',
+                width: 140,
+                headerFilter: {
+                    allowSearch: true
+                }
+            },
+            {
+                dataField: 'ProjectName',
+                caption: 'PROJECT NAME',
+                width: 140,
+                headerFilter: {
+                    allowSearch: true
+                }
+            },
+            {
+                dataField: 'SrcEnquiry',
+                caption: 'SUB SOURCE',
+                width: 140,
+                headerFilter: {
+                    allowSearch: true
+                }
+            },
+            {
+                dataField: 'PSrcEnquiry',
+                caption: 'MAIN SOURCE',
+                width: 140,
+                headerFilter: {
+                    allowSearch: true
+                }
+            },
+            {
+                dataField: 'Remarks',
+                caption: 'REMARKS',
+                width: 140,
+                headerFilter: {
+                    allowSearch: true
+                }
+            },
+
+            ]
+        }).dxDataGrid('instance');
+
+        const applyFilterTypes = [{
+            key: 'auto',
+            name: 'Immediately',
+        }, {
+            key: 'onClick',
+            name: 'On Button Click',
+        }];
+
+        const applyFilterModeEditor = $('#useFilterApplyButton').dxSelectBox({
+            items: applyFilterTypes,
+            value: applyFilterTypes[0].key,
+            valueExpr: 'key',
+            displayExpr: 'name',
+            onValueChanged(data) {
+                dataGrid.option('filterRow.applyFilter', data.value);
+            },
+        }).dxSelectBox('instance');
+
+        $('#filterRow').dxCheckBox({
+            text: 'Filter Row',
+            value: true,
+            onValueChanged(data) {
+                dataGrid.clearFilter();
+                dataGrid.option('filterRow.visible', data.value);
+                applyFilterModeEditor.option('disabled', !data.value);
+            },
+        });
+
+        $('#headerFilter').dxCheckBox({
+            text: 'Header Filter',
+            value: true,
+            onValueChanged(data) {
+                dataGrid.clearFilter();
+                dataGrid.option('headerFilter.visible', data.value);
+            },
+        });
+
+        function getOrderDay(rowData) {
+            return (new Date(rowData.OrderDate)).getDay();
+        }
+    })
+}
+
+
+
+//function LeadRemarks(a) {
+
+
+//    jQuery.noConflict();
+//    jQuery('#ExecutiveRemarks').modal('show');
+
+//    var objVal = {
+//        ClientId: a,
+//    }
+
+//    $.ajax({
+//        async: true,
+//        type: 'POST',
+//        url: '/TelecallerLeadStatus/LoadSalesExecutivePreviousRemarks',
+//        contentType: 'application/json; charset=UTF-8',
+//        data: JSON.stringify(objVal),
+//        success: function (data) {
+//            var data1 = JSON.parse(data);
+//            $('#EXECUTIVE_Rmks').val('')
+//            $('#EXECUTIVE_Rmks').attr('disabled', true)
+
+//            if (data1.msg == 'Success') {
+//                if (jQuery.isEmptyObject((data1.data))) {
+//                }
+//                else {
+//                    var data2 = data1.data.Table;
+//                    var remarks_value = '';
+//                    if (data2.length > 0) {
+//                        $.each(data2, function (i, emp) {
+//                            remarks_value = remarks_value + '\n' + emp.EmpRemarks;
+//                        })
+//                        $('#EXECUTIVE_Rmks').val(remarks_value)
+//                        $('#EXECUTIVE_Rmks').attr('disabled', true)
+
+
+//                        $.ajax({
+//                            async: true,
+//                            type: 'POST',
+//                            url: '/ChannelPartnerLeads/LoadPresalesPreviousRemarks',
+//                            contentType: 'application/json; charset=UTF-8',
+//                            data: JSON.stringify(objVal),
+//                            success: function (data) {
+//                                var data1 = JSON.parse(data);
+//                                $('#Presales_Rmks').val('')
+//                                $('#Presales_Rmks').attr('disabled', true)
+
+//                                if (data1.msg == 'Success') {
+//                                    if (jQuery.isEmptyObject((data1.data))) {
+//                                    }
+//                                    else {
+//                                        var data2 = data1.data.Table;
+//                                        var remarks_value = '';
+//                                        if (data2.length > 0) {
+//                                            $.each(data2, function (i, emp) {
+//                                                remarks_value = remarks_value + '\n' + emp.ExecutiveRemarks;
+//                                            })
+//                                            $('#Presales_Rmks').val(remarks_value)
+//                                            $('#Presales_Rmks').attr('disabled', true)
+//                                        }
+//                                        else {
+//                                            console.log(data2)
+//                                        }
+//                                    }
+//                                }
+//                                else {
+//                                    console.log(data);
+//                                }
+//                            }
+//                        })
+//                    }
+//                    else {
+//                        console.log(data2)
+//                    }
+//                }
+//            }
+//            else {
+//                console.log(data);
+//            }
+//        }
+//    })
+
+//}
+
+    function LeadRemarks(a) {
+    jQuery.noConflict();
+    jQuery('#ExecutiveRemarks').modal('show');
+
+    var objVal = { ClientId: a };
+
+    $.ajax({
+        async: true,
+        type: 'POST',
+        url: '/TelecallerLeadStatus/LoadSalesExecutivePreviousRemarks',
+        contentType: 'application/json; charset=UTF-8',
+        data: JSON.stringify(objVal),
+        success: function (data) {
+            // REMOVED: var data1 = JSON.parse(data);
+            $('#EXECUTIVE_Rmks').val('');
+            $('#EXECUTIVE_Rmks').attr('disabled', true);
+
+            if (data.msg == 'Success') {
+                if (!jQuery.isEmptyObject(data.data)) {
+                    var data2 = data.data.Table;
+                    var remarks_value = '';
+                    if (data2.length > 0) {
+                        $.each(data2, function (i, emp) {
+                            remarks_value += '\n' + emp.EmpRemarks;
+                        });
+                        $('#EXECUTIVE_Rmks').val(remarks_value);
+                        $('#EXECUTIVE_Rmks').attr('disabled', true);
+
+                        $.ajax({
+                            async: true,
+                            type: 'POST',
+                            url: '/ChannelPartnerLeads/LoadPresalesPreviousRemarks',
+                            contentType: 'application/json; charset=UTF-8',
+                            data: JSON.stringify(objVal),
+                            success: function (data) {
+                                // REMOVED: var data1 = JSON.parse(data);
+                                $('#Presales_Rmks').val('');
+                                $('#Presales_Rmks').attr('disabled', true);
+
+                                if (data.msg == 'Success') {
+                                    if (!jQuery.isEmptyObject(data.data)) {
+                                        var data2 = data.data.Table;
+                                        var remarks_value = '';
+                                        if (data2.length > 0) {
+                                            $.each(data2, function (i, emp) {
+                                                remarks_value += '\n' + emp.ExecutiveRemarks;
+                                            });
+                                            $('#Presales_Rmks').val(remarks_value);
+                                            $('#Presales_Rmks').attr('disabled', true);
+                                        }
+                                    }
+                                } else {
+                                    console.log(data);
+                                }
+                            }
+                        });
+                    }
+                }
+            } else {
+                console.log(data);
+            }
+        }
+    });
+}
+        ///////////////////////////// CHANNEL PARTNER //////////////////////////////////
+
+
+})();
+    </script>
+}

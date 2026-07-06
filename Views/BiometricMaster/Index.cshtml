@@ -1,0 +1,324 @@
+@{
+    ViewBag.Title = "Biometric Master";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper p-4">
+    <!-- Header -->
+    <div class="mb-4">
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Biometric Fingerprint Enrollment</h2>
+        <p class="text-gray-600 dark:text-gray-300">Enroll and manage employee fingerprints via eSSL hardware</p>
+    </div>
+
+    <!-- Enrollment Card -->
+    <div class="erp-card-inner rounded-lg shadow-sm border p-6 mb-6">
+        <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white border-b pb-2">New Enrollment</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Employee Selection -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Employee</label>
+                <select id="selectEmployee" class="form-control select2" style="width: 100%;">
+                    <option value=""></option>
+                </select>
+            </div>
+
+            <!-- Finger Selection -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Finger</label>
+                <div id="dxSelectFinger"></div>
+            </div>
+
+        </div>
+
+        <!-- Hardware Status & Actions -->
+        <div class="mt-6 flex flex-wrap items-center gap-4">
+            <button id="btnCapture" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded shadow transition flex items-center">
+                <i class="fas fa-fingerprint mr-2"></i> Capture Fingerprint
+            </button>
+            <button id="btnSave" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded shadow transition flex items-center hidden">
+                <i class="fas fa-save mr-2"></i> Save Enrollment
+            </button>
+            <span id="hardwareStatus" class="text-sm font-medium text-yellow-600 dark:text-yellow-400">
+                <i class="fas fa-exclamation-circle mr-1"></i> Device not connected or waiting for capture.
+            </span>
+        </div>
+
+        <!-- Captured Data Preview (Hidden) -->
+        <input type="hidden" id="hdnFingerprintData" />
+        <input type="hidden" id="hdnScanQuality" />
+    </div>
+
+    <!-- Enrolled Records Grid -->
+    <div class="erp-card-inner rounded-lg shadow-sm border p-6">
+        <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white border-b pb-2">Enrolled Biometrics</h3>
+        <div id="dxGridBiometrics"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            let capturedBase64 = null;
+            let currentQuality = 0;
+
+            // Fingers list
+            const fingers = [
+                { id: 1, name: "Right Thumb" },
+                { id: 2, name: "Right Index" },
+                { id: 3, name: "Right Middle" },
+                { id: 4, name: "Right Ring" },
+                { id: 5, name: "Right Little" },
+                { id: 6, name: "Left Thumb" },
+                { id: 7, name: "Left Index" },
+                { id: 8, name: "Left Middle" },
+                { id: 9, name: "Left Ring" },
+                { id: 10, name: "Left Little" }
+            ];
+
+            // 1. Initialize UI components
+            const $selectEmployee = $("#selectEmployee");
+            
+            // Fetch Employee Data and initialize Select2
+            $.ajax({
+                url: '/Common/Load_Emp_With_Department',
+                method: 'POST',
+                dataType: 'json',
+                success: function(response) {
+                    let employees = [];
+                    if (response.status && response.data) {
+                        if (response.data.Table) employees = response.data.Table;
+                        else if (response.data.Table1) employees = response.data.Table1;
+                        else if (Array.isArray(response.data)) employees = response.data;
+                    }
+
+                    if (employees && employees.length > 0) {
+                        // Clear to avoid duplicates, keeping the empty option for placeholder
+                        $selectEmployee.empty().append('<option value=""></option>');
+                        
+                        employees.forEach(function(emp) {
+                            const empId = emp.EmpId || emp.EmpCode;
+                            // Sometimes the Department is already appended to EmpName from the DB
+                            const optionText = emp.DepartmentName ? 
+                                (emp.EmpName + " (" + empId + ") - " + emp.DepartmentName) : 
+                                (emp.EmpName + " (" + empId + ")");
+
+                            const $option = $("<option></option>")
+                                .val(empId)
+                                .text(optionText)
+                                .data("empItem", emp);
+                            $selectEmployee.append($option);
+                        });
+
+                        // Re-init and notify Select2 of the DOM change
+                        $selectEmployee.select2({
+                            placeholder: "Search Employee...",
+                            allowClear: true,
+                            width: '100%'
+                        }).trigger('change');
+                    }
+                },
+                error: function(err) {
+                    console.error("Failed to load employees:", err);
+                }
+            });
+
+            const selectFinger = $("#dxSelectFinger").dxSelectBox({
+                dataSource: fingers,
+                displayExpr: "name",
+                valueExpr: "id",
+                placeholder: "Select Finger..."
+            }).dxSelectBox("instance");
+
+            const gridBiometrics = $("#dxGridBiometrics").dxDataGrid({
+                dataSource: new DevExpress.data.DataSource({
+                    load: function() {
+                        return $.ajax({
+                            url: '/BiometricMaster/LoadAllBiometrics',
+                            method: 'POST',
+                            dataType: 'json'
+                        }).then(function(response) {
+                            if (response.status && response.data) {
+                                return response.data;
+                            }
+                            return [];
+                        });
+                    }
+                }),
+                showBorders: true,
+                columnAutoWidth: true,
+                filterRow: { visible: false },
+                searchPanel: { visible: true, width: 250 },
+                columns: [
+                    { dataField: "BiometricId", caption: "ID", width: 70 },
+                    { dataField: "UserId", caption: "Emp ID" },
+                    { dataField: "UserName", caption: "Employee Name" },
+                    { dataField: "DepartmentName", caption: "Department" },
+                    { dataField: "FingerLabel", caption: "Finger" },
+                    { dataField: "ScanQuality", caption: "Quality (%)" },
+                    { dataField: "DeviceType", caption: "Device" },
+                    { dataField: "EnrollDate", caption: "Enrolled On", dataType: "date", format: "dd-MMM-yyyy" },
+                    {
+                        type: "buttons",
+                        buttons: [{
+                            hint: "Delete",
+                            icon: "trash",
+                            onClick: function(e) {
+                                deleteRecord(e.row.data.BiometricId);
+                            }
+                        }]
+                    }
+                ]
+            }).dxDataGrid("instance");
+
+            // 2. Hardware Mock/Integration
+            // In a real environment, this connects to eSSL SDK/Web API on localhost
+            $("#btnCapture").click(function() {
+                const empId = $("#selectEmployee").val();
+                const fingerId = selectFinger.option("value");
+
+                if (!empId) {
+                    DevExpress.ui.notify("Please select an employee first.", "warning", 3000);
+                    return;
+                }
+                if (!fingerId) {
+                    DevExpress.ui.notify("Please select a finger to scan.", "warning", 3000);
+                    return;
+                }
+
+                $("#hardwareStatus").html('<i class="fas fa-spinner fa-spin mr-1"></i> Waiting for fingerprint scan...');
+                $("#btnCapture").prop("disabled", true);
+                
+                // --- INTEGRATION POINT FOR EXTERNAL HARDWARE ---
+                // Attempt to connect to a local Biometric Service (e.g., Mantra MFS100, ZKTeco, eSSL)
+                // These devices require a local windows service to be running on the client machine.
+                // Default ports: Mantra (8000 / 11100), ZKTeco/eSSL (various).
+                
+                const localServiceUrl = "http://127.0.0.1:8000/api/capture"; // Change this to your device's local API URL
+                
+                // Using a 10-second timeout for the capture process
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+                fetch(localServiceUrl, {
+                    method: 'POST', // or GET depending on the specific SDK
+                    signal: controller.signal
+                    // body: JSON.stringify({ Quality: 60, timeout: 10000 }) // Uncomment if your SDK requires payload
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Device service responded with an error.');
+                    return response.json();
+                })
+                .then(data => {
+                    // Extract template and quality from the device response.
+                    // This property name depends ENTIRELY on your scanner's SDK.
+                    // Example: Mantra -> data.AnsiTemplate, ZKTeco -> data.Template
+                    capturedBase64 = data.TemplateBase64 || data.AnsiTemplate || data.Template; 
+                    currentQuality = data.Quality || 100;
+                    
+                    if (capturedBase64) {
+                        $("#hardwareStatus").html('<i class="fas fa-check-circle mr-1 text-green-600"></i> Scan successful (Quality: ' + currentQuality + '%)');
+                        $("#btnSave").removeClass("hidden");
+                        DevExpress.ui.notify("Fingerprint captured successfully!", "success", 2000);
+                    } else {
+                         throw new Error('Invalid capture data received from device.');
+                    }
+                })
+                .catch(error => {
+                    console.error("Biometric Capture Error:", error);
+                    let errMsg = "Could not connect to scanner. Please ensure the device is plugged in and the local service is running.";
+                    if (error.name === 'AbortError') errMsg = "Scanner timed out waiting for a fingerprint.";
+                    
+                    $("#hardwareStatus").html('<i class="fas fa-exclamation-triangle mr-1 text-red-600"></i> ' + errMsg);
+                    DevExpress.ui.notify(errMsg, "error", 4000);
+                })
+                .finally(() => {
+                    clearTimeout(timeoutId);
+                    $("#btnCapture").prop("disabled", false);
+                });
+            });
+
+            // 3. Save to Database
+            $("#btnSave").click(function() {
+                const $selectedEmp = $("#selectEmployee").find(":selected");
+                const empItem = $selectedEmp.data("empItem");
+                const fingerItem = selectFinger.option("selectedItem");
+
+                if (!empItem || !fingerItem || !capturedBase64) {
+                    DevExpress.ui.notify("Incomplete data. Please capture again.", "error", 3000);
+                    return;
+                }
+
+                // Extract clean name if department is appended
+                let cleanName = empItem.EmpName;
+                let cleanDept = empItem.DepartmentName || "Unknown";
+                if (cleanName && cleanName.includes(" - ")) {
+                    const parts = cleanName.split(" - ");
+                    cleanName = parts[0].trim();
+                    if (!empItem.DepartmentName && parts.length > 1) {
+                        cleanDept = parts[1].trim();
+                    }
+                }
+
+                const requestData = {
+                    UserId: empItem.EmpId || empItem.EmpCode,
+                    UserName: cleanName,
+                    DepartmentId: empItem.DepartmentId || 0,
+                    DepartmentName: cleanDept,
+                    FingerIndex: fingerItem.id,
+                    FingerLabel: fingerItem.name,
+                    FingerprintData: capturedBase64,
+                    ScanQuality: currentQuality,
+                    DeviceType: "eSSL",
+                    DeviceName: "eSSL Local Scanner"
+                };
+
+                $.ajax({
+                    url: '/BiometricMaster/SaveFingerprint',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(requestData),
+                    success: function(response) {
+                        if (response.status) {
+                            DevExpress.ui.notify(response.msg, "success", 3000);
+                            // Reset state
+                            capturedBase64 = null;
+                            $("#btnSave").addClass("hidden");
+                            $("#hardwareStatus").html('<i class="fas fa-exclamation-circle mr-1"></i> Device ready for next scan.');
+                            // Reload grid
+                            gridBiometrics.refresh();
+                        } else {
+                            DevExpress.ui.notify(response.msg || "Failed to save.", "error", 3000);
+                        }
+                    },
+                    error: function(err) {
+                        DevExpress.ui.notify("Server error during save.", "error", 3000);
+                    }
+                });
+            });
+
+            // 4. Delete Record
+            function deleteRecord(biometricId) {
+                const result = DevExpress.ui.dialog.confirm("Are you sure you want to delete this fingerprint record?", "Confirm Delete");
+                result.done(function(dialogResult) {
+                    if (dialogResult) {
+                        $.ajax({
+                            url: '/BiometricMaster/DeleteBiometric',
+                            method: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify({ BiometricId: biometricId }),
+                            success: function(response) {
+                                if (response.status) {
+                                    DevExpress.ui.notify(response.msg, "success", 3000);
+                                    gridBiometrics.refresh();
+                                } else {
+                                    DevExpress.ui.notify(response.msg, "error", 3000);
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+}

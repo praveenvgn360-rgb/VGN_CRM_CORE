@@ -1,0 +1,760 @@
+@{
+    ViewBag.Title = "Marketing Dashboard New";
+    ViewBag.ActiveMenu = "MarketingDashboard_New";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* ── Dashboard Layout ─────────────────────────────── */
+    .mgmt-kpi-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 1.1rem 1.25rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,.04);
+        display: flex;
+        flex-direction: column;
+        gap: .35rem;
+        transition: transform .18s, box-shadow .18s;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .mgmt-kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--kpi-accent, var(--primary));
+        border-radius: 14px 0 0 14px;
+    }
+
+    .mgmt-kpi-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 24px rgba(0,0,0,.10);
+    }
+
+    .mgmt-kpi-label {
+        font-size: .7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        color: var(--text-muted);
+    }
+
+    .mgmt-kpi-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1.1;
+    }
+
+    .mgmt-kpi-sub {
+        font-size: .72rem;
+        color: var(--text-muted);
+    }
+
+    .mgmt-kpi-icon {
+        position: absolute;
+        top: .9rem;
+        right: 1rem;
+        font-size: 1.8rem;
+        opacity: .5;
+        color: var(--kpi-accent, var(--text-muted));
+    }
+
+    /* ── Section Card ─────────────────────────────────── */
+    .mgmt-section-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 1.25rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,.04);
+        height: 100%;
+    }
+
+    .mgmt-section-title {
+        font-size: .82rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+
+    /* ── Date Filters ─────────────────────────────────── */
+    .mgmt-datepicker {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.25rem;
+    }
+
+    .mgmt-datepicker label {
+        font-size: .78rem;
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+
+    .mgmt-datepicker input[type="date"] {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        padding: .35rem .75rem;
+        font-size: .82rem;
+        outline: none;
+    }
+
+    .mgmt-datepicker input[type="date"]:focus {
+        border-color: var(--primary);
+    }
+
+    .mgmt-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        background: var(--primary);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: .38rem .9rem;
+        font-size: .78rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity .15s;
+    }
+
+    .mgmt-btn-outline {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: .38rem .9rem;
+        font-size: .78rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .15s;
+    }
+
+    .mgmt-btn:hover, .mgmt-btn-outline:hover { opacity: .88; }
+    .mgmt-btn-outline:hover { background: var(--surface); }
+
+    /* ── Quick Actions ───────────────────────── */
+    .report-link-tile {
+        display: flex;
+        align-items: center;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 1.15rem;
+        border-radius: 14px;
+        box-shadow: 0 4px 16px rgba(0,0,0,.04);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        text-decoration: none;
+        color: var(--text);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .report-link-tile::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+        pointer-events: none;
+    }
+    
+    .report-link-tile:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 24px rgba(0,0,0,.12);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+    
+    .report-icon-box {
+        width: 50px;
+        height: 50px;
+        min-width: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 1.4rem;
+        margin-right: 1.15rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .report-link-tile:hover .report-icon-box {
+        transform: scale(1.1) rotate(-3deg);
+    }
+
+    /* ── LEAD SOURCE BARS ── */
+    .src-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 13px;
+    }
+
+    .src-nm {
+        font-size: .76rem;
+        font-weight: 700;
+        min-width: 110px;
+        color: var(--text);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .src-bar {
+        flex: 1;
+        height: 10px;
+        border-radius: 5px;
+        background: var(--border);
+        overflow: hidden;
+        margin: 0 12px;
+    }
+
+    .src-fill {
+        height: 100%;
+        border-radius: 5px;
+        transition: width 1.2s cubic-bezier(.4,0,.2,1);
+    }
+
+    .src-pct {
+        font-size: .75rem;
+        font-weight: 700;
+        min-width: 38px;
+        text-align: right;
+        color: var(--text-muted);
+    }
+
+    /* ── CHANNEL GRID ── */
+    .channel-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        max-height: 380px;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+
+    .channel-grid::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .channel-grid::-webkit-scrollbar-thumb {
+        background-color: var(--border);
+        border-radius: 10px;
+    }
+
+    .channel-grid::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .ch-card {
+        background: var(--bg);
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        transition: transform 0.3s ease;
+        border: 1px solid var(--border);
+    }
+
+    .ch-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .ch-ico {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin: 0 auto 12px;
+        font-size: 1.2rem;
+    }
+
+    .ch-pct {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 5px;
+    }
+
+    .ch-nm {
+        font-size: .75rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        line-height: 1.35;
+    }
+</style>
+
+<!-- ── Page Header ────────────────────────────────────────── -->
+<div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+    <div>
+        <h1 class="text-xl font-bold" style="color:var(--text)">
+            <i class="bi bi-bar-chart-fill me-2" style="color:var(--primary)"></i>Marketing Analytics
+        </h1>
+        <p class="text-sm mt-1" style="color:var(--text-muted)">Marketing Dashboard & Performance</p>
+    </div>
+    <div class="mgmt-datepicker">
+        <label><i class="bi bi-calendar3 me-1"></i>From</label>
+        <input type="date" id="fromDate" />
+        <label>To</label>
+        <input type="date" id="toDate" />
+        <button class="mgmt-btn" id="btnApply"><i class="bi bi-search"></i> Apply</button>
+        <button class="mgmt-btn-outline" id="btnReset"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+    </div>
+</div>
+
+<!-- ── KPI Cards ────────────────────────── -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6" id="kpi_row">
+    <div class="mgmt-kpi-card" style="--kpi-accent:#4680FF" id="card-total">
+        <div class="mgmt-kpi-label">Total Leads</div>
+        <div class="mgmt-kpi-value" id="totalleadsCount">0</div>
+        <div class="mgmt-kpi-sub" id="totalChange"><i class="bi bi-arrow-up me-1"></i> 0%</div>
+        <i class="bi bi-people mgmt-kpi-icon"></i>
+    </div>
+    <div class="mgmt-kpi-card" style="--kpi-accent:#10b981" id="card-online">
+        <div class="mgmt-kpi-label">Online Leads</div>
+        <div class="mgmt-kpi-value" id="onlineleadsCount">0</div>
+        <div class="mgmt-kpi-sub" id="onlineChange"><i class="bi bi-arrow-up me-1"></i> 0%</div>
+        <i class="bi bi-globe mgmt-kpi-icon"></i>
+    </div>
+    <div class="mgmt-kpi-card" style="--kpi-accent:#f97316" id="card-offline">
+        <div class="mgmt-kpi-label">Offline Leads</div>
+        <div class="mgmt-kpi-value" id="offlineleadsCount">0</div>
+        <div class="mgmt-kpi-sub" id="offlineChange"><i class="bi bi-arrow-up me-1"></i> 0%</div>
+        <i class="bi bi-shop mgmt-kpi-icon"></i>
+    </div>
+    <div class="mgmt-kpi-card" style="--kpi-accent:#8b5cf6" id="card-channel">
+        <div class="mgmt-kpi-label">CP Leads</div>
+        <div class="mgmt-kpi-value" id="cpleadsCount">0</div>
+        <div class="mgmt-kpi-sub" id="cpChange"><i class="bi bi-arrow-up me-1"></i> 0%</div>
+        <i class="bi bi-diagram-3 mgmt-kpi-icon"></i>
+    </div>
+    <div class="mgmt-kpi-card" style="--kpi-accent:#ec4899" id="card-other">
+        <div class="mgmt-kpi-label">Others</div>
+        <div class="mgmt-kpi-value" id="othersCount">0</div>
+        <div class="mgmt-kpi-sub" id="othersChange"><i class="bi bi-arrow-up me-1"></i> 0%</div>
+        <i class="bi bi-three-dots mgmt-kpi-icon"></i>
+    </div>
+    <div class="mgmt-kpi-card" style="--kpi-accent:#ef4444">
+        <div class="mgmt-kpi-label">Conversion Rate</div>
+        <div class="mgmt-kpi-value" id="conversionRate">—</div>
+        <div class="mgmt-kpi-sub">Live metric</div>
+        <i class="bi bi-pie-chart mgmt-kpi-icon"></i>
+    </div>
+</div>
+
+<!-- ── Charts Row ────────────────────── -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+    <div class="lg:col-span-2 mgmt-section-card">
+        <div class="mgmt-section-title">
+            <i class="bi bi-bar-chart-fill" style="color:var(--primary)"></i>Lead Based Sales Performance
+        </div>
+        <div class="chart-container" style="position:relative;height:300px;width:100%;">
+            <canvas id="salesChart"></canvas>
+        </div>
+    </div>
+    <div class="lg:col-span-1 mgmt-section-card">
+        <div class="mgmt-section-title">
+            <i class="bi bi-funnel-fill" style="color:#ec4899"></i>Lead Sources Breakdown
+        </div>
+        <div style="max-height:300px;overflow-y:auto;padding-right:5px;">
+            <div id="leadSourceContainer"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Quick Actions Row ────────────────────── -->
+<div class="grid grid-cols-1 lg:grid-cols-1 mb-4">
+    <div class="mgmt-section-card">
+        <div class="mgmt-section-title">
+            <i class="bi bi-lightning-fill" style="color:#f59e0b"></i>Quick Actions
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <a href="/SourceAnalysis/SourceAnalysis" target="_blank" class="report-link-tile">
+                <div class="report-icon-box" style="background:#10b981"><i class="bi bi-graph-up"></i></div>
+                <span class="font-semibold text-sm">Source Wise Lead Analysis Report</span>
+            </a>
+            <a href="/EnquiryMaster/Index?openSourceModal=true" target="_blank" class="report-link-tile">
+                <div class="report-icon-box" style="background:#f97316"><i class="bi bi-database"></i></div>
+                <span class="font-semibold text-sm">Source Creation</span>
+            </a>
+            <a href="/MarketingLeadSourceCost/Index" target="_blank" class="report-link-tile">
+                <div class="report-icon-box" style="background:#4680FF"><i class="bi bi-currency-rupee"></i></div>
+                <span class="font-semibold text-sm">Source Cost Leads Report</span>
+            </a>
+            <a href="/SourceWiseGeneratedReport/Index" target="_blank" class="report-link-tile">
+                <div class="report-icon-box" style="background:#ef4444"><i class="bi bi-diagram-2"></i></div>
+                <span class="font-semibold text-sm">Project Lead Source - Wise Report</span>
+            </a>
+            <a href="/HoardingEntryDetails/Index" target="_blank" class="report-link-tile">
+                <div class="report-icon-box" style="background:#14b8a6"><i class="bi bi-megaphone"></i></div>
+                <span class="font-semibold text-sm">Hoarding Entry Details</span>
+            </a>
+            <a href="/ProjectWiseTemplatesUpload/Index" target="_blank" class="report-link-tile">
+                <div class="report-icon-box" style="background:#22c55e"><i class="bi bi-whatsapp"></i></div>
+                <span class="font-semibold text-sm">Project - Whatsapp Templates</span>
+            </a>
+            <a href="/ExecutiveMappingToProject/Index" target="_blank" class="report-link-tile">
+                <div class="report-icon-box" style="background:#8b5cf6"><i class="bi bi-person-lines-fill"></i></div>
+                <span class="font-semibold text-sm">Executive Mapping To Project</span>
+            </a>
+            <a href="/ASVRequestReport/Index" target="_blank" class="report-link-tile">
+                <div class="report-icon-box" style="background:#eab308"><i class="bi bi-file-earmark-text"></i></div>
+                <span class="font-semibold text-sm">ASV Request Report</span>
+            </a>
+            <a href="/CPSourceAnalysis/CPSourceAnalysis" target="_blank" class="report-link-tile">
+                <div class="report-icon-box" style="background:#0ea5e9"><i class="bi bi-handshake"></i></div>
+                <span class="font-semibold text-sm">CP Source Lead Analysis Report</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ── Channel Performance Row ────────────────────── -->
+<div class="grid grid-cols-1 lg:grid-cols-1 mb-4">
+    <div class="mgmt-section-card">
+        <div class="mgmt-section-title flex justify-between w-full">
+            <span><i class="bi bi-broadcast-pin" style="color:#8b5cf6"></i>Channel Performance</span>
+        </div>
+        <div class="channel-grid" id="channelPerformanceContainer"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function () {
+            'use strict';
+
+            /* ── Set default date range (current month) ─────────────────────── */
+            (function setDefaultDates() {
+                var now = new Date();
+                var y = now.getFullYear();
+                var m = String(now.getMonth() + 1).padStart(2, '0');
+                var d = String(now.getDate()).padStart(2, '0');
+                var first = y + '-' + m + '-01';
+                var today = y + '-' + m + '-' + d;
+
+                var fromEl = document.getElementById('fromDate');
+                var toEl = document.getElementById('toDate');
+
+                if (fromEl && !fromEl.value) fromEl.value = first;
+                if (toEl && !toEl.value) toEl.value = today;
+
+                if (fromEl && toEl) {
+                    fromEl.addEventListener('change', function () {
+                        if (toEl.value && toEl.value < fromEl.value) toEl.value = fromEl.value;
+                        toEl.min = fromEl.value;
+                    });
+                    toEl.addEventListener('change', function () {
+                        if (fromEl.value && fromEl.value > toEl.value) fromEl.value = toEl.value;
+                    });
+                    fromEl.max = today;
+                    toEl.max = today;
+                    toEl.min = first;
+                }
+            })();
+
+            /* ── Helpers ─────────────────────────────────────────────────────── */
+            function getFilters() {
+                return {
+                    fromDate: (document.getElementById('fromDate') || {}).value || '',
+                    toDate: (document.getElementById('toDate') || {}).value || ''
+                };
+            }
+
+            function refreshAll() {
+                loadTopLeadCounts();
+                loadSalesPerformance();
+                loadLeadSourceBreakdown();
+                loadChannelPerformance();
+            }
+
+            function prop(obj, nameList) {
+                for (let n of nameList) {
+                    if (obj[n] !== undefined) return obj[n];
+                }
+                return 0;
+            }
+
+            /* ── Wire buttons after DOM ready ───────────────────────────────── */
+            var btnApply = document.getElementById('btnApply');
+            if (btnApply) {
+                btnApply.addEventListener('click', function () {
+                    var f = (document.getElementById('fromDate') || {}).value || '';
+                    var t = (document.getElementById('toDate') || {}).value || '';
+                    if (f && t && f > t) {
+                        Swal.fire('Validation', 'From date cannot be after To date.', 'warning');
+                        return;
+                    }
+                    refreshAll();
+                });
+            }
+
+            var btnReset = document.getElementById('btnReset');
+            if (btnReset) {
+                btnReset.addEventListener('click', function () {
+                    var fromEl = document.getElementById('fromDate');
+                    var toEl = document.getElementById('toDate');
+                    if (fromEl) fromEl.value = '';
+                    if (toEl) toEl.value = '';
+                    refreshAll();
+                });
+            }
+
+            /* Stat card clicks → open LeadDetails */
+            function openLeads(flagType) {
+                var f = getFilters();
+                window.open(
+                    '/LeadDetails?Category=ModeWise&FromDate=' + f.fromDate + '&ToDate=' + f.toDate + '&Flag=' + flagType,
+                    '_blank', 'noreferrer'
+                );
+            }
+
+            var cardTotal = document.getElementById('card-total');
+            var cardOnline = document.getElementById('card-online');
+            var cardOffline = document.getElementById('card-offline');
+            var cardChannel = document.getElementById('card-channel');
+            var cardOther = document.getElementById('card-other');
+
+            if (cardTotal) cardTotal.addEventListener('click', function () { openLeads('0'); });
+            if (cardOnline) cardOnline.addEventListener('click', function () { openLeads('ONLINE'); });
+            if (cardOffline) cardOffline.addEventListener('click', function () { openLeads('OFFLINE'); });
+            if (cardChannel) cardChannel.addEventListener('click', function () { openLeads('CP_OTHERS'); });
+            if (cardOther) cardOther.addEventListener('click', function () { openLeads('CP_OTHERS'); });
+
+            /* Initial load */
+            refreshAll();
+
+            /* ═══════════════════════════════════════════════════════════════════
+               TOP LEAD COUNTS 
+               ═══════════════════════════════════════════════════════════════════ */
+            function loadTopLeadCounts() {
+                var filters = getFilters();
+                var searchParams = new URLSearchParams(filters);
+                fetch('/MarketingDashboard_New/GetTopLeadCounts?' + searchParams)
+                    .then(r => r.json())
+                    .then(res => {
+                        document.getElementById('totalleadsCount').textContent = prop(res, ['TOTAL_LEADS', 'total_LEADS', 'total_leads', 'tOTAL_LEADS']);
+                        document.getElementById('onlineleadsCount').textContent = prop(res, ['ONLINE', 'online', 'oNLINE']);
+                        document.getElementById('offlineleadsCount').textContent = prop(res, ['OFFLINE', 'offline', 'oFFLINE']);
+                        document.getElementById('cpleadsCount').textContent = prop(res, ['CHANNEL_PARTNER', 'channel_PARTNER', 'channel_partner', 'cHANNEL_PARTNER']);
+                        document.getElementById('othersCount').textContent = prop(res, ['OTHERS', 'others', 'oTHERS']);
+
+                        setChange('#totalChange', prop(res, ['TOTAL_LEADS_DIFF', 'total_LEADS_DIFF', 'total_leads_diff', 'tOTAL_LEADS_DIFF']));
+                        setChange('#onlineChange', prop(res, ['ONLINE_DIFF', 'online_DIFF', 'online_diff', 'oNLINE_DIFF']));
+                        setChange('#offlineChange', prop(res, ['OFFLINE_DIFF', 'offline_DIFF', 'offline_diff', 'oFFLINE_DIFF']));
+                        setChange('#cpChange', prop(res, ['CHANNEL_PARTNER_DIFF', 'channel_PARTNER_DIFF', 'channel_partner_diff', 'cHANNEL_PARTNER_DIFF']));
+                        setChange('#othersChange', prop(res, ['OTHERS_DIFF', 'others_DIFF', 'others_diff', 'oTHERS_DIFF']));
+
+                        document.getElementById('conversionRate').textContent = '—';
+                    })
+                    .catch(err => console.error('GetTopLeadCounts error', err));
+            }
+
+            function setChange(sel, val) {
+                val = parseFloat(val) || 0;
+                var up = val >= 0;
+                var icon = up ? 'bi-arrow-up' : 'bi-arrow-down';
+                var sign = up ? '+' : '';
+                var el = document.querySelector(sel);
+                if(el) {
+                    el.innerHTML = '<i class="bi ' + icon + ' me-1"></i>' + sign + val + '% from last month';
+                    el.style.color = up ? '#10b981' : '#ef4444';
+                }
+            }
+
+            /* ═══════════════════════════════════════════════════════════════════
+               SALES PERFORMANCE CHART  (Chart.js)
+               ═══════════════════════════════════════════════════════════════════ */
+            var salesChart;
+
+            function loadSalesPerformance() {
+                var filters = getFilters();
+                var searchParams = new URLSearchParams(filters);
+                fetch('/MarketingDashboard_New/GetLeadBookedPerformance?' + searchParams)
+                    .then(r => r.json())
+                    .then(res => {
+                        var labels = [], booked = [], leads = [];
+                        if (Array.isArray(res)) {
+                            res.forEach(function (v) {
+                                labels.push(v.enqMonth || v.EnqMonth);
+                                booked.push(v.bookNOS || v.BookNOS);
+                                leads.push(v.totLead || v.TotLead);
+                            });
+                        }
+                        bindSalesChart(labels, booked, leads);
+                    })
+                    .catch(err => console.error('GetLeadBookedPerformance error', err));
+            }
+
+            function bindSalesChart(labels, soldData, listedData) {
+                if (salesChart) salesChart.destroy();
+
+                var ctx = document.getElementById('salesChart');
+                if (!ctx) return;
+
+                salesChart = new Chart(ctx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Total Leads',
+                                data: listedData,
+                                yAxisID: 'yLeads',
+                                backgroundColor: 'rgba(5,150,105,.65)',
+                                borderColor: '#059669',
+                                borderWidth: 1,
+                                borderRadius: 5,
+                                borderSkipped: false
+                            },
+                            {
+                                label: 'Booked',
+                                data: soldData,
+                                yAxisID: 'yBooked',
+                                backgroundColor: 'rgba(70,128,255,.75)', // Primary color
+                                borderColor: '#4680FF',
+                                borderWidth: 1,
+                                borderRadius: 5,
+                                borderSkipped: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: {
+                                ticks: { autoSkip: false, maxRotation: 45, font: { family: 'inherit', size: 11, weight: '600' } },
+                                grid: { display: false }
+                            },
+                            yLeads: {
+                                type: 'linear', position: 'left', beginAtZero: true,
+                                title: { display: true, text: 'Total Leads', font: { family: 'inherit', weight: '600' } },
+                                grid: { color: '#f1f5f9' },
+                                ticks: { font: { family: 'inherit' } }
+                            },
+                            yBooked: {
+                                type: 'linear', position: 'right', beginAtZero: true,
+                                title: { display: true, text: 'Booked', font: { family: 'inherit', weight: '600' } },
+                                grid: { drawOnChartArea: false },
+                                ticks: { font: { family: 'inherit' } }
+                            }
+                        }
+                    }
+                });
+            }
+
+            /* ═══════════════════════════════════════════════════════════════════
+               LEAD SOURCE BREAKDOWN
+               ═══════════════════════════════════════════════════════════════════ */
+            var colorCache = {};
+            var baseColors = [
+                '#4680FF', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444',
+                '#0ea5e9', '#f97316', '#22c55e', '#6366f1', '#f43f5e',
+                '#14b8a6', '#a855f7', '#ec4899', '#84cc16', '#06b6d4'
+            ];
+
+            function srcColor(name) {
+                var k = (name || '').trim().toUpperCase();
+                if (!colorCache[k]) {
+                    var idx = Object.keys(colorCache).length;
+                    colorCache[k] = idx < baseColors.length
+                        ? baseColors[idx]
+                        : 'hsl(' + ((idx * 137) % 360) + ',65%,52%)';
+                }
+                return colorCache[k];
+            }
+
+            function loadLeadSourceBreakdown() {
+                var filters = getFilters();
+                var searchParams = new URLSearchParams(filters);
+                fetch('/MarketingDashboard_New/GetLeadSourceBreakdown?' + searchParams)
+                    .then(r => r.json())
+                    .then(res => {
+                        var container = document.getElementById('leadSourceContainer');
+                        if (!res || !res.length) {
+                            container.innerHTML = '<p class="text-center text-muted small py-4">No data found</p>';
+                            return;
+                        }
+                        var html = '';
+                        res.forEach(function (item) {
+                            var head = item.sourceHeadEnquiry || item.SourceHeadEnquiry;
+                            var pct = item.percentage || item.Percentage;
+                            var c = srcColor(head);
+                            html += '<div class="src-item">'
+                                + '<span class="src-nm" title="' + head + '">' + head + '</span>'
+                                + '<div class="src-bar"><div class="src-fill" style="width:' + pct + '%;background:' + c + '"></div></div>'
+                                + '<span class="src-pct">' + pct + '%</span>'
+                                + '</div>';
+                        });
+                        container.innerHTML = html;
+                    })
+                    .catch(err => console.error('GetLeadSourceBreakdown error', err));
+            }
+
+            /* ═══════════════════════════════════════════════════════════════════
+               CHANNEL PERFORMANCE
+               ═══════════════════════════════════════════════════════════════════ */
+            function loadChannelPerformance() {
+                var filters = getFilters();
+                var searchParams = new URLSearchParams(filters);
+                fetch('/MarketingDashboard_New/GetChannelPerformance?' + searchParams)
+                    .then(r => r.json())
+                    .then(data => {
+                        var container = document.getElementById('channelPerformanceContainer');
+                        if (!data || !data.length) {
+                            container.innerHTML = '<p class="text-center text-muted small py-4">No data available</p>';
+                            return;
+                        }
+                        var html = '';
+                        data.forEach(function (item) {
+                            var head = item.sourceHeadEnquiry || item.SourceHeadEnquiry;
+                            var pct = item.percentage || item.Percentage;
+                            var ic = channelIcon(head);
+                            html += '<div class="ch-card">'
+                                + '<div class="ch-ico" style="background:' + ic.bg + '"><i class="bi ' + ic.icon + '"></i></div>'
+                                + '<div class="ch-pct">' + pct + '%</div>'
+                                + '<div class="ch-nm">' + head + '</div>'
+                                + '</div>';
+                        });
+                        container.innerHTML = html;
+                    })
+                    .catch(err => console.error('GetChannelPerformance error', err));
+            }
+
+            function channelIcon(src) {
+                var s = (src || '').toLowerCase();
+                if (s.includes('facebook') || s.includes('social')) return { icon: 'bi-facebook', bg: '#1877f2' };
+                if (s.includes('instagram')) return { icon: 'bi-instagram', bg: '#e1306c' };
+                if (s.includes('google')) return { icon: 'bi-google', bg: '#ea4335' };
+                if (s.includes('email')) return { icon: 'bi-envelope', bg: '#ff6b35' };
+                if (s.includes('whatsapp')) return { icon: 'bi-whatsapp', bg: '#25d366' };
+                if (s.includes('direct')) return { icon: 'bi-globe', bg: '#7209b7' };
+                if (s.includes('referral')) return { icon: 'bi-person-check', bg: '#0ea5e9' };
+                if (s.includes('youtube')) return { icon: 'bi-youtube', bg: '#ff0000' };
+                return { icon: 'bi-broadcast-pin', bg: '#4680FF' };
+            }
+        })();
+    </script>
+}

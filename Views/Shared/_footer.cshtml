@@ -1,0 +1,86 @@
+<style>
+    .main-footer {
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1rem;
+        position: fixed;
+        bottom: 0;
+        left: var(--sidebar-w);
+        right: 0;
+        z-index: 998;
+        transition: left var(--trans), background 0.3s ease, border-color 0.3s ease;
+    }
+    
+    [data-sidebar="mini"] .main-footer {
+        left: var(--sidebar-mini);
+    }
+    
+    [data-sidebar="hidden"] .main-footer {
+        left: 0;
+    }
+    
+    .footer-social-links {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+    }
+    .footer-social-link {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        transition: color 0.2s ease, transform 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+    }
+    .footer-social-link:hover {
+        color: var(--primary);
+        transform: translateY(-2px);
+        background: var(--bg-card);
+        border-color: var(--primary);
+    }
+</style>
+
+<footer class="main-footer">
+    <!-- Left: Copyright -->
+    <div>
+        &copy; 2023 - 2030 <strong style="color:var(--text)">VGN</strong>. All rights reserved.
+    </div>
+
+    <!-- Middle: Session Timer / Dynamic -->
+    <div>
+        <div id="sessionExpiryDisplay" style="color: #ff0000; font-weight: bold; display: none;">
+            Session expires in: Loading...
+        </div>
+    </div>
+
+    <!-- Right: Social Media Links -->
+    <div class="footer-social-links">
+        <a href="https://www.facebook.com/VGN1942/" target="_blank" aria-label="Facebook" class="footer-social-link" title="Facebook">
+            <i class="bi bi-facebook"></i>
+        </a>
+        <a href="https://www.instagram.com/vgnhomes/" target="_blank" aria-label="Instagram" class="footer-social-link" title="Instagram">
+            <i class="bi bi-instagram"></i>
+        </a>
+        <a href="https://www.youtube.com/c/VGNHomesPvtLtd" target="_blank" aria-label="YouTube" class="footer-social-link" title="YouTube">
+            <i class="bi bi-youtube"></i>
+        </a>
+        <a href="https://www.linkedin.com/company/vgn-homes-pvt-ltd/" target="_blank" aria-label="LinkedIn" class="footer-social-link" title="LinkedIn">
+            <i class="bi bi-linkedin"></i>
+        </a>
+        <a href="https://www.google.com/maps/place//data=!4m2!3m1!1s0x3a5266874a566b89:0x9ce8f00d9409709e?source=g.page.share" target="_blank" aria-label="Google Maps" class="footer-social-link" title="Google Maps">
+            <i class="bi bi-geo-alt-fill"></i>
+        </a>
+    </div>
+</footer>

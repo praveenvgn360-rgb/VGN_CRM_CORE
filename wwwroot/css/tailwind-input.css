@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@source "../../Views/**/*.cshtml";
+@source "../../Pages/**/*.cshtml";
+@source "../../Areas/**/*.cshtml";
+
+@theme {
+  --color-primary: var(--primary);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-text: var(--sidebar-text);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-hover-bg: var(--sidebar-hover-bg);
+  --color-sidebar-hover-color: var(--sidebar-hover-color);
+  --color-topbar-bg: var(--topbar-bg);
+}
+
+@layer base {
+  :root {
+    --primary: #4680FF;
+    --primary-rgb: 70,128,255;
+    --sidebar-w: 260px;
+    --sidebar-mini: 70px;
+    --topbar-h: 64px;
+    --radius: 12px;
+    --trans: 0.22s ease;
+    --font-family: 'Segoe UI', system-ui, sans-serif;
+    --font-size-base: 14px;
+    /* LIGHT theme colors */
+    --bg: #f4f6fb;
+    --surface: #ffffff;
+    --sidebar-bg: #ffffff;
+    --sidebar-text: #4b5563; 
+    --sidebar-active: rgba(0,0,0,.05);
+    --sidebar-border: #e5e7eb;
+    --sidebar-hover-bg: rgba(0,0,0,.05);
+    --sidebar-hover-color: var(--primary);
+    --sidebar-label-color: #9ca3af;
+    --sidebar-logo-text: #1f2937;
+    --sidebar-search-bg: #f3f4f6;
+    --sidebar-search-border: #e5e7eb;
+    --sidebar-tabs-bg: transparent;
+    --sidebar-tabs-border: #e5e7eb;
+    --sidebar-tab-color: #6b7280;
+    --sidebar-tab-active-color: var(--primary);
+    --sidebar-tab-active-bg: transparent;
+    --topbar-bg: #ffffff;
+    --text: #1a1a2e;
+    --text-muted: #6c757d;
+    --border: #d1d5db;
+    --card-shadow: 0 2px 12px rgba(0,0,0,.06);
+    --icon-filter: none;
+  }
+
+  [data-theme="dark"] {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --sidebar-bg: #111320;
+    --sidebar-text: rgba(255,255,255,.75);
+    --sidebar-active: rgba(255,255,255,.05);
+    --sidebar-border: rgba(255,255,255,.06);
+    --sidebar-hover-bg: rgba(255,255,255,.10);
+    --sidebar-hover-color: #ffffff;
+    --sidebar-label-color: rgba(255,255,255,.4);
+    --sidebar-logo-text: #ffffff;
+    --sidebar-search-bg: rgba(255,255,255,.06);
+    --sidebar-search-border: rgba(255,255,255,.12);
+    --sidebar-tabs-bg: transparent;
+    --sidebar-tabs-border: rgba(255,255,255,.1);
+    --sidebar-tab-color: rgba(255,255,255,0.4);
+    --sidebar-tab-active-color: #ffffff;
+    --sidebar-tab-active-bg: transparent;
+    --topbar-bg: #1a1d27;
+    --text: #e2e8f0;
+    --text-muted: #8892a4;
+    --border: #3f465c;
+    --card-shadow: 0 2px 12px rgba(0,0,0,.25);
+    --icon-filter: brightness(0) invert(1);
+  }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--text);
+  }
+}

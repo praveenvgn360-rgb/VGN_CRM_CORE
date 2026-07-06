@@ -1,0 +1,504 @@
+@{
+    ViewBag.Title = "HR Dashboard";
+    ViewBag.ActiveMenu = "HRDashboardNew";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<style>
+    /* ── Dashboard Layout ─────────────────────────────── */
+    .mgmt-kpi-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 1.1rem 1.25rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,.04);
+        display: flex;
+        flex-direction: column;
+        gap: .35rem;
+        transition: transform .18s, box-shadow .18s;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+    .mgmt-kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--kpi-accent, var(--primary));
+        border-radius: 14px 0 0 14px;
+    }+
+    .mgmt-kpi-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 24px rgba(0,0,0,.10);
+    }
+    .mgmt-kpi-label {
+        font-size: .7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        color: var(--text-muted);
+    }
+    .mgmt-kpi-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1.1;
+    }
+    .mgmt-kpi-sub {
+        font-size: .72rem;
+        color: var(--text-muted);
+    }
+    .mgmt-kpi-icon {
+        position: absolute;
+        top: .9rem;
+        right: 1rem;
+        font-size: 1.8rem;
+        opacity: .5;
+        color: var(--kpi-accent, var(--text-muted));
+    }
+
+    /* ── Section Card ─────────────────────────────────── */
+    .mgmt-section-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 1.25rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,.04);
+        height: 100%;
+    }
+    .mgmt-section-title {
+        font-size: .82rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+
+    /* Content Sections */
+    .content-section {
+        display: none;
+        animation: fadeIn 0.5s ease;
+    }
+    .content-section.active {
+        display: block;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Tabs */
+    .tab-btn {
+        transition: all 0.3s ease;
+    }
+    .tab-btn.active {
+        border-bottom-color: var(--primary);
+        color: var(--primary);
+    }
+    .tab-btn:hover:not(.active) {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+        opacity: 0.7;
+    }
+
+    /* Chart Container */
+    .chart-container {
+        position: relative;
+        height: 350px;
+        width: 100%;
+    }
+
+    /* Quick Access */
+    .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1rem;
+    }
+    .menu-card {
+        background: var(--surface);
+        border-radius: 12px;
+        padding: 1.2rem;
+        border: 1px solid var(--border);
+        transition: transform 0.2s;
+        text-decoration: none !important;
+        display: flex;
+        flex-direction: column;
+        color: var(--text);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+    .menu-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--primary);
+    }
+    .menu-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        margin-bottom: 1rem;
+    }
+    .icon-blue { background: linear-gradient(135deg, #3498db, #2980b9); }
+    .icon-green { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+    .icon-purple { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+    .icon-orange { background: linear-gradient(135deg, #f39c12, #e67e22); }
+    .icon-teal { background: linear-gradient(135deg, #1abc9c, #16a085); }
+    .icon-yellow { background: linear-gradient(135deg, #f1c40f, #f39c12); }
+    .icon-pink { background: linear-gradient(135deg, #e84393, #fd79a8); }
+    .icon-red { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+
+    .menu-title { font-weight: 600; font-size: 0.95rem; }
+
+    /* DevExpress — footer row only (all header/body/theme styles are in _Layout.cshtml) */
+    .dx-footer-row { background: #a1bdd9bd; color: black; font-weight: bold; }
+
+    /* Chart bar containers */
+    .src-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .src-nm { min-width: 120px; font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .src-bar { flex: 1; height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; }
+    .src-fill { height: 100%; border-radius: 5px; transition: width 0.6s ease; }
+    .src-pct { min-width: 36px; font-size: 0.8rem; font-weight: 600; color: var(--text); text-align: right; }
+
+    /* Gender chart cards */
+    .ch-card { display: flex; flex-direction: column; align-items: center; padding: 1rem; border-radius: 12px; flex: 1; }
+    .ch-ico { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: white; margin-bottom: 10px; }
+    .ch-pct { font-size: 1.8rem; font-weight: 800; color: var(--text); }
+    .ch-nm { font-size: 0.8rem; color: var(--text-muted); }
+</style>
+
+<!-- Loading Spinner -->
+<div class="loader-overlay" id="loader" style="display:none;">
+    <div class="loader-spinner"></div>
+    <div class="loader-message">Loading Data, Please Wait...</div>
+</div>
+<div class="loading-spinner" id="loadingSpinner" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.7); z-index:9999; justify-content:center; align-items:center;">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+<!-- Page Header -->
+<div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+    <div>
+        <h1 class="text-xl font-bold" style="color:var(--text)">
+            <i class="bi bi-person-workspace me-2" style="color:var(--primary)"></i>HR Dashboard
+        </h1>
+        <p class="text-sm mt-1" style="color:var(--text-muted)">Human Resources Management & Analytics</p>
+    </div>
+    <div class="flex items-center gap-4">
+        <div class="text-sm font-semibold" style="color:var(--text-muted)">
+            <i class="bi bi-calendar3 me-1"></i> <span id="currentDate"></span>
+        </div>
+        <button id="refreshBtn" class="inline-flex items-center justify-center gap-2 bg-[var(--primary)] text-white rounded-lg px-4 py-2 text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+        </button>
+    </div>
+</div>
+
+<!-- Side-by-Side Tabs -->
+<div class="flex border-b border-gray-200 dark:border-gray-700 mb-6 overflow-x-auto">
+    <button class="tab-btn active px-4 py-2 border-b-2 font-medium text-sm border-primary text-primary whitespace-nowrap" data-section="dashboard">
+        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+    </button>
+    <button class="tab-btn px-4 py-2 border-b-2 border-transparent font-medium text-sm text-gray-500 whitespace-nowrap" data-section="attendance">
+        <i class="bi bi-calendar-check me-2"></i>Attendance
+    </button>
+    <button class="tab-btn px-4 py-2 border-b-2 border-transparent font-medium text-sm text-gray-500 whitespace-nowrap" data-section="payroll">
+        <i class="bi bi-cash-stack me-2"></i>Payroll
+    </button>
+    <button class="tab-btn px-4 py-2 border-b-2 border-transparent font-medium text-sm text-gray-500 whitespace-nowrap" data-section="manpower">
+        <i class="bi bi-graph-up me-2"></i>Man Power
+    </button>
+    <button class="tab-btn px-4 py-2 border-b-2 border-transparent font-medium text-sm text-gray-500 whitespace-nowrap" data-section="onboard">
+        <i class="bi bi-building me-2"></i>On Board
+    </button>
+    <button class="tab-btn px-4 py-2 border-b-2 border-transparent font-medium text-sm text-gray-500 whitespace-nowrap" data-section="offboard">
+        <i class="bi bi-book me-2"></i>Off Board
+    </button>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────── -->
+<!-- DASHBOARD SECTION -->
+<!-- ────────────────────────────────────────────────────────────── -->
+<div id="dashboard" class="content-section active">
+    
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6" id="statsCards">
+        <!-- Rendered by JS -->
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        <div class="mgmt-section-card">
+            <div class="mgmt-section-title">
+                <i class="bi bi-person-circle" style="color:#3498db"></i> Age Distribution
+            </div>
+            <div id="ageChartContainer" style="padding: 0.5rem 0; overflow-y: auto; max-height: 320px;">
+                <p class="text-center text-muted small py-4">Loading...</p>
+            </div>
+        </div>
+        
+        <div class="mgmt-section-card">
+            <div class="mgmt-section-title">
+                <i class="bi bi-clock-history" style="color:#2ecc71"></i> Experience in Years
+            </div>
+            <div id="tenureChartContainer" style="padding: 0.5rem 0; overflow-y: auto; max-height: 320px;">
+                <p class="text-center text-muted small py-4">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <div class="lg:col-span-2 mgmt-section-card">
+            <div class="mgmt-section-title">
+                <i class="bi bi-diagram-3" style="color:#9b59b6"></i> Department Overview
+            </div>
+            <div id="departmentGrid"></div>
+        </div>
+        
+        <div class="lg:col-span-1 mgmt-section-card">
+            <div class="mgmt-section-title">
+                <i class="bi bi-gender-ambiguous" style="color:#e74c3c"></i> Gender Ratio
+            </div>
+            <div id="genderChartContainer" style="display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap; padding: 1rem 0; min-height: 200px;">
+                <p class="text-center text-muted small py-4">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="mgmt-section-card mb-6">
+        <div class="mgmt-section-title">
+            <i class="bi bi-gender-ambiguous" style="color:#f39c12"></i> Depart Wise Gender
+        </div>
+        <div id="deptGenderChartContainer" style="padding: 0.5rem 0; overflow-y: auto; max-height: 350px;">
+            <p class="text-center text-muted small py-4">Loading...</p>
+        </div>
+    </div>
+
+    <!-- Quick Access -->
+    <div class="mgmt-section-card">
+        <div class="mgmt-section-title">
+            <i class="bi bi-lightning-charge" style="color:#f1c40f"></i> Quick Access
+        </div>
+        <div class="menu-grid" id="hrMenus">
+            <!-- Rendered by JS -->
+        </div>
+    </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────── -->
+<!-- ATTENDANCE SECTION -->
+<!-- ────────────────────────────────────────────────────────────── -->
+<div id="attendance" class="content-section">
+    <div class="mgmt-section-card mb-4">
+        <div class="flex items-end gap-4 flex-wrap">
+            <div class="flex flex-col gap-1 min-w-[200px]">
+                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Month <span class="text-red-500">*</span></label>
+                <input type="month" id="Attendance_Month_date" name="DateOfMonth" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all">
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="button" id="btn_Attendance_Load" class="inline-flex items-center justify-center gap-2 bg-[var(--primary)] text-white rounded-lg px-5 py-2 text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm">
+                    <i class="fa fa-spinner"></i> Load
+                </button>
+                <button type="button" id="btn_clear_attendance" class="inline-flex items-center justify-center gap-2 bg-slate-500 text-white border border-slate-600 rounded-lg px-5 py-2 text-sm font-semibold hover:bg-slate-600 transition-colors shadow-sm">
+                    <i class="fa fa-eraser"></i> Clear
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mgmt-section-card mb-4">
+        <div class="mgmt-section-title"><i class="bi bi-calendar2-check" style="color:#2ecc71"></i> Attendance Summary</div>
+        <div id="gridAttendanceSummary"></div>
+    </div>
+
+    <div class="mgmt-section-card">
+        <div class="mgmt-section-title"><i class="bi bi-calendar-minus" style="color:#e74c3c"></i> Leave Requests</div>
+        <div id="gridContainerLeave"></div>
+    </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────── -->
+<!-- PAYROLL SECTION -->
+<!-- ────────────────────────────────────────────────────────────── -->
+<div id="payroll" class="content-section">
+    <div class="mgmt-section-card mb-4">
+        <div class="flex items-end gap-4 flex-wrap">
+            <div class="flex flex-col gap-1 min-w-[200px]">
+                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Month <span class="text-red-500">*</span></label>
+                <input type="month" id="payroll_Month_date" name="DateOfMonth" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all">
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="button" id="btn_payroll_Load" class="inline-flex items-center justify-center gap-2 bg-[var(--primary)] text-white rounded-lg px-5 py-2 text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm">
+                    <i class="fa fa-spinner"></i> Load
+                </button>
+                <button type="button" id="btn_clear_payroll" class="inline-flex items-center justify-center gap-2 bg-slate-500 text-white border border-slate-600 rounded-lg px-5 py-2 text-sm font-semibold hover:bg-slate-600 transition-colors shadow-sm">
+                    <i class="fa fa-eraser"></i> Clear
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <div class="mgmt-section-card">
+            <div class="mgmt-section-title"><i class="bi bi-bar-chart-line" style="color:#3498db"></i> Department-wise Net Salary</div>
+            <div id="deptSalaryChart" style="height:360px;"></div>
+        </div>
+        <div class="mgmt-section-card">
+            <div class="mgmt-section-title"><i class="bi bi-pie-chart" style="color:#2ecc71"></i> Company-wise Salary Distribution</div>
+            <div id="companySalaryChart" style="height:360px;"></div>
+        </div>
+    </div>
+
+    <div class="mgmt-section-card mb-4">
+        <div class="mgmt-section-title"><i class="bi bi-stack" style="color:#f39c12"></i> Statutory Contributions by Department</div>
+        <div id="pfSalaryChart" style="height:350px;"></div>
+    </div>
+
+    <div class="mgmt-section-card mb-4">
+        <div class="mgmt-section-title"><i class="bi bi-wallet2" style="color:#9b59b6"></i> Departmentwise Salary Details</div>
+        <div id="gridDeptSalary"></div>
+    </div>
+
+    <div class="mgmt-section-card mb-4">
+        <div class="mgmt-section-title"><i class="bi bi-diagram-3" style="color:#1abc9c"></i> VGN Group Salary Breakup</div>
+        <div id="gridGroupSalaryBrkup"></div>
+    </div>
+
+    <div class="mgmt-section-card">
+        <div class="mgmt-section-title"><i class="bi bi-cash-coin" style="color:#e67e22"></i> Current Month Salary Details</div>
+        <div id="gridSalaryBrkUp"></div>
+    </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────── -->
+<!-- MANPOWER SECTION -->
+<!-- ────────────────────────────────────────────────────────────── -->
+<div id="manpower" class="content-section">
+    <div class="mgmt-section-card mb-4">
+        <div class="flex items-end gap-4 flex-wrap">
+            <div class="flex flex-col gap-1 min-w-[200px]">
+                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Month <span class="text-red-500">*</span></label>
+                <input type="month" id="ManPowerMonth_date" name="DateOfMonth" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all">
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="button" id="btn_load_Manpower" class="inline-flex items-center justify-center gap-2 bg-[var(--primary)] text-white rounded-lg px-5 py-2 text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm">
+                    <i class="fa fa-spinner"></i> Load
+                </button>
+                <button type="button" id="btn_clear_manpower" class="inline-flex items-center justify-center gap-2 bg-slate-500 text-white border border-slate-600 rounded-lg px-5 py-2 text-sm font-semibold hover:bg-slate-600 transition-colors shadow-sm">
+                    <i class="fa fa-eraser"></i> Clear
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mgmt-section-card">
+        <div class="mgmt-section-title"><i class="bi bi-people-fill" style="color:#3498db"></i> Manpower Summary</div>
+        <div id="ManPowerGridContainer"></div>
+    </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────── -->
+<!-- ON BOARD SECTION -->
+<!-- ────────────────────────────────────────────────────────────── -->
+<div id="onboard" class="content-section">
+    <div class="mgmt-section-card mb-4">
+        <div class="flex items-end gap-4 flex-wrap">
+            <div class="flex flex-col gap-1 min-w-[250px]">
+                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Department <span class="text-red-500">*</span></label>
+                <select id="dd_onDepartment" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all"></select>
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="button" id="btn_Onrefresh" class="inline-flex items-center justify-center gap-2 bg-[var(--primary)] text-white rounded-lg px-5 py-2 text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm">
+                    <i class="fa fa-spinner"></i> Load
+                </button>
+                <button type="button" id="btn_Onclear" class="inline-flex items-center justify-center gap-2 bg-slate-500 text-white border border-slate-600 rounded-lg px-5 py-2 text-sm font-semibold hover:bg-slate-600 transition-colors shadow-sm">
+                    <i class="fa fa-eraser"></i> Clear
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mgmt-section-card">
+        <div class="mgmt-section-title"><i class="bi bi-person-check" style="color:#2ecc71"></i> Onboard Checklist</div>
+        <div id="gridOnboard"></div>
+    </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────── -->
+<!-- OFF BOARD SECTION -->
+<!-- ────────────────────────────────────────────────────────────── -->
+<div id="offboard" class="content-section">
+    <div class="mgmt-section-card mb-4">
+        <div class="flex items-end gap-4 flex-wrap">
+            <div class="flex flex-col gap-1 min-w-[250px]">
+                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Department <span class="text-red-500">*</span></label>
+                <select id="dd_offDepartment" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all"></select>
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="button" id="btn_Offrefresh" class="inline-flex items-center justify-center gap-2 bg-[var(--primary)] text-white rounded-lg px-5 py-2 text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm">
+                    <i class="fa fa-spinner"></i> Load
+                </button>
+                <button type="button" id="btn_Offclear" class="inline-flex items-center justify-center gap-2 bg-slate-500 text-white border border-slate-600 rounded-lg px-5 py-2 text-sm font-semibold hover:bg-slate-600 transition-colors shadow-sm">
+                    <i class="fa fa-eraser"></i> Clear
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mgmt-section-card">
+        <div class="mgmt-section-title"><i class="bi bi-person-x" style="color:#e74c3c"></i> Offboard Checklist</div>
+        <div id="gridffboard"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    
+    <script>
+        // Override switchSection logic in HRDashboardNew.js
+        document.addEventListener("DOMContentLoaded", function() {
+            // Tab switching logic
+            $('.tab-btn').click(function (e) {
+                e.preventDefault();
+                const section = $(this).data('section');
+                
+                // Update tabs styling
+                $('.tab-btn').removeClass('active border-primary text-primary').addClass('border-transparent text-gray-500');
+                $(this).removeClass('border-transparent text-gray-500').addClass('active border-primary text-primary');
+
+                // Switch section display
+                $('.content-section').removeClass('active');
+                $(`#${section}`).addClass('active');
+
+                // Update JS tracker and load data if needed
+                if(typeof dashboard !== 'undefined') {
+                    dashboard.currentSection = section;
+                    if (section === 'dashboard') {
+                        loadDashboardData();
+                    }
+                }
+            });
+        });
+    </script>
+
+    <!-- Original Application Logic -->
+    <script src="~/js/ApplicationJs/HRDashboardNew.js" asp-append-version="true"></script>
+
+
+}

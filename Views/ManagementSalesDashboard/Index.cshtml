@@ -1,0 +1,922 @@
+@{
+    ViewBag.Title = "Management Sales Dashboard";
+    ViewBag.ActiveMenu = "ManagementSalesDashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* ── Dashboard Layout ─────────────────────────────── */
+    .mgmt-kpi-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 1.1rem 1.25rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,.04);
+        display: flex;
+        flex-direction: column;
+        gap: .35rem;
+        transition: transform .18s, box-shadow .18s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .mgmt-kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--kpi-accent, var(--primary));
+        border-radius: 14px 0 0 14px;
+    }
+
+    .mgmt-kpi-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 24px rgba(0,0,0,.10);
+    }
+
+    .mgmt-kpi-label {
+        font-size: .7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        color: var(--text-muted);
+    }
+
+    .mgmt-kpi-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1.1;
+    }
+
+    .mgmt-kpi-sub {
+        font-size: .72rem;
+        color: var(--text-muted);
+    }
+
+    .mgmt-kpi-icon {
+        position: absolute;
+        top: .9rem;
+        right: 1rem;
+        font-size: 1.8rem;
+        opacity: .5;
+        color: var(--kpi-accent, var(--text-muted));
+    }
+
+    /* ── Section Card ─────────────────────────────────── */
+    .mgmt-section-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 1.25rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,.04);
+    }
+
+    .mgmt-section-title {
+        font-size: .82rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+
+    /* ── Month Picker ─────────────────────────────────── */
+    .mgmt-monthpicker {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.25rem;
+    }
+
+    .mgmt-monthpicker label {
+        font-size: .78rem;
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+
+    .mgmt-monthpicker input[type="month"] {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        padding: .35rem .75rem;
+        font-size: .82rem;
+        outline: none;
+    }
+
+    .mgmt-monthpicker input[type="month"]:focus {
+        border-color: var(--primary);
+    }
+
+    .mgmt-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        background: var(--primary);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: .38rem .9rem;
+        font-size: .78rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity .15s;
+    }
+
+    .mgmt-btn:hover { opacity: .88; }
+
+    /* ── Tab Pills ─────────────────────────────────────── */
+    .mgmt-tabs {
+        display: flex;
+        gap: .5rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .mgmt-tab {
+        font-size: .75rem;
+        font-weight: 600;
+        padding: .32rem .85rem;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all .15s;
+    }
+
+    .mgmt-tab.active,
+    .mgmt-tab:hover {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+    }
+
+    /* ── Main Navigation Tabs ──────────────────────────── */
+    .mgmt-main-tabs {
+        display: flex;
+        gap: .25rem;
+        border-bottom: 2px solid var(--border);
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .mgmt-main-tab {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-size: .85rem;
+        font-weight: 600;
+        padding: .75rem 1.25rem;
+        cursor: pointer;
+        position: relative;
+        transition: color .2s;
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+    }
+
+    .mgmt-main-tab:hover {
+        color: var(--primary);
+    }
+
+    .mgmt-main-tab.active {
+        color: var(--primary);
+    }
+
+    .mgmt-main-tab.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: var(--primary);
+        border-radius: 3px 3px 0 0;
+    }
+    
+    .mgmt-tab-content {
+        display: none;
+        animation: fadeIn 0.3s ease;
+    }
+    .mgmt-tab-content.active {
+        display: block;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Hyperlink Report Tiles ───────────────────────── */
+    .report-link-tile {
+        display: flex;
+        align-items: center;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 1.15rem;
+        border-radius: 14px;
+        box-shadow: 0 4px 16px rgba(0,0,0,.04);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        text-decoration: none;
+        color: var(--text);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Subtle gradient overlay for depth */
+    .report-link-tile::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+        pointer-events: none;
+    }
+    
+    .report-link-tile:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 24px rgba(0,0,0,.12);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+    
+    .report-icon-box {
+        width: 50px;
+        height: 50px;
+        min-width: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 1.4rem;
+        margin-right: 1.15rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .report-link-tile:hover .report-icon-box {
+        transform: scale(1.1) rotate(-3deg);
+    }
+</style>
+
+<!-- ── Page Header ────────────────────────────────────────── -->
+<div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+    <div>
+        <h1 class="text-xl font-bold" style="color:var(--text)">
+            <i class="bi bi-speedometer2 me-2" style="color:var(--primary)"></i>Management Sales Dashboard
+        </h1>
+        <p class="text-sm mt-1" style="color:var(--text-muted)">Consolidated Dashboard & Legacy Reports</p>
+    </div>
+    <div class="mgmt-monthpicker">
+        <label><i class="bi bi-calendar3 me-1"></i>Month</label>
+        <input type="month" id="inp_month" value="@ViewBag.CurrentMonth" />
+        <button class="mgmt-btn" id="btn_refresh"><i class="bi bi-arrow-clockwise"></i>Refresh Data</button>
+    </div>
+</div>
+
+<!-- ── KPI Cards (Always Visible) ────────────────────────── -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6" id="kpi_row">
+    <div class="mgmt-kpi-card" style="--kpi-accent:#4680FF">
+        <div class="mgmt-kpi-label">Total Leads</div>
+        <div class="mgmt-kpi-value" id="kpi_total">--</div>
+        <div class="mgmt-kpi-sub">All Sources</div>
+        <i class="bi bi-people mgmt-kpi-icon"></i>
+    </div>
+    <div class="mgmt-kpi-card" style="--kpi-accent:#10b981">
+        <div class="mgmt-kpi-label">Online</div>
+        <div class="mgmt-kpi-value" id="kpi_online">--</div>
+        <div class="mgmt-kpi-sub">Digital Sources</div>
+        <i class="bi bi-globe mgmt-kpi-icon"></i>
+    </div>
+    <div class="mgmt-kpi-card" style="--kpi-accent:#f97316">
+        <div class="mgmt-kpi-label">Offline</div>
+        <div class="mgmt-kpi-value" id="kpi_offline">--</div>
+        <div class="mgmt-kpi-sub">Walk-in / Print</div>
+        <i class="bi bi-person-walking mgmt-kpi-icon"></i>
+    </div>
+    <div class="mgmt-kpi-card" style="--kpi-accent:#8b5cf6">
+        <div class="mgmt-kpi-label">Channel</div>
+        <div class="mgmt-kpi-value" id="kpi_channel">--</div>
+        <div class="mgmt-kpi-sub">Partner Refs</div>
+        <i class="bi bi-diagram-3 mgmt-kpi-icon"></i>
+    </div>
+    <div class="mgmt-kpi-card" style="--kpi-accent:#ec4899">
+        <div class="mgmt-kpi-label">Others</div>
+        <div class="mgmt-kpi-value" id="kpi_others">--</div>
+        <div class="mgmt-kpi-sub">Miscellaneous</div>
+        <i class="bi bi-three-dots mgmt-kpi-icon"></i>
+    </div>
+</div>
+
+<!-- ── Main Navigation Hyperlinks (Tabs) ─────────────────── -->
+<div class="mgmt-main-tabs">
+    <!-- Legacy Hyperlinks Tabs -->
+    <button class="mgmt-main-tab active" data-target="tab_sales_reports"><i class="bi bi-link-45deg"></i>Sales Reports</button>
+    <button class="mgmt-main-tab" data-target="tab_presales_reports"><i class="bi bi-link-45deg"></i>Pre-Sales Reports</button>
+    <button class="mgmt-main-tab" data-target="tab_telecaller_reports"><i class="bi bi-link-45deg"></i>Telecaller Reports</button>
+
+    <!-- Consolidated Grid/Chart Tabs -->
+    <button class="mgmt-main-tab" data-target="tab_overview"><i class="bi bi-pie-chart"></i>Charts & Overview</button>
+    <button class="mgmt-main-tab" data-target="tab_target"><i class="bi bi-bullseye"></i>Target vs Achieved</button>
+    <button class="mgmt-main-tab" data-target="tab_prospect"><i class="bi bi-binoculars"></i>Expected Prospect</button>
+    <button class="mgmt-main-tab" data-target="tab_booked"><i class="bi bi-receipt"></i>Booked Data</button>
+    <button class="mgmt-main-tab" data-target="tab_stock"><i class="bi bi-boxes"></i>Project Stock</button>
+</div>
+
+<!-- ── TAB CONTENT: Overview & Charts ────────────────────── -->
+<div id="tab_overview" class="mgmt-tab-content">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <div class="mgmt-section-card">
+            <div class="mgmt-section-title">
+                <i class="bi bi-bar-chart-fill" style="color:var(--primary)"></i>Project-wise Target vs Achieved
+            </div>
+            <div id="chart_projectwise" style="height:320px;"></div>
+        </div>
+        <div class="mgmt-section-card">
+            <div class="mgmt-section-title">
+                <i class="bi bi-bar-chart-line-fill" style="color:#ec4899"></i>Team-wise Booking Abstract
+            </div>
+            <div id="chart_teamwise" style="height:320px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ── TAB CONTENT: Target vs Achieved ───────────────────── -->
+<div id="tab_target" class="mgmt-tab-content">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <!-- Project-wise Data Grid -->
+        <div class="mgmt-section-card">
+            <div class="mgmt-section-title">
+                <i class="bi bi-building" style="color:var(--primary)"></i>Project-wise Target vs Achieved Grid
+            </div>
+            <div id="grid_projectwise" style="min-height:280px;"></div>
+        </div>
+        <!-- Team-wise Abstract Grid -->
+        <div class="mgmt-section-card">
+            <div class="mgmt-section-title">
+                <i class="bi bi-people-fill" style="color:#ec4899"></i>Team-wise Booking Abstract Grid
+            </div>
+            <div id="grid_teamwise" style="min-height:280px;"></div>
+        </div>
+    </div>
+    
+    <!-- Executive-wise Booking Summary -->
+    <div class="mgmt-section-card mb-4">
+        <div class="mgmt-section-title">
+            <i class="bi bi-person-badge" style="color:#10b981"></i>Executive-wise Booking Summary
+        </div>
+        <div id="grid_executivewise" style="min-height:280px;"></div>
+    </div>
+</div>
+
+<!-- ── TAB CONTENT: Expected Prospect ────────────────────── -->
+<div id="tab_prospect" class="mgmt-tab-content">
+    <div class="mgmt-section-card mb-4">
+        <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
+            <div class="mgmt-section-title mb-0">
+                <i class="bi bi-binoculars" style="color:#f97316"></i>Expected Prospect (Site Visits)
+            </div>
+            <div class="flex items-center gap-3 flex-wrap">
+                <label style="font-size:.75rem;color:var(--text-muted)">From</label>
+                <input type="date" id="inp_sv_from" class="mgmt-monthpicker input" style="border:1px solid var(--border);border-radius:8px;padding:.3rem .65rem;background:var(--surface);color:var(--text);font-size:.8rem;" />
+                <label style="font-size:.75rem;color:var(--text-muted)">To</label>
+                <input type="date" id="inp_sv_to" class="mgmt-monthpicker input" style="border:1px solid var(--border);border-radius:8px;padding:.3rem .65rem;background:var(--surface);color:var(--text);font-size:.8rem;" />
+                <button class="mgmt-btn" id="btn_sv_load"><i class="bi bi-search"></i>Load</button>
+            </div>
+        </div>
+        <div class="mgmt-tabs" id="sv_tabs">
+            <button class="mgmt-tab active" data-view="EXECUTIVEWISE">Executive-wise</button>
+            <button class="mgmt-tab" data-view="PROJECTWISE">Project-wise</button>
+            <button class="mgmt-tab" data-view="TEAMWISE">Team-wise</button>
+        </div>
+        <div id="grid_sitevisit" style="min-height:280px;"></div>
+    </div>
+</div>
+
+<!-- ── TAB CONTENT: Booked Data ──────────────────────────── -->
+<div id="tab_booked" class="mgmt-tab-content">
+    <div class="mgmt-section-card mb-4">
+        <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
+            <div class="mgmt-section-title mb-0">
+                <i class="bi bi-receipt" style="color:#4680FF"></i>Booked Data Detailed View
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+                <input type="date" id="inp_bk_from" style="border:1px solid var(--border);border-radius:8px;padding:.3rem .65rem;background:var(--surface);color:var(--text);font-size:.78rem;" />
+                <input type="date" id="inp_bk_to"   style="border:1px solid var(--border);border-radius:8px;padding:.3rem .65rem;background:var(--surface);color:var(--text);font-size:.78rem;" />
+                <button class="mgmt-btn" id="btn_bk_load"><i class="bi bi-search"></i>Load Data</button>
+            </div>
+        </div>
+        <div id="grid_booked" style="min-height:350px;"></div>
+    </div>
+</div>
+
+<!-- ── TAB CONTENT: Stock ────────────────────────────────── -->
+<div id="tab_stock" class="mgmt-tab-content">
+    <div class="mgmt-section-card mb-4">
+        <div class="mgmt-section-title">
+            <i class="bi bi-boxes" style="color:#8b5cf6"></i>Project-wise Stock Overview
+        </div>
+        <div id="grid_stock" style="min-height:350px;"></div>
+    </div>
+</div>
+
+<!-- ── TAB CONTENT: Sales Reports (Hyperlinks) ───────────── -->
+<div id="tab_sales_reports" class="mgmt-tab-content active">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-4">
+        <a href="/ProjectExecutiveSalesTarget/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#10b981"><i class="bi bi-folder2-open"></i></div>
+            <span class="font-semibold text-sm">Periodical Sales Target Analysis (Projectwise)</span>
+        </a>
+        <a href="/ProjectExecutiveSalesTarget/Executivewise" class="report-link-tile">
+            <div class="report-icon-box" style="background:#f97316"><i class="bi bi-people"></i></div>
+            <span class="font-semibold text-sm">Periodical Sales Target Analysis (Executivewise)</span>
+        </a>
+        <a href="/SalesTargetAnalysis/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#4680FF"><i class="bi bi-bullseye"></i></div>
+            <span class="font-semibold text-sm">Sales Target Analysis Report</span>
+        </a>
+        <a href="/ExecutivePerformanceReport/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#ef4444"><i class="bi bi-person-fill"></i></div>
+            <span class="font-semibold text-sm">Executive Lead Tracking Abstract</span>
+        </a>
+        <a href="/Executivewise_LeadsBookingReport/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#10b981"><i class="bi bi-people-fill"></i></div>
+            <span class="font-semibold text-sm">Executivewise Performance Analysis Report</span>
+        </a>
+        <a href="/Sourcewise_LeadsBookingReport/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#78716c"><i class="bi bi-bar-chart-fill"></i></div>
+            <span class="font-semibold text-sm">Sourcewise Performance Analysis Report</span>
+        </a>
+        <a href="/SalesBreakupReport/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#4680FF"><i class="bi bi-pie-chart-fill"></i></div>
+            <span class="font-semibold text-sm">Sales Breakup Report</span>
+        </a>
+        <a href="/Projectwise_LeadsBookingReport/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#f97316"><i class="bi bi-building"></i></div>
+            <span class="font-semibold text-sm">Projectwise Performance Analysis Report</span>
+        </a>
+        <a href="/SalesDSRReport/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#8b5cf6"><i class="bi bi-file-earmark-bar-graph"></i></div>
+            <span class="font-semibold text-sm">Sales DSR Report</span>
+        </a>
+        <a href="/PreSales_Telecaller_DSR/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#14b8a6"><i class="bi bi-mic-fill"></i></div>
+            <span class="font-semibold text-sm">Pre-Sales / Telecaller DSR Report</span>
+        </a>
+        <a href="/SalesTargetAbstract/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#14b8a6"><i class="bi bi-list-task"></i></div>
+            <span class="font-semibold text-sm">Sales Target Abstract</span>
+        </a>
+        <a href="/FlatPlotStock/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#eab308"><i class="bi bi-map"></i></div>
+            <span class="font-semibold text-sm">Stock Details</span>
+        </a>
+        <a href="/SalesAbstractWithValue/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#4680FF"><i class="bi bi-graph-up"></i></div>
+            <span class="font-semibold text-sm">Sales Abstract With Value</span>
+        </a>
+        <a href="/CustomerSiteVisitNegotiationReport/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#10b981"><i class="bi bi-handshake"></i></div>
+            <span class="font-semibold text-sm">Enquiry Site Visit Negotiation Data</span>
+        </a>
+        <a href="/Executivewisebookregcancel/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#78716c"><i class="bi bi-journal-text"></i></div>
+            <span class="font-semibold text-sm">ExecutiveWise Booked Cancel Registered</span>
+        </a>
+        <a href="/ExecutiveWiseBookingAbstract/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#ec4899"><i class="bi bi-pie-chart"></i></div>
+            <span class="font-semibold text-sm">ExecutiveWise Booking Abstract</span>
+        </a>
+        <a href="/EnquiryBookingAbstract/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#64748b"><i class="bi bi-file-text"></i></div>
+            <span class="font-semibold text-sm">Enquiry To Booking Abstract</span>
+        </a>
+        <a href="/ProjectWiseBookRegCancel/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#ef4444"><i class="bi bi-building-dash"></i></div>
+            <span class="font-semibold text-sm">ProjectWise Booked Registered CancelData</span>
+        </a>
+        <a href="/ProjectWiseMangementTarget/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#f97316"><i class="bi bi-flag"></i></div>
+            <span class="font-semibold text-sm">Projectwise Management Target</span>
+        </a>
+        <a href="/ProjectStockComparisonReport/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#06b6d4"><i class="bi bi-scales"></i></div>
+            <span class="font-semibold text-sm">Project Stock Comparison Report</span>
+        </a>
+        <a href="/RangeWiseSalesAbstract/RangeWiseSalesAbstract" class="report-link-tile">
+            <div class="report-icon-box" style="background:#1e3a8a"><i class="bi bi-bar-chart-steps"></i></div>
+            <span class="font-semibold text-sm">Rangewise Sales Abstract</span>
+        </a>
+        <a href="/CustomerLeadRating/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#ec4899"><i class="bi bi-star"></i></div>
+            <span class="font-semibold text-sm">Customer Lead Rating Report</span>
+        </a>
+        <a href="/SalesKeyPerfomanceReport/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#10b981"><i class="bi bi-bar-chart"></i></div>
+            <span class="font-semibold text-sm">Sales Key Performance Report</span>
+        </a>
+        <a href="/PresalesSitevisitCompletedReport/Index" class="report-link-tile">
+            <div class="report-icon-box" style="background:#4680FF"><i class="bi bi-flag-fill"></i></div>
+            <span class="font-semibold text-sm">Sitevisit Completed Report</span>
+        </a>
+    </div>
+</div>
+
+<!-- ── TAB CONTENT: Pre-Sales Reports ────────────────────── -->
+<div id="tab_presales_reports" class="mgmt-tab-content">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-4">
+        <a href="/ManagementSalesDashboard/PreSalesTargetReport" class="report-link-tile">
+            <div class="report-icon-box" style="background:#4680FF"><i class="bi bi-crosshair"></i></div>
+            <span class="font-semibold text-sm">PreSales Target/Assigned Report</span>
+        </a>
+        <a href="/ManagementSalesDashboard/BookingAbstract_Report" class="report-link-tile">
+            <div class="report-icon-box" style="background:#ef4444"><i class="bi bi-file-text"></i></div>
+            <span class="font-semibold text-sm">Booking Abstract</span>
+        </a>
+        <a href="/ManagementSalesDashboard/LeadAbstract_Report" class="report-link-tile">
+            <div class="report-icon-box" style="background:#f97316"><i class="bi bi-people"></i></div>
+            <span class="font-semibold text-sm">Lead Abstract</span>
+        </a>
+    </div>
+</div>
+
+<!-- ── TAB CONTENT: Telecaller Reports ───────────────────── -->
+<div id="tab_telecaller_reports" class="mgmt-tab-content">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-4">
+        <a href="/ManagementSalesDashboard/TelecallerTargettReport" class="report-link-tile">
+            <div class="report-icon-box" style="background:#4680FF"><i class="bi bi-bullseye"></i></div>
+            <span class="font-semibold text-sm">Telecaller Target/Assigned Report</span>
+        </a>
+        <a href="/ManagementSalesDashboard/BookingAbstract_Report" class="report-link-tile">
+            <div class="report-icon-box" style="background:#ef4444"><i class="bi bi-file-text"></i></div>
+            <span class="font-semibold text-sm">Booking Abstract</span>
+        </a>
+        <a href="/ManagementSalesDashboard/LeadAbstract_Report" class="report-link-tile">
+            <div class="report-icon-box" style="background:#f97316"><i class="bi bi-people"></i></div>
+            <span class="font-semibold text-sm">Lead Abstract</span>
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    'use strict';
+
+    // ── Tab Navigation Logic ─────────────────────────────────
+    document.querySelectorAll('.mgmt-main-tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            // Remove active from all tabs
+            document.querySelectorAll('.mgmt-main-tab').forEach(t => t.classList.remove('active'));
+            // Add active to clicked
+            tab.classList.add('active');
+
+            // Hide all contents
+            document.querySelectorAll('.mgmt-tab-content').forEach(c => c.classList.remove('active'));
+            // Show target content
+            var target = tab.getAttribute('data-target');
+            document.getElementById(target).classList.add('active');
+
+            // Refresh grid layout if DevExtreme grids exist in the newly shown tab
+            setTimeout(function() {
+                window.dispatchEvent(new Event('resize'));
+            }, 50);
+        });
+    });
+
+    // ── helpers ──────────────────────────────────────────────
+    function fmt(n) {
+        if (n == null || isNaN(n)) return '0';
+        n = Math.round(n);
+        var s = n.toString(), last3 = s.slice(-3), rest = s.slice(0, -3);
+        return rest ? rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + last3 : last3;
+    }
+
+    function safeJson(d) {
+        if (typeof d === 'string') { try { return JSON.parse(d); } catch (e) { return null; } }
+        return d;
+    }
+
+    function firstDayOfMonth() {
+        var m = document.getElementById('inp_month').value || '@ViewBag.CurrentMonth';
+        return m + '-01';
+    }
+    function lastDayOfMonth() {
+        var m = document.getElementById('inp_month').value || '@ViewBag.CurrentMonth';
+        var d = new Date(m + '-01');
+        return new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().slice(0, 10);
+    }
+
+    // ── DX grid factory ─────────────────────────────────────
+    function makeDxGrid(containerId, columns, dataSource) {
+        return DevExpress.ui.dxDataGrid.getInstance(document.getElementById(containerId)) ||
+            new DevExpress.ui.dxDataGrid(document.getElementById(containerId), {
+                dataSource: dataSource || [],
+                columns: columns,
+                showBorders: true,
+                showRowLines: true,
+                rowAlternationEnabled: true,
+                filterRow: { visible: false },
+                searchPanel: { visible: false },
+                paging: { pageSize: 15 },
+                pager: { showPageSizeSelector: true, allowedPageSizes: [10, 15, 25, 50] },
+                headerFilter: { visible: false },
+                sorting: { mode: 'single' },
+                scrolling: { mode: 'standard' },
+                height: 350,
+                wordWrapEnabled: true
+            });
+    }
+
+    // ── DX chart factory ────────────────────────────────────
+    function updateDxChart(containerId, dataSource, argumentField, valueFields, title) {
+        var chart = DevExpress.ui.dxChart.getInstance(document.getElementById(containerId));
+        if(!chart) {
+            var series = valueFields.map(function(vf) {
+                return { valueField: vf.field, name: vf.name, color: vf.color };
+            });
+            chart = new DevExpress.ui.dxChart(document.getElementById(containerId), {
+                dataSource: dataSource || [],
+                palette: "Soft Pastel",
+                commonSeriesSettings: {
+                    argumentField: argumentField,
+                    type: "bar",
+                    hoverMode: "allArgumentPoints",
+                    selectionMode: "allArgumentPoints",
+                    label: {
+                        visible: true,
+                        format: { type: "fixedPoint", precision: 0 },
+                        backgroundColor: "transparent",
+                        font: { color: "var(--text-muted)", size: 10 }
+                    },
+                    cornerRadius: 4
+                },
+                series: series,
+                legend: {
+                    verticalAlignment: "bottom",
+                    horizontalAlignment: "center",
+                    itemTextPosition: "right",
+                    font: { color: "var(--text)" }
+                },
+                valueAxis: {
+                    label: { font: { color: "var(--text-muted)" } },
+                    grid: { color: "var(--border)" }
+                },
+                argumentAxis: {
+                    label: { font: { color: "var(--text-muted)" } }
+                },
+                tooltip: {
+                    enabled: true,
+                    shared: true,
+                    format: { type: "fixedPoint", precision: 0 },
+                    customizeTooltip: function (info) {
+                        return {
+                            html: "<div><div style='font-weight:bold;margin-bottom:5px;'>" + info.argumentText + "</div>" +
+                                info.points.map(p => "<div>" + p.seriesName + ": " + p.valueText + "</div>").join("") + "</div>"
+                        };
+                    }
+                }
+            });
+        } else {
+            chart.option('dataSource', dataSource);
+        }
+    }
+
+    // ── Load KPI Cards ───────────────────────────────────────
+    function loadKpi() {
+        var month = document.getElementById('inp_month').value || '@ViewBag.CurrentMonth';
+        fetch('/ManagementSalesDashboard/LoadEnquiryCount', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ Month: month })
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            res = safeJson(res);
+            if (res && res.status && res.data) {
+                var d = res.data;
+                document.getElementById('kpi_total').textContent   = fmt(d.Total);
+                document.getElementById('kpi_online').textContent  = fmt(d.Online);
+                document.getElementById('kpi_offline').textContent = fmt(d.Offline);
+                document.getElementById('kpi_channel').textContent = fmt(d.Channel);
+                document.getElementById('kpi_others').textContent  = fmt(d.Others);
+            }
+        })
+        .catch(function () {});
+    }
+
+    // ── Load Project-wise Summary & Chart ────────────────────
+    var gridProject;
+    function loadProjectwise() {
+        var month = document.getElementById('inp_month').value || '@ViewBag.CurrentMonth';
+        fetch('/ManagementSalesDashboard/LoadProjectwiseBookedSummary', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ Month: month })
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            res = safeJson(res);
+            var rows = (res && res.status && res.data) ? res.data : [];
+            
+            // Grid
+            if (!gridProject) {
+                gridProject = makeDxGrid('grid_projectwise', [
+                    { dataField: 'ProjectName',  caption: 'Project',  width: 140 },
+                    { dataField: 'Target',        caption: 'Target',   dataType: 'number', width: 90 },
+                    { dataField: 'Achieved',      caption: 'Achieved', dataType: 'number', width: 90 },
+                    { dataField: 'Pending',       caption: 'Pending',  dataType: 'number', width: 90 },
+                    { dataField: 'Achievement',   caption: 'Achv %',   width: 90, customizeText: function(e){ return e.value != null ? e.value + '%' : '--'; } }
+                ], rows);
+            } else {
+                gridProject.option('dataSource', rows);
+            }
+
+            // Chart
+            updateDxChart('chart_projectwise', rows, 'ProjectName', [
+                { field: 'Target', name: 'Target', color: '#4680FF' },
+                { field: 'Achieved', name: 'Achieved', color: '#10b981' }
+            ]);
+        })
+        .catch(function () {});
+    }
+
+    // ── Load Executive-wise Summary ──────────────────────────
+    var gridExec;
+    function loadExecutivewise() {
+        var month = document.getElementById('inp_month').value || '@ViewBag.CurrentMonth';
+        fetch('/ManagementSalesDashboard/ExecutiveWiseBookingSummary', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ Month: month })
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            res = safeJson(res);
+            var rows = (res && res.status && res.data) ? res.data : [];
+            if (!gridExec) {
+                gridExec = makeDxGrid('grid_executivewise', [
+                    { dataField: 'ExecutiveName', caption: 'Executive', width: 140 },
+                    { dataField: 'TeamName',      caption: 'Team',      width: 110 },
+                    { dataField: 'Target',        caption: 'Target',    dataType: 'number', width: 80 },
+                    { dataField: 'Achieved',      caption: 'Achieved',  dataType: 'number', width: 80 },
+                    { dataField: 'Achievement',   caption: 'Achv %',    width: 80, customizeText: function(e){ return e.value != null ? e.value + '%' : '--'; } }
+                ], rows);
+            } else {
+                gridExec.option('dataSource', rows);
+            }
+        })
+        .catch(function () {});
+    }
+
+    // ── Load Team-wise Abstract & Chart ──────────────────────
+    var gridTeam;
+    function loadTeamwise() {
+        var month = document.getElementById('inp_month').value || '@ViewBag.CurrentMonth';
+        fetch('/ManagementSalesDashboard/TeamWiseAbstract', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ Month: month })
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            res = safeJson(res);
+            var rows = (res && res.status && res.data) ? res.data : [];
+            
+            // Grid
+            if (!gridTeam) {
+                gridTeam = makeDxGrid('grid_teamwise', [
+                    { dataField: 'TeamName',  caption: 'Team',     width: 140 },
+                    { dataField: 'Target',    caption: 'Target',   dataType: 'number', width: 90 },
+                    { dataField: 'Achieved',  caption: 'Achieved', dataType: 'number', width: 90 },
+                    { dataField: 'Pending',   caption: 'Pending',  dataType: 'number', width: 90 },
+                    { dataField: 'Achievement', caption: 'Achv %', width: 90, customizeText: function(e){ return e.value != null ? e.value + '%' : '--'; } }
+                ], rows);
+            } else {
+                gridTeam.option('dataSource', rows);
+            }
+
+            // Chart
+            updateDxChart('chart_teamwise', rows, 'TeamName', [
+                { field: 'Target', name: 'Target', color: '#ec4899' },
+                { field: 'Achieved', name: 'Achieved', color: '#8b5cf6' }
+            ]);
+        })
+        .catch(function () {});
+    }
+
+    // ── Load Site Visit (Expected Prospect) ──────────────────
+    var gridSV;
+    var currentSVView = 'EXECUTIVEWISE';
+    function loadSiteVisit() {
+        var from = document.getElementById('inp_sv_from').value;
+        var to   = document.getElementById('inp_sv_to').value;
+        fetch('/ManagementSalesDashboard/LoadExpectedProspect', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ FromDate: from, ToDate: to, ViewType: currentSVView })
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            res = safeJson(res);
+            var rows = (res && res.status && res.data) ? res.data : [];
+            if (!gridSV) {
+                gridSV = makeDxGrid('grid_sitevisit', [], rows);
+            } else {
+                gridSV.option('dataSource', rows);
+            }
+        })
+        .catch(function () {});
+    }
+
+    // ── Load Booked Data ─────────────────────────────────────
+    var gridBooked;
+    function loadBooked() {
+        var from = document.getElementById('inp_bk_from').value;
+        var to   = document.getElementById('inp_bk_to').value;
+        fetch('/ManagementSalesDashboard/LoadBookedData', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ FromDate: from, ToDate: to })
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            res = safeJson(res);
+            var rows = (res && res.status && res.data) ? res.data : [];
+            if (!gridBooked) {
+                gridBooked = makeDxGrid('grid_booked', [], rows);
+            } else {
+                gridBooked.option('dataSource', rows);
+            }
+        })
+        .catch(function () {});
+    }
+
+    // ── Load Stock ───────────────────────────────────────────
+    var gridStock;
+    function loadStock() {
+        fetch('/ManagementSalesDashboard/LoadStockData', { method: 'POST' })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            res = safeJson(res);
+            var rows = (res && res.status && res.data) ? res.data : [];
+            if (!gridStock) {
+                gridStock = makeDxGrid('grid_stock', [], rows);
+            } else {
+                gridStock.option('dataSource', rows);
+            }
+        })
+        .catch(function () {});
+    }
+
+    // ── Init defaults ────────────────────────────────────────
+    var today = new Date();
+    var y = today.getFullYear(), m = today.getMonth();
+    var firstDay = new Date(y, m, 1).toISOString().slice(0, 10);
+    var lastDay  = new Date(y, m + 1, 0).toISOString().slice(0, 10);
+
+    document.getElementById('inp_sv_from').value = firstDay;
+    document.getElementById('inp_sv_to').value   = lastDay;
+    document.getElementById('inp_bk_from').value = firstDay;
+    document.getElementById('inp_bk_to').value   = lastDay;
+
+    // ── Event bindings ───────────────────────────────────────
+    document.getElementById('btn_refresh').addEventListener('click', function () {
+        loadKpi();
+        loadProjectwise();
+        loadExecutivewise();
+        loadTeamwise();
+    });
+
+    document.getElementById('btn_sv_load').addEventListener('click', loadSiteVisit);
+    document.getElementById('btn_bk_load').addEventListener('click', loadBooked);
+
+    document.querySelectorAll('#sv_tabs .mgmt-tab').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('#sv_tabs .mgmt-tab').forEach(function (b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            currentSVView = btn.dataset.view;
+            loadSiteVisit();
+        });
+    });
+
+    // ── Initial Load ─────────────────────────────────────────
+    loadKpi();
+    loadProjectwise();
+    loadExecutivewise();
+    loadTeamwise();
+    loadSiteVisit();
+    loadBooked();
+    loadStock();
+
+})();
+</script>
+}

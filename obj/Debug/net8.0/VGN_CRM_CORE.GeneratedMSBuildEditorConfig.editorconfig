@@ -1,0 +1,113 @@
+is_global = true
+build_property.TargetFramework = net8.0
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = VGN_CRM_CORE
+build_property.RootNamespace = VGN_CRM_CORE
+build_property.ProjectDir = C:\Users\VGN\Desktop\New folder\VGN_CRM_CORE\VGN_CRM_CORE\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 8.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\VGN\Desktop\New folder\VGN_CRM_CORE\VGN_CRM_CORE
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 8.0
+build_property.EnableCodeStyleSeverity = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/Account/Login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/BiometricMaster/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQmlvbWV0cmljTWFzdGVyXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/Circular/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2lyY3VsYXJcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/GeneralDashboard/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcR2VuZXJhbERhc2hib2FyZFxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/GeneralDashboard/Index_Old.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcR2VuZXJhbERhc2hib2FyZFxJbmRleF9PbGQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/Home/About.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxBYm91dC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/Home/Contact.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxDb250YWN0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/Home/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/Home/Privacy.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/HRDashboardNew/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSFJEYXNoYm9hcmROZXdcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/ManagementSalesDashboard/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFuYWdlbWVudFNhbGVzRGFzaGJvYXJkXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/MarketingDashboard_New/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWFya2V0aW5nRGFzaGJvYXJkX05ld1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/Shared/Error.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/Shared/_CookieConsentPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9Db29raWVDb25zZW50UGFydGlhbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/Shared/_footer.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9mb290ZXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/Shared/_ValidationScriptsPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/SourceAnalysis/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU291cmNlQW5hbHlzaXNcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/StockDetails/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3RvY2tEZXRhaWxzXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/VGN/Desktop/New folder/VGN_CRM_CORE/VGN_CRM_CORE/Views/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
