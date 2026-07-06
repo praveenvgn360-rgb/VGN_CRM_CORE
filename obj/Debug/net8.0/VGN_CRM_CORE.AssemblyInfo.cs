@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("VGN_CRM_CORE")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8748d564aba630c8d7ccc34f0f0f5a2fcfd4c8c9")]
 [assembly: System.Reflection.AssemblyProductAttribute("VGN_CRM_CORE")]
 [assembly: System.Reflection.AssemblyTitleAttribute("VGN_CRM_CORE")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
