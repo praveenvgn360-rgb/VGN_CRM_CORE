@@ -278,7 +278,7 @@
     <div class="mgmt-monthpicker">
         <label><i class="bi bi-calendar3 me-1"></i>Month</label>
         <input type="month" id="inp_month" value="@ViewBag.CurrentMonth" />
-        <button class="mgmt-btn" id="btn_refresh"><i class="bi bi-arrow-clockwise"></i>Refresh Data</button>
+        <button class="btn-load" id="btn_refresh"><i class="bi bi-arrow-clockwise"></i> Refresh Data</button>
     </div>
 </div>
 
@@ -389,7 +389,7 @@
                 <input type="date" id="inp_sv_from" class="mgmt-monthpicker input" style="border:1px solid var(--border);border-radius:8px;padding:.3rem .65rem;background:var(--surface);color:var(--text);font-size:.8rem;" />
                 <label style="font-size:.75rem;color:var(--text-muted)">To</label>
                 <input type="date" id="inp_sv_to" class="mgmt-monthpicker input" style="border:1px solid var(--border);border-radius:8px;padding:.3rem .65rem;background:var(--surface);color:var(--text);font-size:.8rem;" />
-                <button class="mgmt-btn" id="btn_sv_load"><i class="bi bi-search"></i>Load</button>
+                <button class="btn-load" id="btn_sv_load"><i class="bi bi-search"></i> Load</button>
             </div>
         </div>
         <div class="mgmt-tabs" id="sv_tabs">
@@ -411,7 +411,7 @@
             <div class="flex items-center gap-2 flex-wrap">
                 <input type="date" id="inp_bk_from" style="border:1px solid var(--border);border-radius:8px;padding:.3rem .65rem;background:var(--surface);color:var(--text);font-size:.78rem;" />
                 <input type="date" id="inp_bk_to"   style="border:1px solid var(--border);border-radius:8px;padding:.3rem .65rem;background:var(--surface);color:var(--text);font-size:.78rem;" />
-                <button class="mgmt-btn" id="btn_bk_load"><i class="bi bi-search"></i>Load Data</button>
+                <button class="btn-load" id="btn_bk_load"><i class="bi bi-search"></i> Load Data</button>
             </div>
         </div>
         <div id="grid_booked" style="min-height:350px;"></div>

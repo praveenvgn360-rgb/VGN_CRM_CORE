@@ -126,6 +126,42 @@
             /* LIGHT theme colors */
             --bg: #f4f6fb;
             --surface: #ffffff;
+            /* ── Action Button Semantic Color Variables (LIGHT) ── */
+            /* LOAD  → Blue */
+            --btn-load-bg:         #2563eb;
+            --btn-load-bg-hover:   #1d4ed8;
+            --btn-load-color:      #ffffff;
+            --btn-load-border:     #1d4ed8;
+            /* SAVE  → Green */
+            --btn-save-bg:         #16a34a;
+            --btn-save-bg-hover:   #15803d;
+            --btn-save-color:      #ffffff;
+            --btn-save-border:     #15803d;
+            /* CANCEL → Grey */
+            --btn-cancel-bg:       #6b7280;
+            --btn-cancel-bg-hover: #4b5563;
+            --btn-cancel-color:    #ffffff;
+            --btn-cancel-border:   #4b5563;
+            /* CLEAR  → Grey (lighter shade) */
+            --btn-clear-bg:        #9ca3af;
+            --btn-clear-bg-hover:  #6b7280;
+            --btn-clear-color:     #ffffff;
+            --btn-clear-border:    #6b7280;
+            /* DELETE → Red */
+            --btn-delete-bg:       #dc2626;
+            --btn-delete-bg-hover: #b91c1c;
+            --btn-delete-color:    #ffffff;
+            --btn-delete-border:   #b91c1c;
+            /* UPDATE → Green (slightly different shade) */
+            --btn-update-bg:       #059669;
+            --btn-update-bg-hover: #047857;
+            --btn-update-color:    #ffffff;
+            --btn-update-border:   #047857;
+            /* EDIT   → Soft Orange (not dark) */
+            --btn-edit-bg:         #f97316;
+            --btn-edit-bg-hover:   #ea580c;
+            --btn-edit-color:      #ffffff;
+            --btn-edit-border:     #ea580c;
             /* Sidebar light theme colors by default */
             --sidebar-bg: #ffffff;
             --sidebar-text: #4b5563; /* text-gray-600 */
@@ -154,6 +190,42 @@
         [data-theme="dark"] {
             --bg: #0f1117;
             --surface: #1a1d27;
+            /* ── Action Button Semantic Color Variables (DARK overrides) ── */
+            /* LOAD  → slightly brighter blue in dark */
+            --btn-load-bg:         #3b82f6;
+            --btn-load-bg-hover:   #2563eb;
+            --btn-load-color:      #ffffff;
+            --btn-load-border:     #2563eb;
+            /* SAVE  → slightly brighter green in dark */
+            --btn-save-bg:         #22c55e;
+            --btn-save-bg-hover:   #16a34a;
+            --btn-save-color:      #ffffff;
+            --btn-save-border:     #16a34a;
+            /* CANCEL → lighter grey in dark */
+            --btn-cancel-bg:       #6b7280;
+            --btn-cancel-bg-hover: #4b5563;
+            --btn-cancel-color:    #f9fafb;
+            --btn-cancel-border:   #9ca3af;
+            /* CLEAR  → medium grey in dark */
+            --btn-clear-bg:        #6b7280;
+            --btn-clear-bg-hover:  #4b5563;
+            --btn-clear-color:     #f9fafb;
+            --btn-clear-border:    #9ca3af;
+            /* DELETE → slightly brighter red in dark */
+            --btn-delete-bg:       #ef4444;
+            --btn-delete-bg-hover: #dc2626;
+            --btn-delete-color:    #ffffff;
+            --btn-delete-border:   #dc2626;
+            /* UPDATE → teal-green in dark */
+            --btn-update-bg:       #10b981;
+            --btn-update-bg-hover: #059669;
+            --btn-update-color:    #ffffff;
+            --btn-update-border:   #059669;
+            /* EDIT   → soft orange in dark */
+            --btn-edit-bg:         #fb923c;
+            --btn-edit-bg-hover:   #f97316;
+            --btn-edit-color:      #ffffff;
+            --btn-edit-border:     #f97316;
             --sidebar-bg: #111320;
             --sidebar-text: rgba(255,255,255,.75);
             --sidebar-active: rgba(255,255,255,.05);
@@ -175,6 +247,126 @@
             --border: #3f465c;
             --card-shadow: 0 2px 12px rgba(0,0,0,.25);
             --icon-filter: brightness(0) invert(1);
+        }
+
+        /* ══════════════════════════════════════════════════════════
+           GLOBAL ACTION BUTTON CLASSES  — applied dynamically from CSS variables
+           Usage: class="btn-load", "btn-save", "btn-cancel", "btn-clear",
+                         "btn-delete", "btn-update", "btn-edit"
+           ══════════════════════════════════════════════════════════ */
+        .btn-load,
+        .btn-save,
+        .btn-cancel,
+        .btn-clear,
+        .btn-delete,
+        .btn-update,
+        .btn-edit {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 6px 16px;
+            border-radius: 8px;
+            border-width: 1px;
+            border-style: solid;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color 0.2s ease, border-color 0.2s ease,
+                        transform 0.15s ease, box-shadow 0.2s ease;
+            text-decoration: none;
+            line-height: 1.4;
+        }
+        .btn-load:hover,
+        .btn-save:hover,
+        .btn-cancel:hover,
+        .btn-clear:hover,
+        .btn-delete:hover,
+        .btn-update:hover,
+        .btn-edit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+        }
+        .btn-load:active,
+        .btn-save:active,
+        .btn-cancel:active,
+        .btn-clear:active,
+        .btn-delete:active,
+        .btn-update:active,
+        .btn-edit:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+        /* Per-button colors pulled from CSS variables */
+        .btn-load {
+            background-color: var(--btn-load-bg);
+            color:            var(--btn-load-color);
+            border-color:     var(--btn-load-border);
+        }
+        .btn-load:hover {
+            background-color: var(--btn-load-bg-hover);
+            border-color:     var(--btn-load-bg-hover);
+            color:            var(--btn-load-color);
+        }
+        .btn-save {
+            background-color: var(--btn-save-bg);
+            color:            var(--btn-save-color);
+            border-color:     var(--btn-save-border);
+        }
+        .btn-save:hover {
+            background-color: var(--btn-save-bg-hover);
+            border-color:     var(--btn-save-bg-hover);
+            color:            var(--btn-save-color);
+        }
+        .btn-cancel {
+            background-color: var(--btn-cancel-bg);
+            color:            var(--btn-cancel-color);
+            border-color:     var(--btn-cancel-border);
+        }
+        .btn-cancel:hover {
+            background-color: var(--btn-cancel-bg-hover);
+            border-color:     var(--btn-cancel-bg-hover);
+            color:            var(--btn-cancel-color);
+        }
+        .btn-clear {
+            background-color: var(--btn-clear-bg);
+            color:            var(--btn-clear-color);
+            border-color:     var(--btn-clear-border);
+        }
+        .btn-clear:hover {
+            background-color: var(--btn-clear-bg-hover);
+            border-color:     var(--btn-clear-bg-hover);
+            color:            var(--btn-clear-color);
+        }
+        .btn-delete {
+            background-color: var(--btn-delete-bg);
+            color:            var(--btn-delete-color);
+            border-color:     var(--btn-delete-border);
+        }
+        .btn-delete:hover {
+            background-color: var(--btn-delete-bg-hover);
+            border-color:     var(--btn-delete-bg-hover);
+            color:            var(--btn-delete-color);
+        }
+        .btn-update {
+            background-color: var(--btn-update-bg);
+            color:            var(--btn-update-color);
+            border-color:     var(--btn-update-border);
+        }
+        .btn-update:hover {
+            background-color: var(--btn-update-bg-hover);
+            border-color:     var(--btn-update-bg-hover);
+            color:            var(--btn-update-color);
+        }
+        .btn-edit {
+            background-color: var(--btn-edit-bg);
+            color:            var(--btn-edit-color);
+            border-color:     var(--btn-edit-border);
+        }
+        .btn-edit:hover {
+            background-color: var(--btn-edit-bg-hover);
+            border-color:     var(--btn-edit-bg-hover);
+            color:            var(--btn-edit-color);
         }
 
         /* ── SIDEBAR VISIBILITY FIXES ────────────────────── */
@@ -2406,6 +2598,80 @@
         [data-sidebar="mini"][data-sidebar-view="list"] .sidebar-nav::-webkit-scrollbar-thumb {
             background: var(--primary) !important;
             border-radius: 4px;
+        }
+
+        /* ── GLOBAL ACTION BUTTONS (semantic colours — do NOT use --primary here) ── */
+        /* All colours come from CSS variables set in :root and [data-theme="dark"]  */
+        /* Load=Blue  Save=Green  Cancel=Grey  Clear=Grey  Delete=Red  Update=Green  Edit=SoftOrange */
+        .btn-load {
+            background-color: var(--btn-load-bg) !important;
+            color:            var(--btn-load-color) !important;
+            border-color:     var(--btn-load-border) !important;
+        }
+        .btn-load:hover {
+            background-color: var(--btn-load-bg-hover) !important;
+            border-color:     var(--btn-load-bg-hover) !important;
+            color:            var(--btn-load-color) !important;
+        }
+        .btn-save {
+            background-color: var(--btn-save-bg) !important;
+            color:            var(--btn-save-color) !important;
+            border-color:     var(--btn-save-border) !important;
+        }
+        .btn-save:hover {
+            background-color: var(--btn-save-bg-hover) !important;
+            border-color:     var(--btn-save-bg-hover) !important;
+            color:            var(--btn-save-color) !important;
+        }
+        .btn-cancel {
+            background-color: var(--btn-cancel-bg) !important;
+            color:            var(--btn-cancel-color) !important;
+            border-color:     var(--btn-cancel-border) !important;
+        }
+        .btn-cancel:hover {
+            background-color: var(--btn-cancel-bg-hover) !important;
+            border-color:     var(--btn-cancel-bg-hover) !important;
+            color:            var(--btn-cancel-color) !important;
+        }
+        .btn-clear {
+            background-color: var(--btn-clear-bg) !important;
+            color:            var(--btn-clear-color) !important;
+            border-color:     var(--btn-clear-border) !important;
+        }
+        .btn-clear:hover {
+            background-color: var(--btn-clear-bg-hover) !important;
+            border-color:     var(--btn-clear-bg-hover) !important;
+            color:            var(--btn-clear-color) !important;
+        }
+        .btn-delete {
+            background-color: var(--btn-delete-bg) !important;
+            color:            var(--btn-delete-color) !important;
+            border-color:     var(--btn-delete-border) !important;
+        }
+        .btn-delete:hover {
+            background-color: var(--btn-delete-bg-hover) !important;
+            border-color:     var(--btn-delete-bg-hover) !important;
+            color:            var(--btn-delete-color) !important;
+        }
+        .btn-update {
+            background-color: var(--btn-update-bg) !important;
+            color:            var(--btn-update-color) !important;
+            border-color:     var(--btn-update-border) !important;
+        }
+        .btn-update:hover {
+            background-color: var(--btn-update-bg-hover) !important;
+            border-color:     var(--btn-update-bg-hover) !important;
+            color:            var(--btn-update-color) !important;
+        }
+        .btn-edit {
+            background-color: var(--btn-edit-bg) !important;
+            color:            var(--btn-edit-color) !important;
+            border-color:     var(--btn-edit-border) !important;
+        }
+        .btn-edit:hover {
+            background-color: var(--btn-edit-bg-hover) !important;
+            border-color:     var(--btn-edit-bg-hover) !important;
+            color:            var(--btn-edit-color) !important;
         }
     </style>
     @RenderSection("styles", required: false)
