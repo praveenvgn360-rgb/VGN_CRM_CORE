@@ -200,7 +200,7 @@
         <div class="text-sm font-semibold" style="color:var(--text-muted)">
             <i class="bi bi-calendar3 me-1"></i> <span id="currentDate"></span>
         </div>
-        <button id="refreshBtn" class="inline-flex items-center justify-center gap-2 bg-[var(--primary)] text-white rounded-lg px-4 py-2 text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm">
+        <button id="refreshBtn" class="btn-load">
             <i class="bi bi-arrow-clockwise"></i> Refresh
         </button>
     </div>
@@ -309,10 +309,10 @@
                 <input type="month" id="Attendance_Month_date" name="DateOfMonth" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all">
             </div>
             <div class="flex items-center gap-3">
-                <button type="button" id="btn_Attendance_Load" class="inline-flex items-center justify-center gap-2 bg-[var(--primary)] text-white rounded-lg px-5 py-2 text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm">
-                    <i class="fa fa-spinner"></i> Load
+                <button type="button" id="btn_Attendance_Load" class="btn-load">
+                    <i class="fa fa-search"></i> Load
                 </button>
-                <button type="button" id="btn_clear_attendance" class="inline-flex items-center justify-center gap-2 bg-slate-500 text-white border border-slate-600 rounded-lg px-5 py-2 text-sm font-semibold hover:bg-slate-600 transition-colors shadow-sm">
+                <button type="button" id="btn_clear_attendance" class="btn-clear">
                     <i class="fa fa-eraser"></i> Clear
                 </button>
             </div>
@@ -341,10 +341,10 @@
                 <input type="month" id="payroll_Month_date" name="DateOfMonth" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all">
             </div>
             <div class="flex items-center gap-3">
-                <button type="button" id="btn_payroll_Load" class="inline-flex items-center justify-center gap-2 bg-[var(--primary)] text-white rounded-lg px-5 py-2 text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm">
-                    <i class="fa fa-spinner"></i> Load
+                <button type="button" id="btn_payroll_Load" class="btn-load">
+                    <i class="fa fa-search"></i> Load
                 </button>
-                <button type="button" id="btn_clear_payroll" class="inline-flex items-center justify-center gap-2 bg-slate-500 text-white border border-slate-600 rounded-lg px-5 py-2 text-sm font-semibold hover:bg-slate-600 transition-colors shadow-sm">
+                <button type="button" id="btn_clear_payroll" class="btn-clear">
                     <i class="fa fa-eraser"></i> Clear
                 </button>
             </div>
@@ -394,10 +394,10 @@
                 <input type="month" id="ManPowerMonth_date" name="DateOfMonth" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all">
             </div>
             <div class="flex items-center gap-3">
-                <button type="button" id="btn_load_Manpower" class="inline-flex items-center justify-center gap-2 bg-[var(--primary)] text-white rounded-lg px-5 py-2 text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm">
-                    <i class="fa fa-spinner"></i> Load
+                <button type="button" id="btn_load_Manpower" class="btn-load">
+                    <i class="fa fa-search"></i> Load
                 </button>
-                <button type="button" id="btn_clear_manpower" class="inline-flex items-center justify-center gap-2 bg-slate-500 text-white border border-slate-600 rounded-lg px-5 py-2 text-sm font-semibold hover:bg-slate-600 transition-colors shadow-sm">
+                <button type="button" id="btn_clear_manpower" class="btn-clear">
                     <i class="fa fa-eraser"></i> Clear
                 </button>
             </div>
@@ -421,10 +421,10 @@
                 <select id="dd_onDepartment" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all"></select>
             </div>
             <div class="flex items-center gap-3">
-                <button type="button" id="btn_Onrefresh" class="inline-flex items-center justify-center gap-2 bg-[var(--primary)] text-white rounded-lg px-5 py-2 text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm">
-                    <i class="fa fa-spinner"></i> Load
+                <button type="button" id="btn_Onrefresh" class="btn-load">
+                    <i class="fa fa-search"></i> Load
                 </button>
-                <button type="button" id="btn_Onclear" class="inline-flex items-center justify-center gap-2 bg-slate-500 text-white border border-slate-600 rounded-lg px-5 py-2 text-sm font-semibold hover:bg-slate-600 transition-colors shadow-sm">
+                <button type="button" id="btn_Onclear" class="btn-clear">
                     <i class="fa fa-eraser"></i> Clear
                 </button>
             </div>
@@ -448,10 +448,10 @@
                 <select id="dd_offDepartment" class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-all"></select>
             </div>
             <div class="flex items-center gap-3">
-                <button type="button" id="btn_Offrefresh" class="inline-flex items-center justify-center gap-2 bg-[var(--primary)] text-white rounded-lg px-5 py-2 text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm">
-                    <i class="fa fa-spinner"></i> Load
+                <button type="button" id="btn_Offrefresh" class="btn-load">
+                    <i class="fa fa-search"></i> Load
                 </button>
-                <button type="button" id="btn_Offclear" class="inline-flex items-center justify-center gap-2 bg-slate-500 text-white border border-slate-600 rounded-lg px-5 py-2 text-sm font-semibold hover:bg-slate-600 transition-colors shadow-sm">
+                <button type="button" id="btn_Offclear" class="btn-clear">
                     <i class="fa fa-eraser"></i> Clear
                 </button>
             </div>
