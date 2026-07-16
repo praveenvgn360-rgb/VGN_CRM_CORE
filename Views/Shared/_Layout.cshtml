@@ -4495,8 +4495,60 @@
             });
         }
 
+        function pollChatStatus() {
+            if (!chatCurrentUserId) return;
+            $.ajax({
+                url: '/api/Chat/onlineUsers',
+                type: 'GET',
+                cache: false,
+                success: function(data) {
+                    let listHasChanged = false;
+                    data.forEach(u => {
+                        let item = document.getElementById('chat-user-' + u.userId);
+                        if (item) {
+                            // Update badge for background users
+                            let badge = item.querySelector('.chat-unread-badge');
+                            if (badge && chatActiveOtherUserId !== u.userId) {
+                                badge.innerText = u.unreadCount;
+                                badge.style.display = u.unreadCount > 0 ? 'flex' : 'none';
+                            }
+                            
+                            // If chatting with this user and they sent something
+                            if (chatActiveOtherUserId === u.userId && u.unreadCount > 0) {
+                                refreshActiveChatMessages();
+                            }
+                        } else {
+                            listHasChanged = true;
+                        }
+                    });
+
+                    if (listHasChanged) {
+                        // New user came online or missing, just reload entire list
+                        loadOnlineUsers();
+                    } else {
+                        updateTotalUnread();
+                    }
+                }
+            });
+        }
+
+        function refreshActiveChatMessages() {
+            if (!chatActiveOtherUserId) return;
+            $.get('/api/Chat/messages/' + chatActiveOtherUserId, function(messages) {
+                document.getElementById('chatMessagesContainer').innerHTML = '';
+                messages.forEach(m => {
+                    let isMe = m.senderId === chatCurrentUserId;
+                    appendMessage(m.senderId, m.message, new Date(m.sentAt), isMe);
+                });
+                scrollToBottom();
+            });
+        }
+
         $(document).ready(function() {
             setTimeout(initSignalR, 1000);
+            
+            // Automatic fallback polling every 2 seconds
+            setInterval(pollChatStatus, 2000);
         });
     </script>
 </body>
