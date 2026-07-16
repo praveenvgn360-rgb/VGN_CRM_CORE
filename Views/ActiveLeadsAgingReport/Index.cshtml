@@ -1,0 +1,278 @@
+@{
+    ViewBag.Title = "Active Leads Aging Report - VGN ERP";
+}
+
+<style>
+    /* Tabs */
+    .tab-btn {
+        transition: all 0.3s ease;
+    }
+    .tab-btn.active {
+        border-bottom-color: var(--primary);
+        color: var(--primary);
+    }
+    .tab-btn:hover:not(.active) {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+        opacity: 0.7;
+    }
+
+    /* Content Sections */
+    .content-section {
+        display: none;
+        animation: fadeIn 0.5s ease;
+    }
+    .content-section.active {
+        display: block;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<!-- Hidden fields for session values -->
+<input type="hidden" id="HEnquiryNo" value="@Context.Request.Query["EnquiryNo"]" />
+
+<!-- Loader Overlay -->
+<div id="loader" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-none" style="display:none;">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 flex flex-col items-center space-y-4">
+        <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div class="text-gray-700 dark:text-gray-300 font-medium">Loading Data, Please wait...</div>
+    </div>
+</div>
+
+@* <!-- Page Header -->
+<div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+    <div>
+        <h1 class="text-xl font-bold" style="color:var(--text)">
+            <i class="bi bi-graph-up-arrow me-2" style="color:var(--primary)"></i>Active Leads Aging Report
+        </h1>
+        <p class="text-sm mt-1" style="color:var(--text-muted)">Lead Tracking & Management Analytics</p>
+    </div>
+</div> *@
+
+<!-- Side-by-Side Tabs -->
+<div class="flex border-b border-gray-200 dark:border-gray-700 mb-6 overflow-x-auto">
+    <button class="tab-btn active px-4 py-2 border-b-2 font-medium text-sm border-primary text-primary whitespace-nowrap" data-section="activeleads">
+        <i class="bi bi-person-lines-fill me-2"></i>ACTIVE LEADS
+    </button>
+    <button class="tab-btn px-4 py-2 border-b-2 border-transparent font-medium text-sm text-gray-500 whitespace-nowrap" data-section="ManualLeads">
+        <i class="bi bi-person-fill-add me-2"></i>MANUAL LEADS
+    </button>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────── -->
+<!-- ACTIVE LEADS SECTION -->
+<!-- ────────────────────────────────────────────────────────────── -->
+<div id="activeleads" class="content-section active">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+        <!-- Left: Filters Card -->
+        <div class="lg:col-span-4 flex flex-col gap-4">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 h-full">
+                <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-700">
+                    <i class="bi bi-funnel text-primary text-lg"></i>
+                    <h3 class="font-semibold text-gray-800 dark:text-gray-200 uppercase text-sm tracking-wider">Filters</h3>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">EXECUTIVE</label>
+                        <select class="select2 w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" id="dd_ExecutiveName"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">TEAM MANAGER</label>
+                        <select class="select2 w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" id="dd_Teammanager"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">TEAM HEAD</label>
+                        <select class="select2 w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" id="dd_TeamHead"></select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">CATEGORY</label>
+                        <div class="flex gap-4">
+                            <label class="relative flex items-center cursor-pointer group">
+                                <input type="radio" name="EnquiryType" value="PRIMARY" checked class="peer sr-only">
+                                <div class="w-4 h-4 rounded-full border-2 border-gray-300 peer-checked:border-primary peer-checked:bg-primary mr-2 flex items-center justify-center transition-all">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-white opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                                </div>
+                                <span class="text-sm font-medium text-gray-600 dark:text-gray-300 group-hover:text-primary transition-colors">PRIMARY</span>
+                            </label>
+                            <label class="relative flex items-center cursor-pointer group">
+                                <input type="radio" name="EnquiryType" value="SECONDARY" class="peer sr-only">
+                                <div class="w-4 h-4 rounded-full border-2 border-gray-300 peer-checked:border-primary peer-checked:bg-primary mr-2 flex items-center justify-center transition-all">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-white opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                                </div>
+                                <span class="text-sm font-medium text-gray-600 dark:text-gray-300 group-hover:text-primary transition-colors">SECONDARY</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
+                        <button type="button" class="btn-load flex-1 justify-center" id="btn_refresh">
+                            <i class="bi bi-arrow-repeat"></i> LOAD
+                        </button>
+                        <button type="button" class="btn-clear flex-1 justify-center" id="btn_clear">
+                            <i class="bi bi-eraser"></i> CLEAR
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Lead Status Stats Card -->
+        <div class="lg:col-span-8 flex flex-col gap-4">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 h-full flex flex-col">
+                <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100 dark:border-gray-700">
+                    <i class="bi bi-bar-chart-fill text-primary text-lg"></i>
+                    <h3 class="font-semibold text-gray-800 dark:text-gray-200 uppercase text-sm tracking-wider">Lead Status Overview</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 flex-1">
+                    <!-- Site Visit -->
+                    <div class="rounded-xl border border-blue-100 dark:border-blue-900/30 overflow-hidden flex flex-col bg-blue-50/30 dark:bg-blue-900/10 transition-transform hover:-translate-y-1 hover:shadow-md duration-300">
+                        <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-center py-2 text-xs font-bold tracking-wider">
+                            <i class="bi bi-geo-alt mr-1"></i> SITE VISIT
+                        </div>
+                        <div class="p-3 space-y-2 flex-1 flex flex-col justify-center">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 dark:text-gray-400 text-xs font-medium">NOT UPDATED</span>
+                                <input type="text" id="SvNotUpdated" disabled class="w-12 text-center bg-transparent border-0 font-bold text-gray-800 dark:text-gray-200 p-0 focus:ring-0" value="0"/>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 dark:text-gray-400 text-xs font-medium">IN PROGRESS</span>
+                                <input type="text" id="SvInprogress" disabled class="w-12 text-center bg-transparent border-0 font-bold text-gray-800 dark:text-gray-200 p-0 focus:ring-0" value="0"/>
+                            </div>
+                            <div class="w-full h-px bg-blue-200/50 dark:bg-blue-800/50 my-1"></div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-orange-600 dark:text-orange-400 text-xs font-bold flex items-center"><i class="bi bi-fire mr-1"></i> HOT</span>
+                                <input type="text" id="Hotleads" disabled class="w-12 text-center bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded font-bold border-0 py-0.5 focus:ring-0" value="0"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Negotiation -->
+                    <div class="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col bg-gray-50/50 dark:bg-gray-800/50 transition-transform hover:-translate-y-1 hover:shadow-md duration-300">
+                        <div class="bg-gradient-to-r from-gray-600 to-gray-700 text-white text-center py-2 text-xs font-bold tracking-wider">
+                            <i class="bi bi-chat-dots mr-1"></i> NEGOTIATION
+                        </div>
+                        <div class="p-3 space-y-2 flex-1 flex flex-col justify-center">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 dark:text-gray-400 text-xs font-medium">NOT UPDATED</span>
+                                <input type="text" id="NegoNotUpdated" disabled class="w-12 text-center bg-transparent border-0 font-bold text-gray-800 dark:text-gray-200 p-0 focus:ring-0" value="0"/>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 dark:text-gray-400 text-xs font-medium">IN PROGRESS</span>
+                                <input type="text" id="NegoInprogress" disabled class="w-12 text-center bg-transparent border-0 font-bold text-gray-800 dark:text-gray-200 p-0 focus:ring-0" value="0"/>
+                            </div>
+                            <div class="w-full h-px bg-gray-200 dark:bg-gray-700 my-1"></div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center"><i class="bi bi-thermometer-half mr-1"></i> WARM</span>
+                                <input type="text" id="WarmLeads" disabled class="w-12 text-center bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded font-bold border-0 py-0.5 focus:ring-0" value="0"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Booking Advance -->
+                    <div class="rounded-xl border border-red-100 dark:border-red-900/30 overflow-hidden flex flex-col bg-red-50/30 dark:bg-red-900/10 transition-transform hover:-translate-y-1 hover:shadow-md duration-300">
+                        <div class="bg-gradient-to-r from-red-400 to-red-500 text-white text-center py-2 text-xs font-bold tracking-wider">
+                            <i class="bi bi-cash-coin mr-1"></i> BOOKING ADV.
+                        </div>
+                        <div class="p-3 space-y-2 flex-1 flex flex-col justify-center">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 dark:text-gray-400 text-xs font-medium">NOT UPDATED</span>
+                                <input type="text" id="BookNotUpdated" disabled class="w-12 text-center bg-transparent border-0 font-bold text-gray-800 dark:text-gray-200 p-0 focus:ring-0" value="0"/>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 dark:text-gray-400 text-xs font-medium">IN PROGRESS</span>
+                                <input type="text" id="BookInprogress" disabled class="w-12 text-center bg-transparent border-0 font-bold text-gray-800 dark:text-gray-200 p-0 focus:ring-0" value="0"/>
+                            </div>
+                            <div class="w-full h-px bg-red-200/50 dark:bg-red-800/50 my-1"></div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-yellow-600 dark:text-yellow-400 text-xs font-bold flex items-center"><i class="bi bi-snow mr-1"></i> COLD</span>
+                                <input type="text" id="ColdLeads" disabled class="w-12 text-center bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded font-bold border-0 py-0.5 focus:ring-0" value="0"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Future Project -->
+                    <div class="rounded-xl border border-pink-100 dark:border-pink-900/30 overflow-hidden flex flex-col bg-pink-50/30 dark:bg-pink-900/10 transition-transform hover:-translate-y-1 hover:shadow-md duration-300">
+                        <div class="bg-gradient-to-r from-pink-400 to-pink-500 text-white text-center py-2 text-xs font-bold tracking-wider">
+                            <i class="bi bi-building mr-1"></i> FUTURE PROJ.
+                        </div>
+                        <div class="p-3 space-y-2 flex-1 flex flex-col justify-center">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 dark:text-gray-400 text-xs font-medium">NOT UPDATED</span>
+                                <input type="text" id="FutNotUpdated" disabled class="w-12 text-center bg-transparent border-0 font-bold text-gray-800 dark:text-gray-200 p-0 focus:ring-0" value="0"/>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 dark:text-gray-400 text-xs font-medium">IN PROGRESS</span>
+                                <input type="text" id="FutInprogress" disabled class="w-12 text-center bg-transparent border-0 font-bold text-gray-800 dark:text-gray-200 p-0 focus:ring-0" value="0"/>
+                            </div>
+                            <div class="w-full h-px bg-pink-200/50 dark:bg-pink-800/50 my-1"></div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-purple-600 dark:text-purple-400 text-xs font-bold flex items-center"><i class="bi bi-three-dots mr-1"></i> OTHERS</span>
+                                <input type="text" id="OtherLeads" disabled class="w-12 text-center bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded font-bold border-0 py-0.5 focus:ring-0" value="0"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid Section -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-semibold text-gray-800 dark:text-gray-200 uppercase text-sm tracking-wider flex items-center gap-2">
+                <i class="bi bi-table text-primary"></i> Data Grid
+            </h3>
+        </div>
+        <div id="gridContainer" class="w-full"></div>
+    </div>
+</div>
+
+<!-- ────────────────────────────────────────────────────────────── -->
+<!-- MANUAL LEADS SECTION -->
+<!-- ────────────────────────────────────────────────────────────── -->
+<div id="ManualLeads" class="content-section">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
+        <div class="flex justify-between items-center mb-4 flex-wrap gap-4">
+            <h3 class="font-semibold text-gray-800 dark:text-gray-200 uppercase text-sm tracking-wider flex items-center gap-2">
+                <i class="bi bi-person-lines-fill text-primary"></i> Manual Leads Data
+            </h3>
+            <div class="flex items-center gap-3">
+                <button type="button" class="btn-load" id="btn_LoadManualLeads">
+                    <i class="bi bi-arrow-repeat"></i> LOAD
+                </button>
+                <button type="button" class="btn-clear" id="btn_ManualLeadclear">
+                    <i class="bi bi-eraser"></i> CLEAR
+                </button>
+            </div>
+        </div>
+        <div id="gridContainer1" class="w-full"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Tab switching logic
+            $('.tab-btn').click(function (e) {
+                e.preventDefault();
+                const section = $(this).data('section');
+                
+                // Update tabs styling
+                $('.tab-btn').removeClass('active border-primary text-primary').addClass('border-transparent text-gray-500');
+                $(this).removeClass('border-transparent text-gray-500').addClass('active border-primary text-primary');
+
+                // Switch section display
+                $('.content-section').removeClass('active');
+                $(`#${section}`).addClass('active');
+            });
+        });
+    </script>
+    <script src="~/js/applicationjs/activeleads_agingreport.js"></script>
+}
