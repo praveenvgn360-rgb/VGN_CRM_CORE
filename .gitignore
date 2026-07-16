@@ -1,9 +1,6 @@
-"wwwroot/videos/*.mp4" 
-"wwwroot/videos/*.avi" 
-"wwwroot/videos/*.mov" 
-"wwwroot/videos/*.mp4" 
-"wwwroot/videos/*.avi" 
-"wwwroot/videos/*.mov" 
-".vs/" 
-"bin/" 
-"obj/" 
+wwwroot/videos/*.mp4
+wwwroot/videos/*.avi
+wwwroot/videos/*.mov  
+.vs/ 
+bin/
+obj/ 
