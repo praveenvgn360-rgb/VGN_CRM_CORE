@@ -10,5 +10,8 @@ namespace VGN_CRM_CORE.Models
         public string PostedBy { get; set; }
         public string PostedDate { get; set; }
         public string ExpiryDate { get; set; }
+        public string DeptId { get; set; }
+        public string PostedByEmpId { get; set; }
+        public bool IsActive { get; set; }
     }
 }

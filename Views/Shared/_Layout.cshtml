@@ -18,6 +18,21 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewBag.Title — VGN ERP</title>
+    <script>
+        (function() {
+            try {
+                var raw = localStorage.getItem('vgn_prefs');
+                if (raw) {
+                    var p = JSON.parse(raw);
+                    var html = document.documentElement;
+                    if (p.ThemeMode) html.dataset.theme = p.ThemeMode === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : p.ThemeMode;
+                    if (p.Contrast) html.dataset.contrast = p.Contrast;
+                    if (p.MenuView) html.dataset.sidebarView = p.MenuView;
+                    if (p.SidebarType) html.dataset.sidebar = p.SidebarType === 'mini' ? 'full' : p.SidebarType;
+                }
+            } catch(e) {}
+        })();
+    </script>
     <link href="~/css/tailwind.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Outfit:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -4048,8 +4063,16 @@
 
             // On clicking a menu link, hide sidebar
             sidebarEl.addEventListener('click', function(e) {
-                var link = e.target.closest('a.nav-link, .nav-link-tile');
+                var link = e.target.closest('a.nav-link, .nav-link-tile, a.srch-item');
                 if (link && link.getAttribute('href') && link.getAttribute('href') !== '#' && !link.hasAttribute('data-bs-toggle')) {
+                    
+                    if (link.classList.contains('srch-item')) {
+                        var menuSearch = document.getElementById('menuSearch');
+                        if (menuSearch) {
+                            menuSearch.value = '';
+                        }
+                    }
+
                     if (window.innerWidth >= 769) {
                         var hiddenBtn = document.querySelector('[data-sb="hidden"]');
                         if (hiddenBtn) {
@@ -4222,19 +4245,24 @@
 
         <!-- ACTIVE CHAT VIEW -->
         <div id="activeChatView" style="display: none; flex: 1; flex-direction: column; overflow: hidden; background: var(--bg);">
-            <div style="padding: .75rem 1rem; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; gap: .75rem;">
-                <button onclick="backToChatUsers()" style="background: none; border: none; color: var(--text); cursor: pointer;"><i class="bi bi-arrow-left"></i></button>
-                <div>
-                    <div style="font-weight: 600; color: var(--text); font-size: .9rem;" id="activeChatUserName">User</div>
-                    <div style="font-size: .7rem; color: var(--primary);" id="activeChatStatus">Online</div>
+            <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; gap: .75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); z-index: 10;">
+                <button onclick="backToChatUsers()" style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"><i class="bi bi-arrow-left"></i></button>
+                <div style="display:flex; align-items: center; gap: 10px; flex: 1;">
+                    <div style="width: 36px; height: 36px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;" id="activeChatUserAvatar">U</div>
+                    <div style="line-height: 1.2;">
+                        <div style="font-weight: 700; color: var(--text); font-size: .95rem;" id="activeChatUserName">User</div>
+                        <div style="font-size: .75rem; color: #10b981; font-weight: 600;" id="activeChatStatus">Online</div>
+                    </div>
                 </div>
             </div>
-            <div id="chatMessagesContainer" style="flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: .75rem;">
+            <div id="chatMessagesContainer" style="flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; background: var(--bg);">
                 <!-- messages here -->
             </div>
-            <div style="padding: 1rem; background: var(--surface); border-top: 1px solid var(--border); display: flex; gap: .5rem;">
-                <input type="text" id="chatMessageInput" class="form-control" placeholder="Type a message..." onkeypress="if(event.key === 'Enter') sendChatMessage()" />
-                <button onclick="sendChatMessage()" style="background: var(--primary); border: none; color: #fff; padding: 0 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i class="bi bi-send-fill"></i></button>
+            <div style="padding: 1.25rem; background: var(--surface); border-top: 1px solid var(--border); display: flex; gap: .75rem; align-items: center; box-shadow: 0 -4px 12px rgba(0,0,0,0.02); z-index: 10;">
+                <div style="flex: 1; position: relative;">
+                    <input type="text" id="chatMessageInput" class="form-control" placeholder="Type your message here..." onkeypress="if(event.key === 'Enter') sendChatMessage()" style="border-radius: 20px; padding: 0.75rem 1.25rem; background: var(--bg); border: 1px solid var(--border); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s; width: 100%;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(var(--primary-rgb), 0.15)'" onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='inset 0 2px 4px rgba(0,0,0,0.02)'" />
+                </div>
+                <button onclick="sendChatMessage()" style="background: var(--primary); border: none; color: #fff; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3); transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px) scale(1.05)'" onmouseout="this.style.transform='translateY(0) scale(1)'" onmousedown="this.style.transform='scale(0.95)'"><i class="bi bi-send-fill" style="margin-left: -2px; margin-top: 2px;"></i></button>
             </div>
         </div>
     </div>
@@ -4270,12 +4298,20 @@
 
             chatConnection.on("UserOnline", function (userId) {
                 if (userId === chatCurrentUserId) return;
-                // update users list UI
-                updateUserStatus(userId, true);
+                // If user doesn't exist in DOM, reload list
+                if (!document.getElementById('chat-user-' + userId)) {
+                    loadOnlineUsers();
+                } else {
+                    updateUserStatus(userId, true);
+                }
             });
 
             chatConnection.on("UserOffline", function (userId) {
                 updateUserStatus(userId, false);
+            });
+
+            chatConnection.on("NewCircular", function () {
+                if (typeof buildCircularBar === 'function') buildCircularBar();
             });
 
             chatConnection.on("ReceiveMessage", function (senderId, message, sentAt) {
@@ -4293,6 +4329,7 @@
             chatConnection.start().then(function () {
                 document.getElementById('chatStatusText').innerText = 'Connected';
                 document.getElementById('chatStatusText').style.color = '#10b981';
+                loadOnlineUsers(); // Load users immediately so topbar badge updates
             }).catch(function (err) {
                 document.getElementById('chatStatusText').innerText = 'Disconnected';
                 document.getElementById('chatStatusText').style.color = '#ef4444';
@@ -4322,8 +4359,10 @@
                     badge.innerText = count;
                     badge.style.display = 'flex';
                 }
+                updateTotalUnread();
+            } else {
+                loadOnlineUsers();
             }
-            updateTotalUnread();
         }
 
         function updateTotalUnread() {
@@ -4339,34 +4378,43 @@
         }
 
         function loadOnlineUsers() {
-            $.get('/api/Chat/onlineUsers', function(data) {
-                onlineUsers = data;
-                let html = '';
-                data.forEach(u => {
-                    let initials = u.userName.substring(0, 2).toUpperCase();
-                    let unreadDisplay = u.unreadCount > 0 ? 'flex' : 'none';
-                    html += `
-                        <div id="chat-user-${u.userId}" onclick="openChatWith('${u.userId}', '${u.userName.replace(/'/g, "\\'")}')" class="notif-item" style="border-left: none; align-items: center;">
-                            <div style="position:relative;">
-                                <div class="user-avatar" style="width: 40px; height: 40px; min-width: 40px;">${initials}</div>
-                                <div class="status-dot" style="position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; background: #10b981; border: 2px solid var(--surface); border-radius: 50%;"></div>
+            $.ajax({
+                url: '/api/Chat/onlineUsers',
+                type: 'GET',
+                cache: false,
+                success: function(data) {
+                    onlineUsers = data;
+                    let html = '';
+                    data.forEach(u => {
+                        let initials = u.userName.substring(0, 2).toUpperCase();
+                        let unreadDisplay = u.unreadCount > 0 ? 'flex' : 'none';
+                        html += `
+                            <div id="chat-user-${u.userId}" onclick="openChatWith('${u.userId}', '${u.userName.replace(/'/g, "\\'")}')" class="notif-item" style="border-left: none; align-items: center;">
+                                <div style="position:relative;">
+                                    <div class="user-avatar" style="width: 40px; height: 40px; min-width: 40px;">${initials}</div>
+                                    <div class="status-dot" style="position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; background: #10b981; border: 2px solid var(--surface); border-radius: 50%;"></div>
+                                </div>
+                                <div style="flex:1;">
+                                    <div style="font-size:.85rem; font-weight:600; color:var(--text);">${u.userName}</div>
+                                    <div style="font-size:.72rem; color:var(--text-muted);">${u.userId}</div>
+                                </div>
+                                <div class="chat-unread-badge" style="background: var(--primary); color: #fff; font-size: .65rem; font-weight: 700; width: 20px; height: 20px; border-radius: 50%; display: ${unreadDisplay}; align-items: center; justify-content: center;">${u.unreadCount}</div>
                             </div>
-                            <div style="flex:1;">
-                                <div style="font-size:.85rem; font-weight:600; color:var(--text);">${u.userName}</div>
-                                <div style="font-size:.72rem; color:var(--text-muted);">${u.userId}</div>
-                            </div>
-                            <div class="chat-unread-badge" style="background: var(--primary); color: #fff; font-size: .65rem; font-weight: 700; width: 20px; height: 20px; border-radius: 50%; display: ${unreadDisplay}; align-items: center; justify-content: center;">${u.unreadCount}</div>
-                        </div>
-                    `;
-                });
-                document.getElementById('chatUsersListView').innerHTML = html || '<div class="np-empty"><i class="bi bi-people"></i><br/>No users online</div>';
-                updateTotalUnread();
+                        `;
+                    });
+                    document.getElementById('chatUsersListView').innerHTML = html || '<div class="np-empty"><i class="bi bi-people"></i><br/>No users online</div>';
+                    updateTotalUnread();
+                }
             });
         }
 
         function openChatWith(userId, userName) {
             chatActiveOtherUserId = userId;
             document.getElementById('activeChatUserName').innerText = userName;
+            
+            let avatar = document.getElementById('activeChatUserAvatar');
+            if (avatar) avatar.innerText = userName.substring(0, 2).toUpperCase();
+
             document.getElementById('chatUsersListView').style.display = 'none';
             document.getElementById('activeChatView').style.display = 'flex';
             
