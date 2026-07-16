@@ -1,4 +1,4 @@
-﻿$(document).ready(function () {
+$(document).ready(function () {
     localStorage.clear();
     dataGridFunction(0);
     Executive_load();
@@ -21,11 +21,11 @@ function Executive_load() {
     $.ajax({
         async: true,
         type: 'GET',
-        url: '/EnquiryBookingAbstract/LoadExecutives',
+        url: '/ActiveLeadsAgingReport/LoadExecutives',
         contentType: 'application/json; charset=UTF-8',
         data: JSON.stringify(),
-        success: function (data) {
-            var data = JSON.parse(data);
+        success: function (res) {
+            var data = typeof res === 'string' ? JSON.parse(res) : res;
             $('#dd_ExecutiveName').empty();
             if (data.msg == 'Success') {
                 if (!jQuery.isEmptyObject(data.data)) {
@@ -45,11 +45,11 @@ function TeamManager_load() {
     $.ajax({
         async: true,
         type: 'GET',
-        url: '/EnquiryBookingAbstract/LoadTeamManager',
+        url: '/ActiveLeadsAgingReport/LoadTeamManager',
         contentType: 'application/json; charset=UTF-8',
         data: JSON.stringify(),
-        success: function (data) {
-            var data = JSON.parse(data);
+        success: function (res) {
+            var data = typeof res === 'string' ? JSON.parse(res) : res;
             $('#dd_Teammanager').empty();
             if (data.msg == 'Success') {
                 if (!jQuery.isEmptyObject(data.data)) {
@@ -70,11 +70,11 @@ function TeamHead_load() {
     $.ajax({
         async: true,
         type: 'GET',
-        url: '/EnquiryBookingAbstract/LoadTeamHead',
+        url: '/ActiveLeadsAgingReport/LoadTeamHead',
         contentType: 'application/json; charset=UTF-8',
         data: JSON.stringify(),
-        success: function (data) {
-            var data = JSON.parse(data);
+        success: function (res) {
+            var data = typeof res === 'string' ? JSON.parse(res) : res;
             if (data.msg == 'Success') {
                 if (!jQuery.isEmptyObject(data.data)) {
                     var data1 = data.data.Table;
@@ -210,8 +210,8 @@ $('#btn_refresh').click(function () {
         url: '/ActiveLeadsAgingReport/LoadEnquiries',
         contentType: 'application/json; charset=UTF-8',
         data: JSON.stringify(objVal),
-        success: function (data) {
-            var data = JSON.parse(data);
+        success: function (res) {
+            var data = typeof res === 'string' ? JSON.parse(res) : res;
             if (data.msg == 'Success') {
                 var orders = data.data.Table;
                 $('#grid_count').html(orders.length);
@@ -321,8 +321,8 @@ $('#btn_LoadManualLeads').click(function () {
         url: '/ActiveLeadsAgingReport/LoadManualLeads',
         contentType: 'application/json; charset=UTF-8',
         data: JSON.stringify(objVal),
-        success: function (data) {
-            var data = JSON.parse(data);
+        success: function (res) {
+            var data = typeof res === 'string' ? JSON.parse(res) : res;
             if (data.msg == 'Success') {
                 var orders = data.data.Table;
                 $('#summary_grid_count').html(orders.length);

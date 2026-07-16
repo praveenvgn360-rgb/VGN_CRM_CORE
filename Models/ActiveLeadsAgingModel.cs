@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
-using System.Web;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using System.Data.SqlClient;
-using Newtonsoft.Json.Linq;
-using System.Runtime.Serialization;
+using System.Web;
 
 namespace VGN_CRM_CORE.Models
 {
@@ -18,5 +19,10 @@ namespace VGN_CRM_CORE.Models
         public string TeamManagerId { get; set; }
         public string TeamHeadId { get; set; }
         public System.Data.DataSet dsP = new System.Data.DataSet();
+
+        public DataSet dsTeam = new DataSet();
+        public DataSet dsEXE = new DataSet();
+        public DataSet dsAssistantManager = new DataSet();
+
     }
 }
