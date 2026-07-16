@@ -76,10 +76,7 @@ namespace VGN_CRM_CORE.Controllers
             ChatDAL.SaveMessage(Conn, msg);
 
             // Broadcast via Hub to receiver if online
-            if (ChatHub.ActiveUsers.TryGetValue(msg.ReceiverId, out string receiverConnectionId))
-            {
-                await _hubContext.Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", msg.SenderId, msg.Message, msg.SentAt.ToString("o"));
-            }
+            await _hubContext.Clients.Group(msg.ReceiverId.ToUpper()).SendAsync("ReceiveMessage", msg.SenderId, msg.Message, msg.SentAt.ToString("o"));
 
             return Ok(msg);
         }

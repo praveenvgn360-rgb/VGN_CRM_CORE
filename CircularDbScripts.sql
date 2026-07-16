@@ -14,12 +14,29 @@ BEGIN
 END
 ELSE
 BEGIN
-    IF NOT EXISTS (
-        SELECT * FROM sys.columns 
-        WHERE object_id = OBJECT_ID('Tbl_Circulars') AND name = 'ExpiryDate'
-    )
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Tbl_Circulars') AND name = 'ExpiryDate')
     BEGIN
         ALTER TABLE Tbl_Circulars ADD ExpiryDate DATETIME NULL;
+    END
+
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Tbl_Circulars') AND name = 'DeptId')
+    BEGIN
+        ALTER TABLE Tbl_Circulars ADD DeptId VARCHAR(50) NULL;
+    END
+
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Tbl_Circulars') AND name = 'PostedByEmpId')
+    BEGIN
+        ALTER TABLE Tbl_Circulars ADD PostedByEmpId VARCHAR(50) NULL;
+    END
+
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Tbl_Circulars') AND name = 'LastUpdatedDate')
+    BEGIN
+        ALTER TABLE Tbl_Circulars ADD LastUpdatedDate DATETIME NULL;
+    END
+
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Tbl_Circulars') AND name = 'LastUpdatedBy')
+    BEGIN
+        ALTER TABLE Tbl_Circulars ADD LastUpdatedBy VARCHAR(50) NULL;
     END
 END
 GO
@@ -34,10 +51,11 @@ BEGIN
         Description,
         PostedBy,
         PostedDate,
-        ExpiryDate
+        ExpiryDate,
+        IsActive,
+        DeptId,
+        PostedByEmpId
     FROM Tbl_Circulars
-    WHERE IsActive = 1 
-      AND (ExpiryDate IS NULL OR ExpiryDate >= CAST(GETDATE() AS DATE))
     ORDER BY PostedDate DESC;
 END
 GO
@@ -46,11 +64,28 @@ CREATE OR ALTER PROCEDURE usp_AddCircular
     @Title NVARCHAR(200),
     @Description NVARCHAR(MAX),
     @PostedBy VARCHAR(100),
-    @ExpiryDate DATETIME = NULL
+    @ExpiryDate DATETIME = NULL,
+    @DeptId VARCHAR(50) = NULL,
+    @PostedByEmpId VARCHAR(50) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
-    INSERT INTO Tbl_Circulars (Title, Description, PostedBy, PostedDate, ExpiryDate, IsActive)
-    VALUES (@Title, @Description, @PostedBy, GETDATE(), @ExpiryDate, 1);
+    INSERT INTO Tbl_Circulars (Title, Description, PostedBy, PostedDate, ExpiryDate, IsActive, DeptId, PostedByEmpId)
+    VALUES (@Title, @Description, @PostedBy, GETDATE(), @ExpiryDate, 1, @DeptId, @PostedByEmpId);
+END
+GO
+
+CREATE OR ALTER PROCEDURE usp_UpdateCircularStatus
+    @CircularId INT,
+    @IsActive BIT,
+    @LastUpdatedBy VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE Tbl_Circulars
+    SET IsActive = @IsActive,
+        LastUpdatedDate = GETDATE(),
+        LastUpdatedBy = @LastUpdatedBy
+    WHERE CircularId = @CircularId;
 END
 GO
