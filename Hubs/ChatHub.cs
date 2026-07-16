@@ -47,8 +47,10 @@ namespace VGN_CRM_CORE.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
+        public async Task SendMessage(string senderId, string receiverId, string message)
+        {
             // The actual DB saving is done via an API endpoint
             await Clients.Group(receiverId.ToUpper()).SendAsync("ReceiveMessage", senderId, message, DateTime.Now.ToString("o"));
-
+        }
     }
 }

@@ -6,4 +6,6 @@
 "wwwroot/videos/*.mov" 
 ".vs/" 
 "bin/" 
+"obj/" ".vs/" 
+"bin/" 
 "obj/" 
