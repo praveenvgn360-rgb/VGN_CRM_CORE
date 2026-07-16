@@ -81,7 +81,7 @@
 
         function loadCirculars() {
             $.ajax({
-                url: '@Url.Action("GetCirculars", "Circular")',
+                url: '@Url.Action("GetCirculars", "Circular")?all=true',
                 type: 'GET',
                 success: function(res) {
                     if(res.status) {
@@ -106,7 +106,7 @@
                 container.hide();
                 emptyState.removeClass('hidden');
                 return;
-            }
+            }   
             
             emptyState.addClass('hidden');
             container.show();
@@ -121,9 +121,18 @@
                             <div class="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform duration-300 border border-indigo-100 dark:border-indigo-800">
                                 <i class="fas fa-file-alt text-xl"></i>
                             </div>
-                            <span class="text-xs font-semibold px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full border border-slate-200 dark:border-slate-600 shadow-sm">
-                                ${item.postedDate}
-                            </span>
+                            <div class="flex flex-col items-end gap-2">
+                                <span class="text-xs font-semibold px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full border border-slate-200 dark:border-slate-600 shadow-sm">
+                                    ${item.postedDate}
+                                </span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-medium text-slate-500 status-label">${item.isActive ? 'Active' : 'Inactive'}</span>
+                                    <label class="relative inline-flex items-center cursor-pointer" onclick="event.stopPropagation();">
+                                        <input type="checkbox" onchange="toggleCircularStatus(${item.circularId}, this)" class="sr-only peer" ${item.isActive ? 'checked' : ''}>
+                                        <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                         
                         <h4 class="text-lg font-bold text-slate-800 dark:text-white mb-3 line-clamp-2 leading-snug">${item.title}</h4>
@@ -132,7 +141,7 @@
                         
                         <div class="flex items-center gap-3 pt-5 border-t border-slate-100 dark:border-slate-700 mt-auto">
                             <div class="w-9 h-9 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-600 dark:to-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 text-xs font-bold uppercase shadow-sm border border-slate-300 dark:border-slate-500">
-                                ${(item.postedBy || 'OR').substring(0, 2)}
+                                ${(item.postedByEmpId || 'OR').substring(0, 2)}
                             </div>
                             <div>
                                 <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-none">${item.postedBy}</p>
@@ -171,6 +180,31 @@
             $('#circularModal').removeClass('scale-100').addClass('opacity-0 scale-95').delay(300).queue(function(next) {
                 $(this).addClass('hidden');
                 next();
+            });
+        }
+
+        function toggleCircularStatus(id, checkbox) {
+            const isActive = $(checkbox).is(':checked');
+            $.ajax({
+                url: '@Url.Action("UpdateCircularStatus", "Circular")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ CircularId: id, IsActive: isActive }),
+                success: function(res) {
+                    if(!res.status) {
+                        alert("Error: " + res.msg);
+                        $(checkbox).prop('checked', !isActive);
+                    } else {
+                        const label = $(checkbox).closest('.flex').find('.status-label');
+                        if (label.length) {
+                            label.text(isActive ? 'Active' : 'Inactive');
+                        }
+                    }
+                },
+                error: function() {
+                    alert("Failed to update status. Server error.");
+                    $(checkbox).prop('checked', !isActive);
+                }
             });
         }
 

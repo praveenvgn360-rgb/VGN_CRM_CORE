@@ -8,16 +8,16 @@ namespace VGN_CRM_CORE.Hubs
 {
     public class ChatHub : Hub
     {
-        // Thread-safe dictionary to keep track of user connections
-        // Map: UserId -> ConnectionId
-        public static ConcurrentDictionary<string, string> ActiveUsers = new ConcurrentDictionary<string, string>();
+        // Thread-safe dictionary to keep track of connection count per user
+        public static ConcurrentDictionary<string, int> ActiveUsers = new ConcurrentDictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
         public override async Task OnConnectedAsync()
         {
             var userId = Context.GetHttpContext().Request.Query["userId"].ToString();
             if (!string.IsNullOrEmpty(userId))
             {
-                ActiveUsers[userId] = Context.ConnectionId;
+                ActiveUsers.AddOrUpdate(userId, 1, (key, count) => count + 1);
+                await Groups.AddToGroupAsync(Context.ConnectionId, userId.ToUpper());
                 // Broadcast to all that this user is online
                 await Clients.All.SendAsync("UserOnline", userId);
             }
@@ -26,27 +26,31 @@ namespace VGN_CRM_CORE.Hubs
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            var userId = ActiveUsers.FirstOrDefault(x => x.Value == Context.ConnectionId).Key;
+            var userId = Context.GetHttpContext().Request.Query["userId"].ToString();
             if (!string.IsNullOrEmpty(userId))
             {
-                ActiveUsers.TryRemove(userId, out _);
-                await Clients.All.SendAsync("UserOffline", userId);
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId.ToUpper());
+                
+                if (ActiveUsers.TryGetValue(userId, out int count))
+                {
+                    if (count > 1)
+                    {
+                        ActiveUsers[userId] = count - 1;
+                    }
+                    else
+                    {
+                        ActiveUsers.TryRemove(userId, out _);
+                        await Clients.All.SendAsync("UserOffline", userId);
+                    }
+                }
             }
             await base.OnDisconnectedAsync(exception);
         }
 
         public async Task SendMessage(string senderId, string receiverId, string message)
         {
-            // The actual DB saving is done via an API endpoint or we can do it here if we pass connstring.
-            // Let's rely on the API to save it to DB, and just use Hub to broadcast.
-            // Actually, we can just broadcast. The client will call API to save, then call Hub to broadcast.
-            // Or the client calls Hub, Hub saves to DB. 
-            // We'll just pass the message object here.
-            
-            if (ActiveUsers.TryGetValue(receiverId, out string receiverConnectionId))
-            {
-                await Clients.Client(receiverConnectionId).SendAsync("ReceiveMessage", senderId, message, DateTime.Now.ToString("o"));
-            }
+            // The actual DB saving is done via an API endpoint
+            await Clients.Group(receiverId.ToUpper()).SendAsync("ReceiveMessage", senderId, message, DateTime.Now.ToString("o"));
         }
     }
 }
