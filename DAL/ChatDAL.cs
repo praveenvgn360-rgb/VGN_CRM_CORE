@@ -25,6 +25,7 @@ namespace VGN_CRM_CORE.Models
         public string Role { get; set; }
         public string Department { get; set; }
         public int UnreadCount { get; set; }
+        public bool IsOnline { get; set; }
     }
 }
 
@@ -146,9 +147,35 @@ namespace VGN_CRM_CORE.DAL
                 using (var con = new SqlConnection(connString))
                 {
                     con.Open();
-                    using (var cmd = new SqlCommand("usp_GetOnlineUsersForChat", con))
+                    // Use an inline query to ensure we get both online and offline users, 
+                    // including users we've chatted with who might not have an active session right now.
+                    string sql = @"
+                        SELECT 
+                            U.UserId,
+                            MAX(U.UserName) AS UserName,
+                            ISNULL((
+                                SELECT COUNT(*) 
+                                FROM ChatMessages c 
+                                WHERE c.SenderId = U.UserId 
+                                  AND c.ReceiverId = @CurrentUserId 
+                                  AND c.IsRead = 0
+                            ), 0) AS UnreadCount,
+                            CAST(MAX(CAST(ISNULL(T.IsActive, 0) AS INT)) AS BIT) AS IsOnline
+                        FROM (
+                            SELECT UserId, UserName FROM tbl_UserSessionTracker WHERE UserId != @CurrentUserId
+                            UNION
+                            SELECT SenderId AS UserId, SenderId AS UserName FROM ChatMessages WHERE ReceiverId = @CurrentUserId
+                            UNION
+                            SELECT ReceiverId AS UserId, ReceiverId AS UserName FROM ChatMessages WHERE SenderId = @CurrentUserId
+                        ) U
+                        LEFT JOIN tbl_UserSessionTracker T ON U.UserId = T.UserId
+                        WHERE U.UserId != @CurrentUserId
+                        GROUP BY U.UserId
+                    ";
+
+                    using (var cmd = new SqlCommand(sql, con))
                     {
-                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.CommandType = CommandType.Text;
                         cmd.Parameters.AddWithValue("@CurrentUserId", currentUserId);
                         using (var reader = cmd.ExecuteReader())
                         {
@@ -158,7 +185,8 @@ namespace VGN_CRM_CORE.DAL
                                 {
                                     UserId = reader["UserId"].ToString(),
                                     UserName = reader["UserName"].ToString(),
-                                    UnreadCount = Convert.ToInt32(reader["UnreadCount"])
+                                    UnreadCount = Convert.ToInt32(reader["UnreadCount"]),
+                                    IsOnline = Convert.ToBoolean(reader["IsOnline"])
                                 });
                             }
                         }
