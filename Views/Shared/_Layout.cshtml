@@ -4344,6 +4344,10 @@
                     dot.style.background = isOnline ? '#10b981' : '#d1d5db';
                 }
             }
+            
+            let u = onlineUsers.find(x => x.userId === userId);
+            if (u) u.isOnline = isOnline;
+
             if (chatActiveOtherUserId === userId) {
                 document.getElementById('activeChatStatus').innerText = isOnline ? 'Online' : 'Offline';
                 document.getElementById('activeChatStatus').style.color = isOnline ? '#10b981' : 'var(--text-muted)';
@@ -4388,11 +4392,12 @@
                     data.forEach(u => {
                         let initials = u.userName.substring(0, 2).toUpperCase();
                         let unreadDisplay = u.unreadCount > 0 ? 'flex' : 'none';
+                        let dotColor = u.isOnline ? '#10b981' : '#d1d5db';
                         html += `
                             <div id="chat-user-${u.userId}" onclick="openChatWith('${u.userId}', '${u.userName.replace(/'/g, "\\'")}')" class="notif-item" style="border-left: none; align-items: center;">
                                 <div style="position:relative;">
                                     <div class="user-avatar" style="width: 40px; height: 40px; min-width: 40px;">${initials}</div>
-                                    <div class="status-dot" style="position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; background: #10b981; border: 2px solid var(--surface); border-radius: 50%;"></div>
+                                    <div class="status-dot" style="position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; background: ${dotColor}; border: 2px solid var(--surface); border-radius: 50%;"></div>
                                 </div>
                                 <div style="flex:1;">
                                     <div style="font-size:.85rem; font-weight:600; color:var(--text);">${u.userName}</div>
@@ -4402,7 +4407,7 @@
                             </div>
                         `;
                     });
-                    document.getElementById('chatUsersListView').innerHTML = html || '<div class="np-empty"><i class="bi bi-people"></i><br/>No users online</div>';
+                    document.getElementById('chatUsersListView').innerHTML = html || '<div class="np-empty"><i class="bi bi-people"></i><br/>No users to display</div>';
                     updateTotalUnread();
                 }
             });
@@ -4411,6 +4416,11 @@
         function openChatWith(userId, userName) {
             chatActiveOtherUserId = userId;
             document.getElementById('activeChatUserName').innerText = userName;
+            
+            let userObj = onlineUsers.find(u => u.userId === userId);
+            let isOnline = userObj ? userObj.isOnline : false;
+            document.getElementById('activeChatStatus').innerText = isOnline ? 'Online' : 'Offline';
+            document.getElementById('activeChatStatus').style.color = isOnline ? '#10b981' : 'var(--text-muted)';
             
             let avatar = document.getElementById('activeChatUserAvatar');
             if (avatar) avatar.innerText = userName.substring(0, 2).toUpperCase();
@@ -4506,6 +4516,12 @@
                     data.forEach(u => {
                         let item = document.getElementById('chat-user-' + u.userId);
                         if (item) {
+                            // Update online status dot
+                            let dot = item.querySelector('.status-dot');
+                            if (dot) {
+                                dot.style.background = u.isOnline ? '#10b981' : '#d1d5db';
+                            }
+                            
                             // Update badge for background users
                             let badge = item.querySelector('.chat-unread-badge');
                             if (badge && chatActiveOtherUserId !== u.userId) {
@@ -4517,10 +4533,18 @@
                             if (chatActiveOtherUserId === u.userId && u.unreadCount > 0) {
                                 refreshActiveChatMessages();
                             }
+                            
+                            // Update header if they are the active chat
+                            if (chatActiveOtherUserId === u.userId) {
+                                document.getElementById('activeChatStatus').innerText = u.isOnline ? 'Online' : 'Offline';
+                                document.getElementById('activeChatStatus').style.color = u.isOnline ? '#10b981' : 'var(--text-muted)';
+                            }
                         } else {
                             listHasChanged = true;
                         }
                     });
+                    
+                    onlineUsers = data;
 
                     if (listHasChanged) {
                         // New user came online or missing, just reload entire list
