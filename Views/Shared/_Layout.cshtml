@@ -32,6 +32,13 @@
                 }
             } catch(e) {}
         })();
+        // FIX 1: Sync sb-tab active state immediately once DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            var view = document.documentElement.dataset.sidebarView || 'tiles';
+            document.querySelectorAll('.sb-tab').forEach(function(b) { b.classList.remove('active'); });
+            var targetTab = document.getElementById(view === 'tiles' ? 'tab-grid' : 'tab-list');
+            if (targetTab) targetTab.classList.add('active');
+        });
     </script>
     <link href="~/css/tailwind.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
@@ -4357,19 +4364,26 @@
                 }
             });
 
+            // FIX 3: MessageEdited - update in DOM if visible, or refresh active chat
             chatConnection.on("MessageEdited", function (messageId, newText) {
                 let msgDiv = document.getElementById('chat-msg-text-' + messageId);
                 if (msgDiv) {
                     msgDiv.innerText = newText;
                     let editedTag = document.getElementById('chat-msg-edited-' + messageId);
                     if (editedTag) editedTag.style.display = 'inline';
+                } else if (chatActiveOtherUserId) {
+                    // Chat is open but element not found — do a full refresh
+                    refreshActiveChatMessages();
                 }
             });
 
+            // FIX 3: MessageDeleted - update in DOM if visible, or refresh active chat
             chatConnection.on("MessageDeleted", function (messageId) {
                 let msgContainer = document.getElementById('chat-msg-' + messageId);
                 if (msgContainer) {
-                    msgContainer.innerHTML = '<div style="font-size: .8rem; color: var(--text-muted); font-style: italic;"><i class="bi bi-slash-circle"></i> This message was deleted.</div>';
+                    msgContainer.innerHTML = '<div style="font-size: .8rem; color: var(--text-muted); font-style: italic; background: var(--surface); padding: .65rem .85rem; border-radius: 12px 12px 0 12px; border: 1px solid var(--border);"><i class="bi bi-slash-circle"></i> This message was deleted.</div>';
+                } else if (chatActiveOtherUserId) {
+                    refreshActiveChatMessages();
                 }
             });
 
@@ -4437,18 +4451,26 @@
                     onlineUsers = data;
                     let html = '';
                     data.forEach(u => {
-                        let initials = u.userName.substring(0, 2).toUpperCase();
+                        // FIX 2: Display name (first+last name words) and dept abbreviation instead of raw EmpId
+                        let displayName = u.userName || u.userId;
+                        let nameInitials = displayName.replace(/[^a-zA-Z ]/g, '').trim().split(/\s+/).filter(Boolean);
+                        let initials = (nameInitials.length >= 2 ? nameInitials[0][0] + nameInitials[1][0] : displayName.substring(0, 2)).toUpperCase();
+                        // Abbreviate department: take first letter of each word (max 3 chars)
+                        let deptAbbr = u.department ? u.department.trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().substring(0, 3) : '';
+                        let subLabel = deptAbbr || u.userId;
                         let unreadDisplay = u.unreadCount > 0 ? 'flex' : 'none';
                         let dotColor = u.isOnline ? '#10b981' : '#d1d5db';
+                        let safeDisplayName = displayName.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                        let safeDeptAbbr = deptAbbr.replace(/'/g, "\\'");
                         html += `
-                            <div id="chat-user-${u.userId}" onclick="openChatWith('${u.userId}', '${u.userName.replace(/'/g, "\\'")}')" class="notif-item" style="border-left: none; align-items: center;">
+                            <div id="chat-user-${u.userId}" onclick="openChatWith('${u.userId}', '${safeDisplayName}', '${safeDeptAbbr}')" class="notif-item" style="border-left: none; align-items: center;">
                                 <div style="position:relative;">
                                     <div class="user-avatar" style="width: 40px; height: 40px; min-width: 40px;">${initials}</div>
                                     <div class="status-dot" style="position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; background: ${dotColor}; border: 2px solid var(--surface); border-radius: 50%;"></div>
                                 </div>
                                 <div style="flex:1;">
-                                    <div style="font-size:.85rem; font-weight:600; color:var(--text);">${u.userName}</div>
-                                    <div style="font-size:.72rem; color:var(--text-muted);">${u.userId}</div>
+                                    <div style="font-size:.85rem; font-weight:600; color:var(--text);">${displayName}</div>
+                                    <div style="font-size:.72rem; color:var(--text-muted);">${subLabel}</div>
                                 </div>
                                 <div class="chat-unread-badge" style="background: var(--primary); color: #fff; font-size: .65rem; font-weight: 700; width: 20px; height: 20px; border-radius: 50%; display: ${unreadDisplay}; align-items: center; justify-content: center;">${u.unreadCount}</div>
                             </div>
@@ -4460,9 +4482,11 @@
             });
         }
 
-        function openChatWith(userId, userName) {
+        function openChatWith(userId, userName, deptAbbr) {
             chatActiveOtherUserId = userId;
-            document.getElementById('activeChatUserName').innerText = userName;
+            // FIX 2: Show name and dept abbreviation in chat header
+            let headerName = userName + (deptAbbr ? ' · ' + deptAbbr : '');
+            document.getElementById('activeChatUserName').innerText = headerName;
             
             let userObj = onlineUsers.find(u => u.userId === userId);
             let isOnline = userObj ? userObj.isOnline : false;
@@ -4470,7 +4494,10 @@
             document.getElementById('activeChatStatus').style.color = isOnline ? '#10b981' : 'var(--text-muted)';
             
             let avatar = document.getElementById('activeChatUserAvatar');
-            if (avatar) avatar.innerText = userName.substring(0, 2).toUpperCase();
+            if (avatar) {
+                let nameWords = userName.replace(/[^a-zA-Z ]/g, '').trim().split(/\s+/).filter(Boolean);
+                avatar.innerText = (nameWords.length >= 2 ? nameWords[0][0] + nameWords[1][0] : userName.substring(0, 2)).toUpperCase();
+            }
 
             document.getElementById('chatUsersListView').style.display = 'none';
             document.getElementById('activeChatView').style.display = 'flex';
