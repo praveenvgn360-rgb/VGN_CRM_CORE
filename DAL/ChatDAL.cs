@@ -16,6 +16,8 @@ namespace VGN_CRM_CORE.Models
         public string Message { get; set; }
         public DateTime SentAt { get; set; }
         public bool IsRead { get; set; }
+        public bool IsEdited { get; set; }
+        public bool IsDeleted { get; set; }
     }
 
     public class OnlineUser
@@ -69,7 +71,12 @@ namespace VGN_CRM_CORE.DAL
                         cmd.Parameters.AddWithValue("@ReceiverId", msg.ReceiverId);
                         cmd.Parameters.AddWithValue("@Message", msg.Message);
                         cmd.Parameters.AddWithValue("@SentAt", msg.SentAt);
-                        cmd.ExecuteNonQuery();
+                        
+                        var idObj = cmd.ExecuteScalar();
+                        if (idObj != null && idObj != DBNull.Value)
+                        {
+                            msg.MessageId = Convert.ToInt32(idObj);
+                        }
                     }
                 }
             }
@@ -125,7 +132,9 @@ namespace VGN_CRM_CORE.DAL
                                     ReceiverId = reader["ReceiverId"].ToString(),
                                     Message = reader["Message"].ToString(),
                                     SentAt = Convert.ToDateTime(reader["SentAt"]),
-                                    IsRead = Convert.ToBoolean(reader["IsRead"])
+                                    IsRead = Convert.ToBoolean(reader["IsRead"]),
+                                    IsEdited = reader["IsEdited"] != DBNull.Value && Convert.ToBoolean(reader["IsEdited"]),
+                                    IsDeleted = reader["IsDeleted"] != DBNull.Value && Convert.ToBoolean(reader["IsDeleted"])
                                 });
                             }
                         }
@@ -137,6 +146,51 @@ namespace VGN_CRM_CORE.DAL
                 System.Diagnostics.Debug.WriteLine($"[ChatDAL GetMessages] {ex.Message}");
             }
             return list;
+        }
+
+        public static void EditMessage(string connString, int messageId, string senderId, string newMessage)
+        {
+            try
+            {
+                using (var con = new SqlConnection(connString))
+                {
+                    con.Open();
+                    using (var cmd = new SqlCommand("usp_EditChatMessage", con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@MessageId", messageId);
+                        cmd.Parameters.AddWithValue("@SenderId", senderId);
+                        cmd.Parameters.AddWithValue("@NewMessage", newMessage);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ChatDAL EditMessage] {ex.Message}");
+            }
+        }
+
+        public static void DeleteMessage(string connString, int messageId, string senderId)
+        {
+            try
+            {
+                using (var con = new SqlConnection(connString))
+                {
+                    con.Open();
+                    using (var cmd = new SqlCommand("usp_DeleteChatMessage", con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@MessageId", messageId);
+                        cmd.Parameters.AddWithValue("@SenderId", senderId);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ChatDAL DeleteMessage] {ex.Message}");
+            }
         }
 
         public static List<OnlineUser> GetOnlineUsers(string connString, string currentUserId)

@@ -1,69 +1,143 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Data.SqlClient;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using VGN_CRM_CORE.Models;
 
 namespace VGN_CRM_CORE.CommonFunctions
 {
     // ══════════════════════════════════════════════════════════
-    // SESSION HELPER  — uses ISession (ASP.NET Core)
+    // JWT HELPER  — stores user identity in an HttpOnly cookie
+    //               containing a signed JWT token.
+    //
+    // SessionId = Guid.NewGuid() generated at LOGIN time.
+    //             It is stored BOTH inside the JWT payload and
+    //             in the DB (tbl_UserSessionTracker).
+    //             It has nothing to do with ASP.NET Session.Id,
+    //             so it remains stable across browser restarts
+    //             and is unique per login, not per browser.
     // ══════════════════════════════════════════════════════════
     public static class SessionHelper
     {
-        private const string SESSION_KEY = "VGN_CurrentUser";
+        public static IHttpContextAccessor HttpContextAccessor { get; set; }
 
+        // Cookie names
+        private const string JWT_COOKIE  = "vgn_jwt";
+        private const string MENU_COOKIE = "vgn_menu";
+
+        // ── JWT secret and expiry timings read from configuration ────────────
+        private static string _jwtSecret;
+        private static int    _expiryMinutes      = 20;  // fallback
+        private static int    _idleTimeoutMinutes = 20;  // fallback
+        private static int    _idleWarningMinutes = 3;   // fallback
+
+        /// <summary>How long (minutes) the JWT lives after the last activity ping.</summary>
+        public static int ExpiryMinutes      => _expiryMinutes;
+        /// <summary>Minutes of inactivity before the client auto-logs out.</summary>
+        public static int IdleTimeoutMinutes => _idleTimeoutMinutes;
+        /// <summary>Minutes before idle-logout at which to show a warning.</summary>
+        public static int IdleWarningMinutes => _idleWarningMinutes;
+
+        public static void Initialize(IConfiguration config)
+        {
+            _jwtSecret = config["Jwt:Secret"]
+                ?? "VGN360_SuperSecret_JWT_Key_2024!@#$%^&*_MustBe256BitsLong_RandomString";
+
+            if (int.TryParse(config["Jwt:ExpiryMinutes"],      out int exp))  _expiryMinutes      = exp;
+            if (int.TryParse(config["Jwt:IdleTimeoutMinutes"], out int idle)) _idleTimeoutMinutes = idle;
+            if (int.TryParse(config["Jwt:IdleWarningMinutes"], out int warn)) _idleWarningMinutes = warn;
+        }
+
+        private static string JwtSecret => _jwtSecret
+            ?? "VGN360_SuperSecret_JWT_Key_2024!@#$%^&*_MustBe256BitsLong_RandomString";
+
+        // ─────────────────────────────────────────────────────
+        //  Write JWT cookie (called on login)
+        // ─────────────────────────────────────────────────────
         public static void SetUserSession(ISession session, UserSession user)
         {
-            session.SetString(SESSION_KEY, JsonConvert.SerializeObject(user));
+            var context = HttpContextAccessor?.HttpContext;
+            if (context == null) return;
+
+            var jwt = BuildJwt(user);
+            WriteJwtCookie(context, jwt);
         }
 
+        // ─────────────────────────────────────────────────────
+        //  Read & validate JWT cookie
+        // ─────────────────────────────────────────────────────
         public static UserSession GetUserSession(ISession session)
         {
-            var raw = session.GetString(SESSION_KEY);
-            return string.IsNullOrEmpty(raw) ? null : JsonConvert.DeserializeObject<UserSession>(raw);
+            var context = HttpContextAccessor?.HttpContext;
+            if (context == null) return null;
+
+            return ValidateJwtCookie(context);
         }
 
+        // ─────────────────────────────────────────────────────
+        //  Silently renew the JWT cookie expiry
+        //  (call from filter on every authenticated request)
+        // ─────────────────────────────────────────────────────
+        public static void RefreshJwt(UserSession user)
+        {
+            var context = HttpContextAccessor?.HttpContext;
+            if (context == null || user == null) return;
+
+            // Re-issue a fresh token with the SAME SessionId so the DB
+            // record is still matched, but with a new expiry timestamp.
+            var jwt = BuildJwt(user);
+            WriteJwtCookie(context, jwt);
+        }
+
+        // ─────────────────────────────────────────────────────
+        //  Clear JWT cookie (called on logout)
+        // ─────────────────────────────────────────────────────
         public static void ClearSession(ISession session)
         {
-            session.Remove(SESSION_KEY);
-            session.Clear();
+            var context = HttpContextAccessor?.HttpContext;
+            if (context == null) return;
+
+            context.Response.Cookies.Delete(JWT_COOKIE,  new CookieOptions { Path = "/" });
+            // Also delete the old cookie if it exists in the client's browser
+            context.Response.Cookies.Delete(MENU_COOKIE, new CookieOptions { Path = "/" });
+            session?.Remove(MENU_COOKIE);
         }
 
+        // ─────────────────────────────────────────────────────
+        //  Quick auth check
+        // ─────────────────────────────────────────────────────
         public static bool IsLoggedIn(ISession session)
-        {
-            return !string.IsNullOrEmpty(session.GetString(SESSION_KEY));
-        }
+            => GetUserSession(session) != null;
 
-        // ── Menu list helpers ────────────────────────────────
-        private const string MENU_KEY = "VGN_MenuList";
+        // ── Menu list helpers ─────────────────────────────────
 
         public static void SetMenuList(ISession session, List<Models.MenuModel> menus)
         {
-            session.SetString(MENU_KEY, JsonConvert.SerializeObject(menus));
+            if (session == null || menus == null) return;
+            session.SetString(MENU_COOKIE, JsonConvert.SerializeObject(menus));
         }
 
         public static List<Models.MenuModel> GetMenuList(ISession session)
         {
-            var raw = session.GetString(MENU_KEY);
+            if (session == null) return null;
+            var raw = session.GetString(MENU_COOKIE);
             return string.IsNullOrEmpty(raw)
                 ? null
                 : JsonConvert.DeserializeObject<List<Models.MenuModel>>(raw);
         }
 
-        // ── Network helpers ──────────────────────────────────
+        // ── Network helpers ───────────────────────────────────
+
         public static string GetClientIPAddress(HttpRequest request)
         {
-            // Check forwarded header first (proxy/load-balancer)
             var forwarded = request.Headers["X-Forwarded-For"].ToString();
             if (!string.IsNullOrEmpty(forwarded))
-            {
-                var parts = forwarded.Split(',');
-                return parts[0].Trim();
-            }
+                return forwarded.Split(',')[0].Trim();
             return request.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
         }
 
@@ -73,9 +147,7 @@ namespace VGN_CRM_CORE.CommonFunctions
             {
                 if (ipAddress == "::1" || ipAddress == "127.0.0.1")
                     return Dns.GetHostName();
-
-                var entry = Dns.GetHostEntry(ipAddress);
-                return entry.HostName;
+                return Dns.GetHostEntry(ipAddress).HostName;
             }
             catch { return ipAddress; }
         }
@@ -84,6 +156,72 @@ namespace VGN_CRM_CORE.CommonFunctions
         {
             var ua = request.Headers["User-Agent"].ToString();
             return string.IsNullOrEmpty(ua) ? "Unknown" : ua;
+        }
+
+        // ── Private helpers ────────────────────────────────────
+
+        private static string BuildJwt(UserSession user)
+        {
+            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var key     = System.Text.Encoding.ASCII.GetBytes(JwtSecret);
+
+            var descriptor = new SecurityTokenDescriptor
+            {
+                Subject = new System.Security.Claims.ClaimsIdentity(new[]
+                {
+                    new System.Security.Claims.Claim("jti",      user.SessionId),
+                    new System.Security.Claims.Claim("UserData", JsonConvert.SerializeObject(user))
+                }),
+                Expires            = DateTime.UtcNow.AddMinutes(_expiryMinutes),
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = handler.CreateToken(descriptor);
+            return handler.WriteToken(token);
+        }
+
+        private static void WriteJwtCookie(HttpContext context, string jwt)
+        {
+            context.Response.Cookies.Append(JWT_COOKIE, jwt, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure   = context.Request.IsHttps,
+                SameSite = SameSiteMode.Lax,
+                Expires  = DateTime.UtcNow.AddMinutes(_expiryMinutes)
+            });
+        }
+
+        private static UserSession ValidateJwtCookie(HttpContext context)
+        {
+            var jwt = context.Request.Cookies[JWT_COOKIE];
+            if (string.IsNullOrEmpty(jwt)) return null;
+
+            try
+            {
+                var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                var key     = System.Text.Encoding.ASCII.GetBytes(JwtSecret);
+
+                handler.ValidateToken(jwt,
+                    new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey         = new SymmetricSecurityKey(key),
+                        ValidateIssuer           = false,
+                        ValidateAudience         = false,
+                        ClockSkew                = TimeSpan.Zero
+                    },
+                    out SecurityToken validated);
+
+                var jwtToken = (System.IdentityModel.Tokens.Jwt.JwtSecurityToken)validated;
+                var userData = jwtToken.Claims.First(x => x.Type == "UserData").Value;
+                return JsonConvert.DeserializeObject<UserSession>(userData);
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 
@@ -125,14 +263,14 @@ namespace VGN_CRM_CORE.CommonFunctions
                 using (var cmd = new SqlCommand("usp_ManageUserSession", con))
                 {
                     cmd.CommandType = System.Data.CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@Action", "LOGIN");
-                    cmd.Parameters.AddWithValue("@SessionId", audit.SessionId ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@UserId", audit.UserId);
-                    cmd.Parameters.AddWithValue("@UserName", audit.UserName ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@IPAddress", audit.IPAddress ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@HostName", audit.HostName ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Action",      "LOGIN");
+                    cmd.Parameters.AddWithValue("@SessionId",   audit.SessionId ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@UserId",      audit.UserId);
+                    cmd.Parameters.AddWithValue("@UserName",    audit.UserName   ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@IPAddress",   audit.IPAddress  ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@HostName",    audit.HostName   ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@BrowserInfo", audit.BrowserInfo ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@TimeoutMinutes", 20);
+                    cmd.Parameters.AddWithValue("@TimeoutMinutes", 480);
                     con.Open();
                     cmd.ExecuteNonQuery();
                 }
@@ -140,7 +278,7 @@ namespace VGN_CRM_CORE.CommonFunctions
         }
 
         /// <summary>Stamp the logout time and mark session inactive.</summary>
-        public static void LogLogout(string sessionId)
+        public static void LogLogout(string sessionId, string reason = "User Logged Out")
         {
             Try(() =>
             {
@@ -148,8 +286,9 @@ namespace VGN_CRM_CORE.CommonFunctions
                 using (var cmd = new SqlCommand("usp_ManageUserSession", con))
                 {
                     cmd.CommandType = System.Data.CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@Action", "LOGOUT");
+                    cmd.Parameters.AddWithValue("@Action",    "LOGOUT");
                     cmd.Parameters.AddWithValue("@SessionId", sessionId);
+                    cmd.Parameters.AddWithValue("@LogoutReason", reason);
                     con.Open();
                     cmd.ExecuteNonQuery();
                 }
@@ -165,11 +304,11 @@ namespace VGN_CRM_CORE.CommonFunctions
                 using (var cmd = new SqlCommand("usp_ManageUserSession", con))
                 {
                     cmd.CommandType = System.Data.CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@Action", "LOG_SCREEN");
-                    cmd.Parameters.AddWithValue("@SessionId", log.SessionId ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@UserId", log.UserId ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@ScreenName", log.PageTitle ?? log.PageUrl ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@TimeoutMinutes", 20);
+                    cmd.Parameters.AddWithValue("@Action",         "LOG_SCREEN");
+                    cmd.Parameters.AddWithValue("@SessionId",      log.SessionId ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@UserId",         log.UserId    ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ScreenName",     log.PageTitle ?? log.PageUrl ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@TimeoutMinutes", 480);
                     con.Open();
                     cmd.ExecuteNonQuery();
                 }
@@ -181,20 +320,11 @@ namespace VGN_CRM_CORE.CommonFunctions
         {
             Try(() =>
             {
-                const string sql = @"
-                    MERGE tbl_UserPreferences AS target
-                    USING (SELECT @UserId AS UserId) AS source ON target.UserId = source.UserId
-                    WHEN MATCHED THEN
-                        UPDATE SET ThemeMode=@ThemeMode, ThemeColor=@ThemeColor,
-                                   SidebarType=@SidebarType, NavLayout=@NavLayout,
-                                   Contrast=@Contrast, UpdatedOn=GETDATE()
-                    WHEN NOT MATCHED THEN
-                        INSERT (UserId, ThemeMode, ThemeColor, SidebarType, NavLayout, Contrast)
-                        VALUES (@UserId, @ThemeMode, @ThemeColor, @SidebarType, @NavLayout, @Contrast);";
-
                 using (var con = new SqlConnection(Conn))
-                using (var cmd = new SqlCommand(sql, con))
+                using (var cmd = new SqlCommand("usp_ManageUserPreferences", con))
                 {
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Action",      "SAVE");
                     cmd.Parameters.AddWithValue("@UserId",      pref.UserId);
                     cmd.Parameters.AddWithValue("@ThemeMode",   pref.ThemeMode);
                     cmd.Parameters.AddWithValue("@ThemeColor",  pref.ThemeColor);
@@ -212,10 +342,11 @@ namespace VGN_CRM_CORE.CommonFunctions
             var pref = new UserPreferences { UserId = userId };
             Try(() =>
             {
-                const string sql = "SELECT * FROM tbl_UserPreferences WHERE UserId=@UserId";
                 using (var con = new SqlConnection(Conn))
-                using (var cmd = new SqlCommand(sql, con))
+                using (var cmd = new SqlCommand("usp_ManageUserPreferences", con))
                 {
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Action", "GET");
                     cmd.Parameters.AddWithValue("@UserId", userId);
                     con.Open();
                     using (var rdr = cmd.ExecuteReader())
@@ -234,6 +365,26 @@ namespace VGN_CRM_CORE.CommonFunctions
             return pref;
         }
 
+        public static void ResetPreferences(string userId)
+        {
+            Try(() =>
+            {
+                using (var con = new SqlConnection(Conn))
+                using (var cmd = new SqlCommand("usp_ManageUserPreferences", con))
+                {
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Action", "RESET");
+                    cmd.Parameters.AddWithValue("@UserId", userId);
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            });
+        }
+
+        /// <summary>
+        /// Returns true if there is already an ACTIVE session for this UserId in the DB.
+        /// This is the single-session enforcement check used at login time.
+        /// </summary>
         public static bool IsUserAlreadyLoggedIn(string userId)
         {
             bool loggedIn = false;
@@ -245,9 +396,9 @@ namespace VGN_CRM_CORE.CommonFunctions
                     using (var cmd = new SqlCommand("usp_ManageUserSession", con))
                     {
                         cmd.CommandType = System.Data.CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@Action", "CHECK_CONCURRENT");
-                        cmd.Parameters.AddWithValue("@UserId", userId);
-                        cmd.Parameters.AddWithValue("@TimeoutMinutes", 20);
+                        cmd.Parameters.AddWithValue("@Action",         "CHECK_CONCURRENT");
+                        cmd.Parameters.AddWithValue("@UserId",         userId);
+                        cmd.Parameters.AddWithValue("@TimeoutMinutes", 480);
                         int count = Convert.ToInt32(cmd.ExecuteScalar());
                         loggedIn = count > 0;
                     }
@@ -261,13 +412,29 @@ namespace VGN_CRM_CORE.CommonFunctions
             Try(() =>
             {
                 using (var con = new SqlConnection(Conn))
+                using (var cmd = new SqlCommand("usp_ManageUserSession", con))
                 {
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Action", "FORCE_LOGOUT_OTHER");
+                    cmd.Parameters.AddWithValue("@UserId", userId);
                     con.Open();
-                    using (var cmd = new SqlCommand("UPDATE tbl_UserSessionTracker SET IsActive = 0, LogoutTime = GETDATE() WHERE UserId = @UserId AND IsActive = 1", con))
-                    {
-                        cmd.Parameters.AddWithValue("@UserId", userId);
-                        cmd.ExecuteNonQuery();
-                    }
+                    cmd.ExecuteNonQuery();
+                }
+            });
+        }
+
+        public static void TimeoutLogoutUser(string sessionId)
+        {
+            Try(() =>
+            {
+                using (var con = new SqlConnection(Conn))
+                using (var cmd = new SqlCommand("usp_ManageUserSession", con))
+                {
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Action", "TIMEOUT_LOGOUT");
+                    cmd.Parameters.AddWithValue("@SessionId", sessionId);
+                    con.Open();
+                    cmd.ExecuteNonQuery();
                 }
             });
         }
@@ -283,20 +450,22 @@ namespace VGN_CRM_CORE.CommonFunctions
         /// Queries the DB to determine the exact state of a session:
         ///   Valid       – row exists and IsActive = 1 (and not timed out)
         ///   Invalidated – row exists but IsActive = 0  (force-logout / timeout)
-        ///   NotFound    – no row at all (DB restart, missing record, user never logged in via this SP)
-        /// On any DB error we return Valid so we never wrongly lock out a user due to connectivity.
+        ///   NotFound    – no row at all (DB restart, missing record)
+        /// On any DB error we return Valid so we never wrongly lock out a user.
         /// </summary>
         public static SessionCheckResult CheckSessionStatus(string sessionId)
         {
+            if (string.IsNullOrEmpty(sessionId)) return SessionCheckResult.NotFound;
+
             SessionCheckResult result = SessionCheckResult.Valid; // safe default on DB error
             Try(() =>
             {
                 const string sql = @"
                     SELECT
                         CASE
-                            WHEN COUNT(*) = 0                          THEN 0  -- NotFound
-                            WHEN MAX(CAST(IsActive AS INT)) = 1        THEN 1  -- Valid
-                            ELSE                                            2  -- Invalidated (IsActive=0)
+                            WHEN COUNT(*) = 0                   THEN 0  -- NotFound
+                            WHEN MAX(CAST(IsActive AS INT)) = 1 THEN 1  -- Valid
+                            ELSE                                     2  -- Invalidated (IsActive=0)
                         END
                     FROM tbl_UserSessionTracker
                     WHERE SessionId = @SessionId";
@@ -315,7 +484,7 @@ namespace VGN_CRM_CORE.CommonFunctions
             return result;
         }
 
-        // ── private helper ───────────────────────────────────
+        // ── private helper ────────────────────────────────────
         private static void Try(Action action)
         {
             try { action(); }
@@ -327,7 +496,7 @@ namespace VGN_CRM_CORE.CommonFunctions
     }
 
     // ══════════════════════════════════════════════════════════
-    // PASSWORD HELPER  (simple SHA-256; swap for BCrypt in prod)
+    // PASSWORD HELPER  (simple SHA-256)
     // ══════════════════════════════════════════════════════════
     public static class PasswordHelper
     {
@@ -374,9 +543,7 @@ namespace VGN_CRM_CORE.CommonFunctions
                             {
                                 string fallback = config.GetSection("ConnectionStringsFallback")[name];
                                 if (fallback != null && TestConnection(fallback))
-                                {
                                     _useFallback = true;
-                                }
                             }
                             _lastCheck = DateTime.Now;
                         }
@@ -399,27 +566,18 @@ namespace VGN_CRM_CORE.CommonFunctions
             {
                 var builder = new SqlConnectionStringBuilder(connectionString);
                 string server = builder.DataSource;
-                if (server.Contains(","))
-                {
-                    server = server.Split(',')[0];
-                }
-                
+                if (server.Contains(",")) server = server.Split(',')[0];
+
                 using (var tcp = new System.Net.Sockets.TcpClient())
                 {
-                    var result = tcp.BeginConnect(server, 1433, null, null);
+                    var result  = tcp.BeginConnect(server, 1433, null, null);
                     var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(2));
-                    if (!success)
-                    {
-                        return false;
-                    }
+                    if (!success) return false;
                     tcp.EndConnect(result);
                     return true;
                 }
             }
-            catch
-            {
-                return false;
-            }
+            catch { return false; }
         }
     }
 }

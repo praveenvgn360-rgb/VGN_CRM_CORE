@@ -53,5 +53,14 @@ namespace VGN_CRM_CORE.Controllers
             AuditLogger.SavePreferences(pref);
             return Json(new { success = true });
         }
+
+        // POST /Settings/Reset
+        [HttpPost]
+        public IActionResult Reset()
+        {
+            var user = SessionHelper.GetUserSession(HttpContext.Session);
+            AuditLogger.ResetPreferences(user.UserId);
+            return Json(new { success = true });
+        }
     }
 }
