@@ -11,92 +11,38 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/css/tailwind.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
     <style>
-        :root { --primary: #4680FF; }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #e8eeff 0%, #f8f0ff 50%, #e8f4ff 100%);
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+        :root {
+            --primary: #4680FF;
+            --primary-rgb: 70,128,255;
         }
-        .login-wrapper {
-            display: grid; grid-template-columns: 1fr 1fr;
-            width: 900px; max-height: 96vh; min-height: 480px;
-            border-radius: 24px; overflow: hidden;
-            box-shadow: 0 32px 80px rgba(70,128,255,.18), 0 4px 16px rgba(0,0,0,.08);
-        }
-        .login-brand { position: relative; overflow: hidden; }
-        .login-brand video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-        .login-brand-overlay {
-            position: absolute; inset: 0; background: rgba(0,0,0,.30);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .login-brand-overlay img { max-width: 200px; object-fit: contain; filter: drop-shadow(0 4px 16px rgba(0,0,0,.4)); }
-        .login-form-panel {
-            background: #fff; display: flex; flex-direction: column;
-            justify-content: center; padding: 3rem 3.5rem;
-        }
-        .login-title { font-size: 1.75rem; font-weight: 700; color: #1a1a2e; }
-        .login-sub { color: #6c757d; font-size: .9rem; margin-top: .3rem; }
-        .form-control {
-            border-radius: 12px; border: 1.5px solid #e2e8f0;
-            padding: .65rem 1rem; font-size: .95rem;
-            transition: border-color .2s, box-shadow .2s; width: 100%;
-        }
-        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(70,128,255,.12); outline: none; }
-        .form-label { font-size: .85rem; font-weight: 600; color: #374151; margin-bottom: .3rem; }
-        .input-group-text {
-            border-radius: 12px 0 0 12px; border: 1.5px solid #e2e8f0;
-            border-right: none; background: #f8f9fa; color: #6c757d;
-        }
-        .input-group .form-control { border-radius: 0 12px 12px 0; }
-        .input-group:focus-within .input-group-text { border-color: var(--primary); }
-        .input-group:focus-within .form-control { border-color: var(--primary); box-shadow: none; }
-        .btn-login {
-            background: linear-gradient(135deg, var(--primary), #6c47ff);
-            color: #fff; border: none; border-radius: 12px;
-            padding: .8rem; font-weight: 600; font-size: 1rem;
-            width: 100%; cursor: pointer; transition: opacity .2s;
-        }
-        .btn-login:hover { opacity: .9; }
-        .text-danger-msg { color: #dc3545; font-size: .82rem; margin-top: .25rem; display: block; }
-        .alert-err {
-            background: #fff5f5; border: 1px solid #fecaca; border-radius: 10px;
-            padding: .75rem 1rem; font-size: .88rem; color: #dc3545;
-            margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem;
-        }
-        .pwd-wrapper { position: relative; }
-        .pwd-toggle {
-            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-            background: none; border: none; color: #9ca3af; cursor: pointer; padding: 0; font-size: 1rem;
-        }
-        .footer-txt { text-align: center; margin-top: 1.5rem; color: #9ca3af; font-size: .8rem; }
     </style>
 </head>
-<body>
-    <div class="login-wrapper">
+<body class="min-h-screen bg-gradient-to-br from-[#e8eeff] via-[#f8f0ff] to-[#e8f4ff] flex items-center justify-center font-[system-ui,sans-serif]">
+    <div class="grid grid-cols-1 lg:grid-cols-[8fr_4fr] w-[1100px] max-w-[95vw] max-h-[96vh] min-h-[480px] rounded-[24px] overflow-hidden shadow-[0_32px_80px_rgba(70,128,255,.18),_0_4px_16px_rgba(0,0,0,.08)]">
+        
         <!-- LEFT: Video -->
-        <div class="login-brand">
-            <video autoplay muted loop playsinline>
+        <div class="relative overflow-hidden hidden lg:block">
+            <video autoplay muted loop playsinline class="absolute inset-0 w-full h-full object-cover">
                 <source src="~/videos/VGN Aspire.mp4" type="video/mp4" />
             </video>
-            <div class="login-brand-overlay"></div>
+            <div class="absolute inset-0 bg-black/30 flex flex-col items-center justify-center">
+            </div>
         </div>
 
         <!-- RIGHT: Form -->
-        <div class="login-form-panel">
-            <div class="d-flex align-items-center gap-3 mb-1">
-                <img src="~/images/VGN360.png" alt="VGN360" style="height:56px;object-fit:contain;" />
-                <div class="login-title">Welcome Back &#128075;</div>
+        <div class="bg-white flex flex-col justify-center py-12 px-8 md:px-14">
+            <div class="flex items-center justify-center gap-3 mb-1">
+                <img src="~/images/VGN360.png" alt="VGN360" class="h-14 object-contain" />
+                <div class="text-[1.75rem] font-bold text-[#1a1a2e]">Welcome Back &#128075;</div>
             </div>
-            <div class="login-sub mb-4">Sign in to your VGN360 account</div>
+            <div class="text-[#6c757d] text-[0.9rem] mt-1 mb-8 text-center">Sign in to your VGN360 account</div>
 
             @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ContainsKey(""))
             {
-                <div class="alert-err" id="alertBox">
+                <div class="bg-[#fff5f5] border border-[#fecaca] rounded-[10px] py-3 px-4 text-[0.88rem] text-[#dc3545] mb-4 flex items-center gap-2 transition-opacity duration-500" id="alertBox">
                     <i class="bi bi-exclamation-triangle-fill"></i>
                     @foreach (var err in ViewData.ModelState[""].Errors)
                     {<span>@err.ErrorMessage</span>}
@@ -108,54 +54,50 @@
                 <input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl" />
 
                 <!-- User ID -->
-                <div class="mb-3">
-                    <label class="form-label"><i class="bi bi-person me-1"></i>User ID</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-person"></i></span>
-                        <input asp-for="UserId" id="UserId" class="form-control"
+                <div class="mb-5">
+                    <label class="block text-[0.85rem] font-semibold text-[#374151] mb-1"><i class="bi bi-person mr-1"></i>User ID</label>
+                    <div class="flex items-center border-[1.5px] border-[#e2e8f0] rounded-xl bg-white focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/20 transition-all duration-200">
+                        <span class="pl-4 pr-3 text-[#6c757d]"><i class="bi bi-person"></i></span>
+                        <input asp-for="UserId" id="UserId" class="w-full bg-transparent border-none py-2.5 pr-4 text-[0.95rem] focus:outline-none focus:ring-0"
                                placeholder="Enter your User ID" autocomplete="username" />
                     </div>
-                    <span asp-validation-for="UserId" class="text-danger-msg"></span>
+                    <span asp-validation-for="UserId" class="text-[#dc3545] text-[0.82rem] mt-1 block"></span>
                 </div>
 
                 <!-- Password -->
-                <div class="mb-3">
-                    <label class="form-label"><i class="bi bi-lock me-1"></i>Password</label>
-                    <div class="pwd-wrapper">
-                        <input asp-for="Password" id="PasswordInput" class="form-control"
+                <div class="mb-5">
+                    <label class="block text-[0.85rem] font-semibold text-[#374151] mb-1"><i class="bi bi-lock mr-1"></i>Password</label>
+                    <div class="relative flex items-center border-[1.5px] border-[#e2e8f0] rounded-xl bg-white focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/20 transition-all duration-200">
+                        <span class="pl-4 pr-3 text-[#6c757d]"><i class="bi bi-lock"></i></span>
+                        <input asp-for="Password" id="PasswordInput" class="w-full bg-transparent border-none py-2.5 pr-10 text-[0.95rem] focus:outline-none focus:ring-0"
                                placeholder="Enter your password"
-                               autocomplete="current-password" style="padding-right:2.5rem" />
-                        <button type="button" class="pwd-toggle" onclick="togglePwd()">
+                               autocomplete="current-password" />
+                        <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-gray-600 cursor-pointer p-0 text-base z-10 bg-transparent border-none" onclick="togglePwd()">
                             <i class="bi bi-eye-slash" id="pwdIcon"></i>
                         </button>
                     </div>
-                    <span asp-validation-for="Password" class="text-danger-msg"></span>
+                    <span asp-validation-for="Password" class="text-[#dc3545] text-[0.82rem] mt-1 block"></span>
                 </div>
 
                 <!-- Login Type -->
-                <div class="mb-3">
-                    <label class="form-label"><i class="bi bi-people me-1"></i>Login Type</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-people"></i></span>
-                        <select name="LoginType" id="LoginType" class="form-control">
+                <div class="mb-8">
+                    <label class="block text-[0.85rem] font-semibold text-[#374151] mb-1"><i class="bi bi-people mr-1"></i>Login Type</label>
+                    <div class="relative flex items-center border-[1.5px] border-[#e2e8f0] rounded-xl bg-white focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/20 transition-all duration-200">
+                        <span class="pl-4 pr-3 text-[#6c757d]"><i class="bi bi-people"></i></span>
+                        <select name="LoginType" id="LoginType" class="w-full bg-transparent border-none py-2.5 pr-10 text-[0.95rem] focus:outline-none focus:ring-0 appearance-none">
                             <option value="CORPORATE">CORPORATE</option>
                             <option value="CHANNELPARTNER">CHANNEL PARTNER</option>
                         </select>
+                        <i class="bi bi-chevron-down absolute right-4 pointer-events-none text-[#6c757d] text-sm z-10"></i>
                     </div>
                 </div>
 
-                <!-- Remember me -->
-                <div class="d-flex align-items-center mb-4">
-                    <input asp-for="RememberMe" id="RememberMe" class="form-check-input me-2" />
-                    <label for="RememberMe" class="form-check-label small text-muted">Remember me</label>
-                </div>
-
-                <button type="submit" class="btn-login">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                <button type="submit" class="w-full bg-gradient-to-br from-primary to-[#6c47ff] hover:opacity-90 text-white border-none rounded-xl py-3 font-semibold text-[1rem] cursor-pointer transition-opacity duration-200">
+                    <i class="bi bi-box-arrow-in-right mr-2"></i>Sign In
                 </button>
             </form>
 
-            <div class="footer-txt">&copy; @DateTime.Now.Year VGN360 &mdash; All rights reserved</div>
+            <div class="text-center mt-6 text-[#9ca3af] text-[0.8rem]">&copy; @DateTime.Now.Year VGN360 &mdash; All rights reserved</div>
         </div>
     </div>
 
@@ -169,7 +111,6 @@
         var alertBox = document.getElementById('alertBox');
         if (alertBox) {
             setTimeout(function () {
-                alertBox.style.transition = 'opacity 0.5s';
                 alertBox.style.opacity = '0';
                 setTimeout(function () { alertBox.style.display = 'none'; }, 500);
             }, 4000);
@@ -178,12 +119,31 @@
         inputs.forEach(function (inp) {
             inp.addEventListener('input', function () {
                 if (alertBox) {
-                    alertBox.style.transition = 'opacity 0.3s';
                     alertBox.style.opacity = '0';
                     setTimeout(function () { alertBox.style.display = 'none'; }, 300);
                 }
             });
         });
     </script>
+
+    @if (ViewBag.KickedOut == true)
+    {
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Session Ended',
+                    text: 'Same userid logged in using another system.',
+                    confirmButtonColor: '#4680FF',
+                    customClass: {
+                        popup: 'rounded-2xl shadow-2xl border-0',
+                        confirmButton: 'inline-flex items-center justify-center rounded-xl px-6 py-2 font-bold text-white cursor-pointer'
+                    }
+                });
+            });
+        </script>
+    }
 </body>
 </html>

@@ -75,10 +75,45 @@ namespace VGN_CRM_CORE.Controllers
 
             ChatDAL.SaveMessage(Conn, msg);
 
-            // Broadcast via Hub to receiver if online
-            await _hubContext.Clients.Group(msg.ReceiverId.ToUpper()).SendAsync("ReceiveMessage", msg.SenderId, msg.Message, msg.SentAt.ToString("o"));
+            // Broadcast via Hub to receiver if online (including MessageId)
+            await _hubContext.Clients.Group(msg.ReceiverId.ToUpper()).SendAsync("ReceiveMessage", msg.SenderId, msg.Message, msg.SentAt.ToString("o"), msg.MessageId);
 
             return Ok(msg);
+        }
+
+        public class EditMessageRequest
+        {
+            public string ReceiverId { get; set; }
+            public string Message { get; set; }
+        }
+
+        [HttpPut("edit/{messageId}")]
+        public async Task<IActionResult> EditMessage(int messageId, [FromBody] EditMessageRequest req)
+        {
+            var user = SessionHelper.GetUserSession(HttpContext.Session);
+            if (user == null) return Unauthorized();
+
+            ChatDAL.EditMessage(Conn, messageId, user.UserId, req.Message);
+
+            await _hubContext.Clients.Group(req.ReceiverId.ToUpper()).SendAsync("MessageEdited", messageId, req.Message);
+            return Ok();
+        }
+
+        public class DeleteMessageRequest
+        {
+            public string ReceiverId { get; set; }
+        }
+
+        [HttpDelete("delete/{messageId}")]
+        public async Task<IActionResult> DeleteMessage(int messageId, [FromBody] DeleteMessageRequest req)
+        {
+            var user = SessionHelper.GetUserSession(HttpContext.Session);
+            if (user == null) return Unauthorized();
+
+            ChatDAL.DeleteMessage(Conn, messageId, user.UserId);
+
+            await _hubContext.Clients.Group(req.ReceiverId.ToUpper()).SendAsync("MessageDeleted", messageId);
+            return Ok();
         }
         
         [HttpPost("markRead/{senderId}")]
