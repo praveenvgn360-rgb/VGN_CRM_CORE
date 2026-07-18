@@ -1,6 +1,7 @@
 wwwroot/videos/*.mp4
 wwwroot/videos/*.avi
 wwwroot/videos/*.mov
+SqlQuery/
 .vs/
 bin/
 obj/

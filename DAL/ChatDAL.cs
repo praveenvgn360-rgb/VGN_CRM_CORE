@@ -203,10 +203,12 @@ namespace VGN_CRM_CORE.DAL
                     con.Open();
                     // Use an inline query to ensure we get both online and offline users, 
                     // including users we've chatted with who might not have an active session right now.
+                    // FIX 2: Resolve real UserName and Department for all users (including offline/history users)
                     string sql = @"
                         SELECT 
                             U.UserId,
-                            MAX(U.UserName) AS UserName,
+                            ISNULL(MAX(T.UserName), U.UserId) AS UserName,
+                            '' AS Department,
                             ISNULL((
                                 SELECT COUNT(*) 
                                 FROM ChatMessages c 
@@ -216,11 +218,11 @@ namespace VGN_CRM_CORE.DAL
                             ), 0) AS UnreadCount,
                             CAST(MAX(CAST(ISNULL(T.IsActive, 0) AS INT)) AS BIT) AS IsOnline
                         FROM (
-                            SELECT UserId, UserName FROM tbl_UserSessionTracker WHERE UserId != @CurrentUserId
+                            SELECT UserId FROM tbl_UserSessionTracker WHERE UserId != @CurrentUserId
                             UNION
-                            SELECT SenderId AS UserId, SenderId AS UserName FROM ChatMessages WHERE ReceiverId = @CurrentUserId
+                            SELECT SenderId AS UserId FROM ChatMessages WHERE ReceiverId = @CurrentUserId
                             UNION
-                            SELECT ReceiverId AS UserId, ReceiverId AS UserName FROM ChatMessages WHERE SenderId = @CurrentUserId
+                            SELECT ReceiverId AS UserId FROM ChatMessages WHERE SenderId = @CurrentUserId
                         ) U
                         LEFT JOIN tbl_UserSessionTracker T ON U.UserId = T.UserId
                         WHERE U.UserId != @CurrentUserId
@@ -239,6 +241,7 @@ namespace VGN_CRM_CORE.DAL
                                 {
                                     UserId = reader["UserId"].ToString(),
                                     UserName = reader["UserName"].ToString(),
+                                    Department = reader["Department"].ToString(),
                                     UnreadCount = Convert.ToInt32(reader["UnreadCount"]),
                                     IsOnline = Convert.ToBoolean(reader["IsOnline"])
                                 });

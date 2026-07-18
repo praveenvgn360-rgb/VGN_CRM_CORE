@@ -95,7 +95,10 @@ namespace VGN_CRM_CORE.Controllers
 
             ChatDAL.EditMessage(Conn, messageId, user.UserId, req.Message);
 
+            // Notify the receiver
             await _hubContext.Clients.Group(req.ReceiverId.ToUpper()).SendAsync("MessageEdited", messageId, req.Message);
+            // Also notify the sender (other tabs / devices)
+            await _hubContext.Clients.Group(user.UserId.ToUpper()).SendAsync("MessageEdited", messageId, req.Message);
             return Ok();
         }
 
@@ -112,7 +115,10 @@ namespace VGN_CRM_CORE.Controllers
 
             ChatDAL.DeleteMessage(Conn, messageId, user.UserId);
 
+            // Notify the receiver
             await _hubContext.Clients.Group(req.ReceiverId.ToUpper()).SendAsync("MessageDeleted", messageId);
+            // Also notify the sender (other tabs / devices)
+            await _hubContext.Clients.Group(user.UserId.ToUpper()).SendAsync("MessageDeleted", messageId);
             return Ok();
         }
         
