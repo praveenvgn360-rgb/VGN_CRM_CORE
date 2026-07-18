@@ -9,13 +9,9 @@ $(document).ready(function () {
 
 var ExeId = "", Assnmanager = "", Teamhead = "", Project = "", Team = "";
 
-// Loader controls (using inline loader overlay)
-function showLoader() {
-    $('#loader').removeClass('opacity-0 pointer-events-none').addClass('opacity-100 pointer-events-auto');
-}
-function hideLoader() {
-    $('#loader').addClass('opacity-0 pointer-events-none').removeClass('opacity-100 pointer-events-auto');
-}
+// Loader controls
+function showLoader() { document.getElementById('loader').classList.add('show'); }
+function hideLoader() { document.getElementById('loader').classList.remove('show'); }
 
 function Executive_load() {
     $.ajax({
@@ -91,11 +87,11 @@ function TeamHead_load() {
 
 function dataGridFunction(data) {
     var orders = (data != 0) ? data : [];
-    var export_enable_disable = ($('#HUserid').val() == '25354') ? false : true;
 
     const dataGrid = $('#gridContainer').dxDataGrid({
         dataSource: orders,
         keyExpr: 'ClientId',
+        height: 'calc(100vh - 180px)',
         onRowClick: function (e) {
             getrow_client_value(e.key);
         },
@@ -113,21 +109,6 @@ function dataGridFunction(data) {
         paging: { enabled: false },
         columnChooser: { enabled: true, mode: 'select' },
         searchPanel: { visible: true, width: 240, placeholder: 'Search...' },
-        export: { enabled: export_enable_disable },
-        onExporting(e) {
-            const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Active Leads');
-            DevExpress.excelExporter.exportDataGrid({
-                component: e.component,
-                worksheet,
-                autoFilterEnabled: true,
-            }).then(() => {
-                workbook.xlsx.writeBuffer().then((buffer) => {
-                    saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'Active Leads.xlsx');
-                });
-            });
-            e.cancel = true;
-        },
         onOptionChanged: function (e) {
             if (e.name === "filterValue" || e.name === "searchPanel") {
                 updateVisibleRowCount();
@@ -286,21 +267,6 @@ function dataGridFunction1(data) {
         paging: { enabled: false },
         columnChooser: { enabled: true, mode: 'select' },
         searchPanel: { visible: true, width: 240, placeholder: 'Search...' },
-        export: { enabled: true },
-        onExporting(e) {
-            const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Manual Leads');
-            DevExpress.excelExporter.exportDataGrid({
-                component: e.component,
-                worksheet,
-                autoFilterEnabled: true,
-            }).then(() => {
-                workbook.xlsx.writeBuffer().then((buffer) => {
-                    saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'Manual Leads.xlsx');
-                });
-            });
-            e.cancel = true;
-        },
         columns: [
             { dataField: 'EntryDatetime', caption: 'ENQUIRY DATE', width: 120, dataType: "datetime", format: 'dd/MM/yyyy' },
             { dataField: 'CustomerName', caption: 'CLIENT NAME', width: 150 },
