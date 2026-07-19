@@ -4366,6 +4366,7 @@
 
             // FIX 3: MessageEdited - update in DOM if visible, or refresh active chat
             chatConnection.on("MessageEdited", function (messageId, newText) {
+                console.log("SignalR received MessageEdited for ID:", messageId, "New text:", newText);
                 let msgDiv = document.getElementById('chat-msg-text-' + messageId);
                 if (msgDiv) {
                     msgDiv.innerText = newText;
@@ -4379,6 +4380,7 @@
 
             // FIX 3: MessageDeleted - update in DOM if visible, or refresh active chat
             chatConnection.on("MessageDeleted", function (messageId) {
+                console.log("SignalR received MessageDeleted for ID:", messageId);
                 let msgContainer = document.getElementById('chat-msg-' + messageId);
                 if (msgContainer) {
                     msgContainer.innerHTML = '<div style="font-size: .8rem; color: var(--text-muted); font-style: italic; background: var(--surface); padding: .65rem .85rem; border-radius: 12px 12px 0 12px; border: 1px solid var(--border);"><i class="bi bi-slash-circle"></i> This message was deleted.</div>';
@@ -4592,7 +4594,7 @@
                     url: '/api/Chat/edit/' + editingMessageId,
                     type: 'PUT',
                     contentType: 'application/json',
-                    data: JSON.stringify({ ReceiverId: chatActiveOtherUserId, Message: txt }),
+                    data: JSON.stringify({ receiverId: chatActiveOtherUserId, message: txt }),
                     success: function() {
                         let textSpan = document.getElementById('chat-msg-text-' + editingMessageId);
                         if (textSpan) textSpan.innerText = txt;
@@ -4606,8 +4608,8 @@
             }
 
             let msgObj = {
-                ReceiverId: chatActiveOtherUserId,
-                Message: txt
+                receiverId: chatActiveOtherUserId,
+                message: txt
             };
 
             input.value = '';
@@ -4664,7 +4666,7 @@
                         url: '/api/Chat/delete/' + messageId,
                         type: 'DELETE',
                         contentType: 'application/json',
-                        data: JSON.stringify({ ReceiverId: chatActiveOtherUserId }),
+                        data: JSON.stringify({ receiverId: chatActiveOtherUserId }),
                         success: function() {
                             let msgContainer = document.getElementById('chat-msg-' + messageId);
                             if (msgContainer) {
