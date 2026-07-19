@@ -4373,8 +4373,7 @@
                     let editedTag = document.getElementById('chat-msg-edited-' + messageId);
                     if (editedTag) editedTag.style.display = 'inline';
                 } else if (chatActiveOtherUserId) {
-                    // Chat is open but element not found — do a full refresh
-                    refreshActiveChatMessages();
+                    syncActiveChatMessages();
                 }
             });
 
@@ -4385,7 +4384,7 @@
                 if (msgContainer) {
                     msgContainer.innerHTML = '<div style="font-size: .8rem; color: var(--text-muted); font-style: italic; background: var(--surface); padding: .65rem .85rem; border-radius: 12px 12px 0 12px; border: 1px solid var(--border);"><i class="bi bi-slash-circle"></i> This message was deleted.</div>';
                 } else if (chatActiveOtherUserId) {
-                    refreshActiveChatMessages();
+                    syncActiveChatMessages();
                 }
             });
 
@@ -4702,9 +4701,9 @@
                                 badge.style.display = u.unreadCount > 0 ? 'flex' : 'none';
                             }
                             
-                            // If chatting with this user and they sent something
-                            if (chatActiveOtherUserId === u.userId && u.unreadCount > 0) {
-                                refreshActiveChatMessages();
+                            // If chatting with this user, sync to catch edits/deletes/new messages robustly
+                            if (chatActiveOtherUserId === u.userId) {
+                                syncActiveChatMessages();
                             }
                             
                             // Update header if they are the active chat
@@ -4729,15 +4728,38 @@
             });
         }
 
-        function refreshActiveChatMessages() {
+        function syncActiveChatMessages() {
             if (!chatActiveOtherUserId) return;
-            $.get('/api/Chat/messages/' + chatActiveOtherUserId, function(messages) {
-                document.getElementById('chatMessagesContainer').innerHTML = '';
-                messages.forEach(m => {
-                    let isMe = m.senderId === chatCurrentUserId;
-                    appendMessage(m.messageId, m.senderId, m.message, new Date(m.sentAt), isMe, m.isEdited, m.isDeleted);
-                });
-                scrollToBottom();
+            $.ajax({
+                url: '/api/Chat/messages/' + chatActiveOtherUserId,
+                type: 'GET',
+                cache: false,
+                success: function(messages) {
+                    let appended = false;
+                    messages.forEach(m => {
+                        let container = document.getElementById('chat-msg-' + m.messageId);
+                        let msgDiv = document.getElementById('chat-msg-text-' + m.messageId);
+                        
+                        if (container) {
+                            if (m.isDeleted && !container.innerHTML.includes('This message was deleted')) {
+                                container.innerHTML = '<div style="font-size: .8rem; color: var(--text-muted); font-style: italic; background: var(--surface); padding: .65rem .85rem; border-radius: 12px 12px 0 12px; border: 1px solid var(--border);"><i class="bi bi-slash-circle"></i> This message was deleted.</div>';
+                            } else if (!m.isDeleted && msgDiv) {
+                                if (msgDiv.innerText !== m.message) {
+                                    msgDiv.innerText = m.message;
+                                }
+                                let editedTag = document.getElementById('chat-msg-edited-' + m.messageId);
+                                if (editedTag) {
+                                    editedTag.style.display = m.isEdited ? 'inline' : 'none';
+                                }
+                            }
+                        } else {
+                            let isMe = m.senderId === chatCurrentUserId;
+                            appendMessage(m.messageId, m.senderId, m.message, new Date(m.sentAt), isMe, m.isEdited, m.isDeleted);
+                            appended = true;
+                        }
+                    });
+                    if (appended) scrollToBottom();
+                }
             });
         }
 
