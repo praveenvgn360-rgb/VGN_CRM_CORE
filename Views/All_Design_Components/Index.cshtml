@@ -3,51 +3,6 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<!-- ===== CSS CDNs ===== -->
-<link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdn3.devexpress.com/jslib/23.1.6/css/dx.light.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-
-<!-- ===== ADVANCED LIBRARIES ===== -->
-<!-- Select2 - Advanced Dropdown -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
-<!-- Flatpickr - Advanced Date/Time Picker -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css" />
-
-<!-- Chart.js - Additional Chart Library -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css" />
-
-<!-- Tailwind CSS -->
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-    tailwind.config = {
-        darkMode: 'class',
-        corePlugins: { preflight: false },
-        theme: {
-            extend: {
-                colors: {
-                    primary: 'var(--primary)',
-                    blue: {
-                        50: 'rgba(var(--primary-rgb), 0.05)',
-                        100: 'rgba(var(--primary-rgb), 0.1)',
-                        200: 'rgba(var(--primary-rgb), 0.2)',
-                        300: 'rgba(var(--primary-rgb), 0.3)',
-                        400: 'rgba(var(--primary-rgb), 0.4)',
-                        500: 'var(--primary)',
-                        600: 'var(--primary)',
-                        700: 'var(--primary)',
-                        800: 'var(--primary)',
-                        900: 'var(--primary)',
-                    }
-                }
-            }
-        }
-    }
-</script>
-
 <style>
     /* ===== LOADER ===== */
     #full-page-loader {
@@ -250,230 +205,6 @@
             color: #fff;
         }
 
-    /* ===== VGN SEMANTIC BUTTONS (Theme Aware) ===== */
-    .btn-load {
-        background: var(--primary) !important;
-        color: #fff !important;
-        border: none !important;
-    }
-
-        .btn-load:hover {
-            opacity: 0.85;
-            transform: translateY(-1px);
-        }
-
-    .btn-save {
-        background: #10b981 !important;
-        color: #fff !important;
-        border: none !important;
-    }
-
-        .btn-save:hover {
-            opacity: 0.85;
-            transform: translateY(-1px);
-        }
-
-    .btn-update {
-        background: #f59e0b !important;
-        color: #fff !important;
-        border: none !important;
-    }
-
-        .btn-update:hover {
-            opacity: 0.85;
-            transform: translateY(-1px);
-        }
-
-    .btn-edit {
-        background: #8b5cf6 !important;
-        color: #fff !important;
-        border: none !important;
-    }
-
-        .btn-edit:hover {
-            opacity: 0.85;
-            transform: translateY(-1px);
-        }
-
-    .btn-delete {
-        background: #ef4444 !important;
-        color: #fff !important;
-        border: none !important;
-    }
-
-        .btn-delete:hover {
-            opacity: 0.85;
-            transform: translateY(-1px);
-        }
-
-    .btn-clear {
-        background: #6b7280 !important;
-        color: #fff !important;
-        border: none !important;
-    }
-
-        .btn-clear:hover {
-            opacity: 0.85;
-            transform: translateY(-1px);
-        }
-
-    .btn-cancel {
-        background: #9ca3af !important;
-        color: #fff !important;
-        border: none !important;
-    }
-
-        .btn-cancel:hover {
-            opacity: 0.85;
-            transform: translateY(-1px);
-        }
-
-    .btn-load, .btn-save, .btn-update, .btn-edit, .btn-delete, .btn-clear, .btn-cancel {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 0.5rem 1.2rem;
-        font-size: 0.78rem;
-        font-weight: 600;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    /* ===== DX GRID OVERRIDES ===== */
-    .dx-datagrid .dx-datagrid-headers {
-        background: var(--primary) !important;
-    }
-
-    .dx-datagrid .dx-header-row td {
-        background: var(--primary) !important;
-        color: #fff !important;
-        font-weight: 600 !important;
-        padding: 10px 8px !important;
-    }
-
-    .dx-datagrid .dx-row-alt > td {
-        background: rgba(var(--primary-rgb), 0.03) !important;
-    }
-
-    .dx-datagrid .dx-row:hover td {
-        background: rgba(var(--primary-rgb), 0.06) !important;
-    }
-
-    .dx-datagrid .dx-datagrid-rowsview .dx-row.dx-state-hover td {
-        background: rgba(var(--primary-rgb), 0.08) !important;
-    }
-
-    /* ===== SELECT2 OVERRIDES ===== */
-    .select2-container--default .select2-selection--single,
-    .select2-container--default .select2-selection--multiple {
-        border-color: #d1d5db !important;
-        border-radius: 8px !important;
-        min-height: 38px !important;
-        background: #f9fafb !important;
-    }
-
-    .dark .select2-container--default .select2-selection--single,
-    .dark .select2-container--default .select2-selection--multiple {
-        background: #374151 !important;
-        border-color: #4b5563 !important;
-        color: #fff !important;
-    }
-
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        color: #1f2937 !important;
-        line-height: 38px !important;
-        padding-left: 12px !important;
-    }
-
-    .dark .select2-container--default .select2-selection--single .select2-selection__rendered {
-        color: #e5e7eb !important;
-    }
-
-    /* ===== FLATPICKR OVERRIDES ===== */
-    .flatpickr-input {
-        background: #f9fafb !important;
-        border: 1px solid #d1d5db !important;
-        border-radius: 8px !important;
-        padding: 8px 12px !important;
-        width: 100% !important;
-        font-size: 0.875rem !important;
-    }
-
-    .dark .flatpickr-input {
-        background: #374151 !important;
-        border-color: #4b5563 !important;
-        color: #e5e7eb !important;
-    }
-
-    .flatpickr-calendar {
-        border-radius: 12px !important;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.2) !important;
-    }
-
-    /* ===== TOGGLE SWITCH FIX ===== */
-    .toggle-switch {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        cursor: pointer;
-        gap: 12px;
-    }
-
-        .toggle-switch input {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-    .toggle-slider {
-        position: relative;
-        width: 48px;
-        height: 26px;
-        background: #d1d5db;
-        border-radius: 13px;
-        transition: background 0.3s ease;
-        flex-shrink: 0;
-    }
-
-    .dark .toggle-slider {
-        background: #4b5563;
-    }
-
-    .toggle-slider::after {
-        content: '';
-        position: absolute;
-        top: 3px;
-        left: 3px;
-        width: 20px;
-        height: 20px;
-        background: #fff;
-        border-radius: 50%;
-        transition: transform 0.3s ease;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-
-    .toggle-switch input:checked + .toggle-slider {
-        background: var(--primary, #4680FF);
-    }
-
-        .toggle-switch input:checked + .toggle-slider::after {
-            transform: translateX(22px);
-        }
-
-    .toggle-label {
-        font-size: 0.8rem;
-        font-weight: 500;
-        color: var(--text, #1f2937);
-    }
-
-    .dark .toggle-label {
-        color: #e5e7eb;
-    }
-
     /* ===== RESPONSIVE ===== */
     @@media (max-width: 1024px) {
         .showcase-sidebar
@@ -482,6 +213,188 @@
         display: none;
     }
 
+    }
+
+    /* ===== CRM COMPONENT REFINEMENTS & THEME FIXES ===== */
+    /* Force icons inside showcase cards to inherit text color instead of global overrides */
+    #main-content .showcase-card i,
+    #main-content .showcase-card .fas,
+    #main-content .showcase-card .far,
+    #main-content .showcase-card .fab,
+    #main-content .showcase-card .fa {
+        color: inherit !important;
+    }
+
+    /* Vibrant Gradient Buttons - Theme-Aware & High-Contrast */
+    .btn-gradient-primary {
+        background: linear-gradient(135deg, var(--primary) 0%, rgba(var(--primary-rgb), 0.8) 100%) !important;
+        color: #ffffff !important;
+    }
+    .btn-gradient-primary:hover {
+        background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.85) 0%, var(--primary) 100%) !important;
+    }
+    .btn-gradient-blue {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+        color: #ffffff !important;
+    }
+    .btn-gradient-blue:hover {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+    }
+    .btn-gradient-green {
+        background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important;
+        color: #ffffff !important;
+    }
+    .btn-gradient-green:hover {
+        background: linear-gradient(135deg, #059669 0%, #065f46 100%) !important;
+    }
+    .btn-gradient-purple {
+        background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%) !important;
+        color: #ffffff !important;
+    }
+    .btn-gradient-purple:hover {
+        background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%) !important;
+    }
+    .btn-gradient-pink {
+        background: linear-gradient(135deg, #ec4899 0%, #be185d 100%) !important;
+        color: #ffffff !important;
+    }
+    .btn-gradient-pink:hover {
+        background: linear-gradient(135deg, #db2777 0%, #9d174d 100%) !important;
+    }
+    .btn-gradient-amber {
+        background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%) !important;
+        color: #ffffff !important;
+    }
+    .btn-gradient-amber:hover {
+        background: linear-gradient(135deg, #d97706 0%, #92400e 100%) !important;
+    }
+    .btn-gradient-indigo {
+        background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%) !important;
+        color: #ffffff !important;
+    }
+    .btn-gradient-indigo:hover {
+        background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%) !important;
+    }
+
+    /* Stats & Profile Cards Theme-Aware Elements */
+    .stats-icon-blue {
+        background-color: rgba(59, 130, 246, 0.1) !important;
+        color: #2563eb !important;
+    }
+    [data-theme="dark"] .stats-icon-blue {
+        background-color: rgba(96, 165, 250, 0.15) !important;
+        color: #60a5fa !important;
+    }
+    .stats-icon-emerald {
+        background-color: rgba(16, 185, 129, 0.1) !important;
+        color: #059669 !important;
+    }
+    [data-theme="dark"] .stats-icon-emerald {
+        background-color: rgba(52, 211, 153, 0.15) !important;
+        color: #34d399 !important;
+    }
+    .stats-icon-purple {
+        background-color: rgba(139, 92, 246, 0.1) !important;
+        color: #7c3aed !important;
+    }
+    [data-theme="dark"] .stats-icon-purple {
+        background-color: rgba(167, 139, 250, 0.15) !important;
+        color: #a78bfa !important;
+    }
+    .stats-icon-amber {
+        background-color: rgba(245, 158, 11, 0.1) !important;
+        color: #d97706 !important;
+    }
+    [data-theme="dark"] .stats-icon-amber {
+        background-color: rgba(251, 191, 36, 0.15) !important;
+        color: #fbbf24 !important;
+    }
+
+    .text-success-custom {
+        color: #059669 !important;
+    }
+    [data-theme="dark"] .text-success-custom {
+        color: #34d399 !important;
+    }
+    .text-danger-custom {
+        color: #dc2626 !important;
+    }
+    [data-theme="dark"] .text-danger-custom {
+        color: #f87171 !important;
+    }
+
+    /* SweetAlert2 Elegant Theme Override */
+    .swal-popup-custom {
+        background: var(--surface) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 16px !important;
+        padding: 2rem !important;
+        box-shadow: var(--card-shadow) !important;
+    }
+    .swal-title-custom {
+        color: var(--text) !important;
+        font-size: 1.25rem !important;
+        font-weight: 700 !important;
+        font-family: var(--font-family), system-ui, -apple-system, sans-serif !important;
+        margin-bottom: 1rem !important;
+    }
+    .swal-html-custom {
+        color: var(--text-muted) !important;
+        font-size: 0.875rem !important;
+        font-family: var(--font-family), system-ui, -apple-system, sans-serif !important;
+    }
+    .swal-input-custom {
+        background: var(--bg) !important;
+        border: 1px solid var(--border) !important;
+        color: var(--text) !important;
+        border-radius: 8px !important;
+        padding: 10px 14px !important;
+        font-size: 0.875rem !important;
+        font-family: var(--font-family), system-ui, -apple-system, sans-serif !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        margin-top: 1rem !important;
+        transition: border-color 0.2s, box-shadow 0.2s !important;
+    }
+    .swal-input-custom:focus {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.25) !important;
+        outline: none !important;
+    }
+    .swal-confirm-btn-custom {
+        background-color: var(--primary) !important;
+        color: #ffffff !important;
+        font-size: 0.82rem !important;
+        font-weight: 600 !important;
+        padding: 10px 24px !important;
+        border-radius: 8px !important;
+        border: none !important;
+        cursor: pointer !important;
+        transition: opacity 0.2s !important;
+        margin: 0 4px !important;
+    }
+    .swal-confirm-btn-custom:hover {
+        opacity: 0.9 !important;
+    }
+    .swal-cancel-btn-custom {
+        background-color: #6b7280 !important;
+        color: #ffffff !important;
+        font-size: 0.82rem !important;
+        font-weight: 600 !important;
+        padding: 10px 24px !important;
+        border-radius: 8px !important;
+        border: none !important;
+        cursor: pointer !important;
+        transition: opacity 0.2s !important;
+        margin: 0 4px !important;
+    }
+    .swal-cancel-btn-custom:hover {
+        opacity: 0.9 !important;
+    }
+    .swal-actions-custom {
+        margin-top: 1.5rem !important;
+        gap: 8px !important;
     }
 </style>
 
@@ -496,32 +409,32 @@
 <div class="px-4 md:px-6 py-6 max-w-[1800px] mx-auto">
 
     <!-- ===== TOP BANNER ===== -->
-    <div class="relative bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-2xl p-6 md:p-8 mb-8 overflow-hidden shadow-lg border border-gray-800">
-        <div class="absolute inset-0 bg-cover bg-center opacity-10" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80');"></div>
+@*     <div class="relative rounded-2xl p-6 md:p-8 mb-8 overflow-hidden" style="background: linear-gradient(135deg, var(--primary) 0%, rgba(var(--primary-rgb),0.72) 60%, rgba(var(--primary-rgb),0.4) 100%); border: 1px solid rgba(var(--primary-rgb),0.35); box-shadow: 0 8px 32px rgba(var(--primary-rgb),0.22);">
+        <div class="absolute top-0 right-0 pointer-events-none" style="width:320px;height:320px;background:radial-gradient(circle,rgba(255,255,255,0.18) 0%,transparent 70%);transform:translate(35%,-35%);"></div>
         <div class="relative z-10">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-300 border border-blue-400/20 mb-3 uppercase tracking-widest">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold mb-3 uppercase tracking-widest" style="background:rgba(255,255,255,0.18); color:#fff; border:1px solid rgba(255,255,255,0.3);">
                 <i class="fas fa-window-maximize animate-pulse"></i> VGN Core Component Registry
             </span>
-            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">VGN CRM Design System</h1>
-            <p class="text-sm md:text-base text-gray-300 max-w-3xl font-light">
+            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight mb-2" style="color:#fff;">VGN CRM Design System</h1>
+            <p class="text-sm md:text-base max-w-3xl font-light" style="color:rgba(255,255,255,0.85);">
                 Complete component library with all input types, advanced dropdowns, date/time pickers, themed buttons,
                 DevExtreme grids with PDF/Excel export, and every Flowbite component.
             </p>
         </div>
     </div>
-
+ *@
     <!-- ===== MAIN GRID ===== -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
         <!-- ===== SIDEBAR NAVIGATION ===== -->
-        <div class="lg:col-span-3">
-            <div class="showcase-sidebar flex flex-col gap-0.5 pr-2">
+        <div class="lg:col-span-2">
+            <div class="showcase-sidebar flex flex-col gap-0.5">
                 <div class="px-3 mb-2">
                     <span class="text-[10px] font-extrabold uppercase tracking-widest text-[var(--text-muted)]">Navigation</span>
                 </div>
 
                 <a href="#section-buttons" class="showcase-nav-link active"><i class="fas fa-hand-pointer w-4"></i> Buttons (All Types)</a>
-                <a href="#section-forms" class="showcase-nav-link"><i class="fas fa-input w-4"></i> Form Elements</a>
+                <a href="#section-forms" class="showcase-nav-link"><i class="fas fa-edit w-4"></i> Form Elements</a>
                 <a href="#section-dxgrid" class="showcase-nav-link"><i class="fas fa-table w-4"></i> DevExtreme Grids</a>
                 <a href="#section-layout" class="showcase-nav-link"><i class="fas fa-layer-group w-4"></i> Layout & Cards</a>
                 <a href="#section-flowbite" class="showcase-nav-link"><i class="fas fa-puzzle-piece w-4"></i> Flowbite Components</a>
@@ -530,7 +443,7 @@
         </div>
 
         <!-- ===== CONTENT COLUMN ===== -->
-        <div class="lg:col-span-9 space-y-6">
+        <div class="lg:col-span-10 space-y-6">
 
             <!-- ============================================================ -->
             <!-- ===== SECTION: BUTTONS (ALL TYPES) ===== -->
@@ -540,15 +453,17 @@
                     <h2 class="font-extrabold text-lg text-[var(--text)] flex items-center gap-2">
                         <i class="fas fa-hand-pointer text-primary"></i> Buttons - All Types
                     </h2>
-                    <button class="btn-edit text-xs px-3 py-1.5 rounded-lg" onclick="toggleCode('code-buttons')">
-                        <i class="fas fa-code"></i> Code
-                    </button>
                 </div>
                 <div class="showcase-body space-y-6">
 
                     <!-- 1. Solid Buttons -->
                     <div>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">1. Solid Buttons</h4>
+                        <div class="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-gray-800/30 pb-1.5">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">1. Solid Buttons</h4>
+                            <button class="text-[10px] font-bold text-primary hover:opacity-80 transition flex items-center gap-1" onclick="toggleCode('code-buttons-solid')">
+                                <i class="fas fa-code"></i> Code
+                            </button>
+                        </div>
                         <div class="flex flex-wrap gap-3">
                             <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition">Primary</button>
                             <button class="px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white text-xs font-semibold rounded-lg shadow-sm transition">Dark</button>
@@ -559,11 +474,23 @@
                             <button class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold rounded-lg shadow-sm transition">Pink</button>
                             <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm transition">Indigo</button>
                         </div>
+                        <div id="code-buttons-solid" class="code-preview-container">
+                            <button class="copy-btn" onclick="copySnippet('code-buttons-solid-text', this)"><i class="fas fa-copy"></i> Copy</button>
+                            <pre class="code-preview-text" id="code-buttons-solid-text">&lt;button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition"&gt;Primary&lt;/button&gt;
+&lt;button class="px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white text-xs font-semibold rounded-lg shadow-sm transition"&gt;Dark&lt;/button&gt;
+&lt;button class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition"&gt;Success&lt;/button&gt;
+&lt;button class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg shadow-sm transition"&gt;Danger&lt;/button&gt;</pre>
+                        </div>
                     </div>
 
                     <!-- 2. Outline Buttons -->
                     <div>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">2. Outline Buttons</h4>
+                        <div class="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-gray-800/30 pb-1.5">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">2. Outline Buttons</h4>
+                            <button class="text-[10px] font-bold text-primary hover:opacity-80 transition flex items-center gap-1" onclick="toggleCode('code-buttons-outline')">
+                                <i class="fas fa-code"></i> Code
+                            </button>
+                        </div>
                         <div class="flex flex-wrap gap-3">
                             <button class="px-4 py-2 border-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-xs font-semibold rounded-lg transition">Primary</button>
                             <button class="px-4 py-2 border-2 border-gray-600 text-gray-600 dark:text-gray-300 dark:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 text-xs font-semibold rounded-lg transition">Dark</button>
@@ -572,49 +499,74 @@
                             <button class="px-4 py-2 border-2 border-amber-500 text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 text-xs font-semibold rounded-lg transition">Warning</button>
                             <button class="px-4 py-2 border-2 border-purple-600 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 text-xs font-semibold rounded-lg transition">Purple</button>
                         </div>
+                        <div id="code-buttons-outline" class="code-preview-container">
+                            <button class="copy-btn" onclick="copySnippet('code-buttons-outline-text', this)"><i class="fas fa-copy"></i> Copy</button>
+                            <pre class="code-preview-text" id="code-buttons-outline-text">&lt;button class="px-4 py-2 border-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-xs font-semibold rounded-lg transition"&gt;Primary&lt;/button&gt;
+&lt;button class="px-4 py-2 border-2 border-gray-600 text-gray-600 dark:text-gray-300 dark:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 text-xs font-semibold rounded-lg transition"&gt;Dark&lt;/button&gt;</pre>
+                        </div>
                     </div>
 
                     <!-- 3. Gradient Buttons -->
                     <div>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">3. Gradient Buttons</h4>
+                        <div class="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-gray-800/30 pb-1.5">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">3. Gradient Buttons (Theme-Aware & Vibrant)</h4>
+                            <button class="text-[10px] font-bold text-primary hover:opacity-80 transition flex items-center gap-1" onclick="toggleCode('code-buttons-gradient')">
+                                <i class="fas fa-code"></i> Code
+                            </button>
+                        </div>
                         <div class="flex flex-wrap gap-3">
-                            <button class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white text-xs font-semibold rounded-lg shadow-sm transition">Blue</button>
-                            <button class="px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-700 hover:from-emerald-600 hover:to-emerald-800 text-white text-xs font-semibold rounded-lg shadow-sm transition">Green</button>
-                            <button class="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 text-white text-xs font-semibold rounded-lg shadow-sm transition">Purple</button>
-                            <button class="px-4 py-2 bg-gradient-to-r from-pink-500 to-pink-700 hover:from-pink-600 hover:to-pink-800 text-white text-xs font-semibold rounded-lg shadow-sm transition">Pink</button>
-                            <button class="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white text-xs font-semibold rounded-lg shadow-sm transition">Amber</button>
-                            <button class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-600 hover:to-indigo-800 text-white text-xs font-semibold rounded-lg shadow-sm transition">Indigo</button>
+                            <button class="px-4 py-2 btn-gradient-primary text-xs font-semibold rounded-lg shadow-sm transition">Theme Primary</button>
+                            <button class="px-4 py-2 btn-gradient-blue text-xs font-semibold rounded-lg shadow-sm transition">Blue</button>
+                            <button class="px-4 py-2 btn-gradient-green text-xs font-semibold rounded-lg shadow-sm transition">Green</button>
+                            <button class="px-4 py-2 btn-gradient-purple text-xs font-semibold rounded-lg shadow-sm transition">Purple</button>
+                            <button class="px-4 py-2 btn-gradient-pink text-xs font-semibold rounded-lg shadow-sm transition">Pink</button>
+                            <button class="px-4 py-2 btn-gradient-amber text-xs font-semibold rounded-lg shadow-sm transition">Amber</button>
+                            <button class="px-4 py-2 btn-gradient-indigo text-xs font-semibold rounded-lg shadow-sm transition">Indigo</button>
+                        </div>
+                        <div id="code-buttons-gradient" class="code-preview-container">
+                            <button class="copy-btn" onclick="copySnippet('code-buttons-gradient-text', this)"><i class="fas fa-copy"></i> Copy</button>
+                            <pre class="code-preview-text" id="code-buttons-gradient-text">&lt;!-- Theme-Aware Dynamic Gradient Button --&gt;
+&lt;button class="px-4 py-2 btn-gradient-primary text-xs font-semibold rounded-lg shadow-sm transition"&gt;Theme Primary&lt;/button&gt;
+
+&lt;!-- Custom Vibrant Gradient Buttons --&gt;
+&lt;button class="px-4 py-2 btn-gradient-blue text-xs font-semibold rounded-lg shadow-sm transition"&gt;Blue&lt;/button&gt;
+&lt;button class="px-4 py-2 btn-gradient-green text-xs font-semibold rounded-lg shadow-sm transition"&gt;Green&lt;/button&gt;
+&lt;button class="px-4 py-2 btn-gradient-purple text-xs font-semibold rounded-lg shadow-sm transition"&gt;Purple&lt;/button&gt;</pre>
                         </div>
                     </div>
 
                     <!-- 4. Icon Buttons -->
                     <div>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">4. Icon Buttons</h4>
+                        <div class="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-gray-800/30 pb-1.5">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">4. Icon Buttons</h4>
+                            <button class="text-[10px] font-bold text-primary hover:opacity-80 transition flex items-center gap-1" onclick="toggleCode('code-buttons-icon')">
+                                <i class="fas fa-code"></i> Code
+                            </button>
+                        </div>
                         <div class="flex flex-wrap gap-3">
-                            <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition inline-flex items-center gap-2">
-                                <i class="fas fa-plus"></i> Create
-                            </button>
-                            <button class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm transition inline-flex items-center gap-2">
-                                <i class="fas fa-save"></i> Save
-                            </button>
-                            <button class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg shadow-sm transition inline-flex items-center gap-2">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
-                            <button class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-lg shadow-sm transition inline-flex items-center gap-2">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                            <button class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-lg shadow-sm transition inline-flex items-center gap-2">
-                                <i class="fas fa-download"></i> Export
-                            </button>
-                            <button class="px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white text-xs font-semibold rounded-lg shadow-sm transition inline-flex items-center gap-2">
-                                <i class="fas fa-print"></i> Print
-                            </button>
+                            <button class="vgn-btn vgn-btn-create">Create</button>
+                            <button class="vgn-btn vgn-btn-save">Save</button>
+                            <button class="vgn-btn vgn-btn-delete">Delete</button>
+                            <button class="vgn-btn vgn-btn-edit">Edit</button>
+                            <button class="vgn-btn vgn-btn-export">Export</button>
+                            <button class="vgn-btn vgn-btn-print">Print</button>
+                        </div>
+                        <div id="code-buttons-icon" class="code-preview-container">
+                            <button class="copy-btn" onclick="copySnippet('code-buttons-icon-text', this)"><i class="fas fa-copy"></i> Copy</button>
+                            <pre class="code-preview-text" id="code-buttons-icon-text">&lt;button class="vgn-btn vgn-btn-create"&gt;Create&lt;/button&gt;
+&lt;button class="vgn-btn vgn-btn-save"&gt;Save&lt;/button&gt;
+&lt;button class="vgn-btn vgn-btn-delete"&gt;Delete&lt;/button&gt;</pre>
                         </div>
                     </div>
 
                     <!-- 5. VGN Semantic Buttons (Theme Aware) -->
                     <div>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">5. VGN Semantic Buttons (Theme Aware)</h4>
+                        <div class="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-gray-800/30 pb-1.5">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">5. VGN Semantic Buttons (Theme Aware)</h4>
+                            <button class="text-[10px] font-bold text-primary hover:opacity-80 transition flex items-center gap-1" onclick="toggleCode('code-buttons-semantic')">
+                                <i class="fas fa-code"></i> Code
+                            </button>
+                        </div>
                         <div class="flex flex-wrap gap-3">
                             <button class="btn-load"><i class="fas fa-sync-alt"></i> Load Data</button>
                             <button class="btn-save"><i class="fas fa-check"></i> Save Changes</button>
@@ -624,21 +576,45 @@
                             <button class="btn-clear"><i class="fas fa-eraser"></i> Clear Fields</button>
                             <button class="btn-cancel"><i class="fas fa-times"></i> Cancel</button>
                         </div>
+                        <div id="code-buttons-semantic" class="code-preview-container">
+                            <button class="copy-btn" onclick="copySnippet('code-buttons-semantic-text', this)"><i class="fas fa-copy"></i> Copy</button>
+                            <pre class="code-preview-text" id="code-buttons-semantic-text">&lt;button class="btn-load"&gt;&lt;i class="fas fa-sync-alt"&gt;&lt;/i&gt; Load Data&lt;/button&gt;
+&lt;button class="btn-save"&gt;&lt;i class="fas fa-check"&gt;&lt;/i&gt; Save Changes&lt;/button&gt;
+&lt;button class="btn-delete"&gt;&lt;i class="fas fa-trash"&gt;&lt;/i&gt; Delete Row&lt;/button&gt;</pre>
+                        </div>
                     </div>
 
                     <!-- 6. Button Groups -->
                     <div>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">6. Button Groups</h4>
+                        <div class="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-gray-800/30 pb-1.5">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">6. Button Groups</h4>
+                            <button class="text-[10px] font-bold text-primary hover:opacity-80 transition flex items-center gap-1" onclick="toggleCode('code-buttons-group')">
+                                <i class="fas fa-code"></i> Code
+                            </button>
+                        </div>
                         <div class="inline-flex rounded-lg shadow-sm" role="group">
                             <button class="px-4 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">Left</button>
                             <button class="px-4 py-2 text-xs font-semibold text-gray-700 bg-white border-t border-b border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">Center</button>
                             <button class="px-4 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">Right</button>
                         </div>
+                        <div id="code-buttons-group" class="code-preview-container">
+                            <button class="copy-btn" onclick="copySnippet('code-buttons-group-text', this)"><i class="fas fa-copy"></i> Copy</button>
+                            <pre class="code-preview-text" id="code-buttons-group-text">&lt;div class="inline-flex rounded-lg shadow-sm" role="group"&gt;
+    &lt;button class="px-4 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"&gt;Left&lt;/button&gt;
+    &lt;button class="px-4 py-2 text-xs font-semibold text-gray-700 bg-white border-t border-b border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"&gt;Center&lt;/button&gt;
+    &lt;button class="px-4 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"&gt;Right&lt;/button&gt;
+&lt;/div&gt;</pre>
+                        </div>
                     </div>
 
                     <!-- 7. Size Variations -->
                     <div>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">7. Size Variations</h4>
+                        <div class="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-gray-800/30 pb-1.5">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">7. Size Variations</h4>
+                            <button class="text-[10px] font-bold text-primary hover:opacity-80 transition flex items-center gap-1" onclick="toggleCode('code-buttons-sizes')">
+                                <i class="fas fa-code"></i> Code
+                            </button>
+                        </div>
                         <div class="flex flex-wrap items-center gap-3">
                             <button class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-semibold rounded shadow-sm transition">XS</button>
                             <button class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded shadow-sm transition">SM</button>
@@ -646,36 +622,40 @@
                             <button class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-base font-semibold rounded shadow-sm transition">LG</button>
                             <button class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold rounded shadow-sm transition">XL</button>
                         </div>
+                        <div id="code-buttons-sizes" class="code-preview-container">
+                            <button class="copy-btn" onclick="copySnippet('code-buttons-sizes-text', this)"><i class="fas fa-copy"></i> Copy</button>
+                            <pre class="code-preview-text" id="code-buttons-sizes-text">&lt;button class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-semibold rounded shadow-sm transition"&gt;XS&lt;/button&gt;
+&lt;button class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded shadow-sm transition"&gt;SM&lt;/button&gt;
+&lt;button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded shadow-sm transition"&gt;MD&lt;/button&gt;
+&lt;button class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-base font-semibold rounded shadow-sm transition"&gt;LG&lt;/button&gt;</pre>
+                        </div>
                     </div>
 
-                    <div id="code-buttons" class="code-preview-container">
-                        <button class="copy-btn" onclick="copySnippet('code-buttons-text', this)"><i class="fas fa-copy"></i> Copy</button>
-                        <pre class="code-preview-text" id="code-buttons-text">&lt;!-- Solid Buttons --&gt;
-&lt;button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm"&gt;Primary&lt;/button&gt;
-&lt;button class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm"&gt;Success&lt;/button&gt;
-
-&lt;!-- Outline Buttons --&gt;
-&lt;button class="px-4 py-2 border-2 border-blue-600 text-blue-600 hover:bg-blue-50 text-xs font-semibold rounded-lg"&gt;Primary&lt;/button&gt;
-
-&lt;!-- Gradient Buttons --&gt;
-&lt;button class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white text-xs font-semibold rounded-lg shadow-sm"&gt;Gradient&lt;/button&gt;
-
-&lt;!-- Icon Buttons --&gt;
-&lt;button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg inline-flex items-center gap-2"&gt;
-    &lt;i class="fas fa-plus"&gt;&lt;/i&gt; Create
-&lt;/button&gt;
-
-&lt;!-- VGN Semantic Buttons --&gt;
-&lt;button class="btn-load"&gt;&lt;i class="fas fa-sync-alt"&gt;&lt;/i&gt; Load&lt;/button&gt;
-&lt;button class="btn-save"&gt;&lt;i class="fas fa-check"&gt;&lt;/i&gt; Save&lt;/button&gt;
-&lt;button class="btn-delete"&gt;&lt;i class="fas fa-trash"&gt;&lt;/i&gt; Delete&lt;/button&gt;
-
-&lt;!-- Button Group --&gt;
-&lt;div class="inline-flex rounded-lg shadow-sm"&gt;
-    &lt;button class="px-4 py-2 border border-gray-300 rounded-l-lg"&gt;Left&lt;/button&gt;
-    &lt;button class="px-4 py-2 border-t border-b border-gray-300"&gt;Center&lt;/button&gt;
-    &lt;button class="px-4 py-2 border border-gray-300 rounded-r-lg"&gt;Right&lt;/button&gt;
-&lt;/div&gt;</pre>
+                    <!-- 8. Dashboard Action Buttons -->
+                    <div>
+                        <div class="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-gray-800/30 pb-1.5">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">8. Dashboard Action Buttons</h4>
+                            <button class="text-[10px] font-bold text-primary hover:opacity-80 transition flex items-center gap-1" onclick="toggleCode('code-buttons-dashboard')">
+                                <i class="fas fa-code"></i> Code
+                            </button>
+                        </div>
+                        <div class="flex flex-wrap gap-3 bg-gray-50 dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                            <button class="btn-clear" id="btnResetDemo"><i class="fas fa-arrow-rotate-left"></i> Clear</button>
+                            <button class="btn-load" id="btnLoadDemo"><i class="fas fa-sync"></i> Load</button>
+                            <button class="btn-apply" id="btnApplyDemo"><i class="fas fa-search"></i> Apply</button>
+                            <button class="btn-save" id="btnSaveDemo"><i class="fas fa-save"></i> Save</button>
+                            <button class="btn-update" id="btnUpdateDemo"><i class="fas fa-pencil-alt"></i> Update</button>
+                            <button class="btn-delete" id="btnDeleteDemo"><i class="fas fa-trash"></i> Delete</button>
+                        </div>
+                        <div id="code-buttons-dashboard" class="code-preview-container">
+                            <button class="copy-btn" onclick="copySnippet('code-buttons-dashboard-text', this)"><i class="fas fa-copy"></i> Copy</button>
+                            <pre class="code-preview-text" id="code-buttons-dashboard-text">&lt;button class="btn-clear" id="btnReset"&gt;&lt;i class="fas fa-arrow-rotate-left"&gt;&lt;/i&gt; Clear&lt;/button&gt;
+&lt;button class="btn-load" id="btnLoad"&gt;&lt;i class="fas fa-sync"&gt;&lt;/i&gt; Load&lt;/button&gt;
+&lt;button class="btn-apply" id="btnApply"&gt;&lt;i class="fas fa-search"&gt;&lt;/i&gt; Apply&lt;/button&gt;
+&lt;button class="btn-save" id="btnSave"&gt;&lt;i class="fas fa-save"&gt;&lt;/i&gt; Save&lt;/button&gt;
+&lt;button class="btn-update" id="btnUpdate"&gt;&lt;i class="fas fa-pencil-alt"&gt;&lt;/i&gt; Update&lt;/button&gt;
+&lt;button class="btn-delete" id="btnDelete"&gt;&lt;i class="fas fa-trash"&gt;&lt;/i&gt; Delete&lt;/button&gt;</pre>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -686,74 +666,99 @@
             <section id="section-forms" class="showcase-card scroll-mt-24">
                 <div class="showcase-header">
                     <h2 class="font-extrabold text-lg text-[var(--text)] flex items-center gap-2">
-                        <i class="fas fa-input text-primary"></i> Form Elements - All Types
+                        <i class="fas fa-keyboard text-primary"></i> Form Elements - All Types
                     </h2>
-                    <button class="btn-edit text-xs px-3 py-1.5 rounded-lg" onclick="toggleCode('code-forms-all')">
-                        <i class="fas fa-code"></i> Code
-                    </button>
                 </div>
                 <div class="showcase-body">
                     <form onsubmit="event.preventDefault()" class="space-y-6">
 
-                        <!-- ===== ROW 1: Basic Inputs ===== -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Text Input</label>
-                                <input type="text" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2.5" placeholder="Enter text...">
-                            </div>
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Email Input</label>
-                                <input type="email" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2.5" placeholder="name@example.com">
-                            </div>
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Number Input</label>
-                                <input type="number" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2.5" placeholder="12345">
-                            </div>
-                        </div>
-
-                        <!-- ===== ROW 2: Password, Phone, URL ===== -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Password</label>
-                                <input type="password" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2.5" placeholder="••••••••">
-                            </div>
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Phone Number</label>
-                                <div class="flex">
-                                    <span class="inline-flex items-center px-3 bg-gray-100 dark:bg-gray-600 border border-r-0 border-gray-300 dark:border-gray-600 rounded-l-lg text-sm text-gray-600 dark:text-gray-300">+91</span>
-                                    <input type="tel" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2.5" placeholder="9840123456">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">URL Input</label>
-                                <input type="url" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2.5" placeholder="https://example.com">
-                            </div>
-                        </div>
-
-                        <!-- ===== ROW 3: Search, Color, File ===== -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Search</label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                        <i class="fas fa-search text-gray-400"></i>
-                                    </div>
-                                    <input type="search" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pl-10 p-2.5" placeholder="Search...">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Color Picker</label>
-                                <input type="color" class="w-full h-11 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer p-1" value="#4680FF">
-                            </div>
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">File Upload</label>
-                                <input type="file" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/20 dark:file:text-blue-300">
-                            </div>
-                        </div>
-
-                        <!-- ===== ROW 4: Select2 Single Dropdown ===== -->
+                        <!-- ===== 1. Basic & Common Inputs ===== -->
                         <div>
-                            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Advanced Dropdown (Select2 - Single)</h4>
+                            <div class="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-gray-800/30 pb-1.5">
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">1. Basic & Common Inputs</h4>
+                                <button type="button" class="text-[10px] font-bold text-primary hover:opacity-80 transition flex items-center gap-1" onclick="toggleCode('code-forms-basic')">
+                                    <i class="fas fa-code"></i> Code
+                                </button>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Text Input</label>
+                                        <input type="text" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2.5" placeholder="Enter text...">
+                                    </div>
+                                    <div>
+                                        <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Email Input</label>
+                                        <input type="email" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2.5" placeholder="name@example.com">
+                                    </div>
+                                    <div>
+                                        <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Number Input</label>
+                                        <input type="number" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2.5" placeholder="12345">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Password</label>
+                                        <div class="relative">
+                                            <input type="password" id="demo-password" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2.5 pr-10" placeholder="••••••••">
+                                            <button type="button" onclick="const p=document.getElementById('demo-password'); if(p.type==='password'){p.type='text';this.innerHTML='<i class=\'fas fa-eye-slash text-gray-400\'></i>';}else{p.type='password';this.innerHTML='<i class=\'fas fa-eye text-gray-400\'></i>';}" class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                                <i class="fas fa-eye text-gray-400"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Phone Number</label>
+                                        <div class="flex">
+                                            <span class="inline-flex items-center px-3 bg-gray-100 dark:bg-gray-600 border border-r-0 border-gray-300 dark:border-gray-600 rounded-l-lg text-sm text-gray-600 dark:text-gray-300">+91</span>
+                                            <input type="tel" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2.5" placeholder="9840123456">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">URL Input</label>
+                                        <input type="url" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2.5" placeholder="https://example.com">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Search</label>
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                                <i class="fas fa-search text-gray-400"></i>
+                                            </div>
+                                            <input type="search" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pl-10 p-2.5" placeholder="Search...">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Color Picker</label>
+                                        <input type="color" class="w-full h-11 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer p-1" value="#4680FF">
+                                    </div>
+                                    <div>
+                                        <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">File Upload</label>
+                                        <input type="file" class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900/20 dark:file:text-blue-300">
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="code-forms-basic" class="code-preview-container">
+                                <button type="button" class="copy-btn" onclick="copySnippet('code-forms-basic-text', this)"><i class="fas fa-copy"></i> Copy</button>
+                                <pre class="code-preview-text" id="code-forms-basic-text">&lt;!-- Text, Email, Number Inputs --&gt;
+&lt;input type="text" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg p-2.5" placeholder="Enter text..."&gt;
+&lt;input type="email" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 text-sm rounded-lg p-2.5" placeholder="Email"&gt;
+
+&lt;!-- Password with toggle visibility --&gt;
+&lt;div class="relative"&gt;
+    &lt;input type="password" id="demo-password" class="w-full bg-gray-50 dark:bg-gray-700 border rounded-lg p-2.5 pr-10"&gt;
+    &lt;button type="button" class="absolute inset-y-0 right-0 flex items-center pr-3"&gt;&lt;i class="fas fa-eye"&gt;&lt;/i&gt;&lt;/button&gt;
+&lt;/div&gt;</pre>
+                            </div>
+                        </div>
+
+                        <!-- ===== 2. Advanced Dropdown (Select2 - Single) ===== -->
+                        <div>
+                            <div class="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-gray-800/30 pb-1.5">
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">2. Advanced Dropdown (Select2 - Single)</h4>
+                                <button type="button" class="text-[10px] font-bold text-primary hover:opacity-80 transition flex items-center gap-1" onclick="toggleCode('code-forms-select2-single')">
+                                    <i class="fas fa-code"></i> Code
+                                </button>
+                            </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300">Select Project</label>
@@ -777,11 +782,30 @@
                                     </select>
                                 </div>
                             </div>
+                            <div id="code-forms-select2-single" class="code-preview-container">
+                                <button type="button" class="copy-btn" onclick="copySnippet('code-forms-select2-single-text', this)"><i class="fas fa-copy"></i> Copy</button>
+                                <pre class="code-preview-text" id="code-forms-select2-single-text">&lt;!-- Select2 Single --&gt;
+&lt;select id="select2-single" class="w-full"&gt;
+    &lt;option value=""&gt;Select a project...&lt;/option&gt;
+    &lt;option value="stafford"&gt;VGN Stafford&lt;/option&gt;
+&lt;/select&gt;
+&lt;script&gt;
+    $('#select2-single').select2({
+        placeholder: 'Select a project...',
+        allowClear: true
+    });
+&lt;/script&gt;</pre>
+                            </div>
                         </div>
 
-                        <!-- ===== ROW 5: Select2 Multi Dropdown ===== -->
+                        <!-- ===== 3. Multi-Select Dropdown (Select2 - Multiple) ===== -->
                         <div>
-                            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Multi-Select Dropdown (Select2 - Multiple)</h4>
+                            <div class="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-gray-800/30 pb-1.5">
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">3. Multi-Select Dropdown (Select2 - Multiple)</h4>
+                                <button type="button" class="text-[10px] font-bold text-primary hover:opacity-80 transition flex items-center gap-1" onclick="toggleCode('code-forms-select2-multi')">
+                                    <i class="fas fa-code"></i> Code
+                                </button>
+                            </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300">Select Multiple Projects</label>
@@ -805,11 +829,29 @@
                                     </select>
                                 </div>
                             </div>
+                            <div id="code-forms-select2-multi" class="code-preview-container">
+                                <button type="button" class="copy-btn" onclick="copySnippet('code-forms-select2-multi-text', this)"><i class="fas fa-copy"></i> Copy</button>
+                                <pre class="code-preview-text" id="code-forms-select2-multi-text">&lt;!-- Select2 Multiple --&gt;
+&lt;select id="select2-multi" class="w-full" multiple&gt;
+    &lt;option value="stafford"&gt;VGN Stafford&lt;/option&gt;
+&lt;/select&gt;
+&lt;script&gt;
+    $('#select2-multi').select2({
+        placeholder: 'Select multiple options',
+        allowClear: true
+    });
+&lt;/script&gt;</pre>
+                            </div>
                         </div>
 
-                        <!-- ===== ROW 6: Date & Time Pickers (Flatpickr) ===== -->
+                        <!-- ===== 4. Advanced Date & Time Pickers (Flatpickr) ===== -->
                         <div>
-                            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Advanced Date & Time Pickers (Flatpickr)</h4>
+                            <div class="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-gray-800/30 pb-1.5">
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">4. Advanced Date & Time Pickers (Flatpickr)</h4>
+                                <button type="button" class="text-[10px] font-bold text-primary hover:opacity-80 transition flex items-center gap-1" onclick="toggleCode('code-forms-flatpickr')">
+                                    <i class="fas fa-code"></i> Code
+                                </button>
+                            </div>
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div>
                                     <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300">Date Picker</label>
@@ -828,45 +870,40 @@
                                     <input type="text" id="flatpickr-range" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg p-2.5" placeholder="Select range...">
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- ===== ROW 7: Toggle Switches (Fixed) ===== -->
-                        <div>
-                            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Toggle Switches</h4>
-                            <div class="flex flex-wrap gap-6">
-                                <label class="toggle-switch">
-                                    <input type="checkbox" checked>
-                                    <span class="toggle-slider"></span>
-                                    <span class="toggle-label">Email Notifications</span>
-                                </label>
-                                <label class="toggle-switch">
-                                    <input type="checkbox">
-                                    <span class="toggle-slider"></span>
-                                    <span class="toggle-label">SMS Alerts</span>
-                                </label>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" checked>
-                                    <span class="toggle-slider"></span>
-                                    <span class="toggle-label">Biometric Verification</span>
-                                </label>
-                                <label class="toggle-switch">
-                                    <input type="checkbox">
-                                    <span class="toggle-slider"></span>
-                                    <span class="toggle-label">Two-Factor Auth</span>
-                                </label>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" checked>
-                                    <span class="toggle-slider"></span>
-                                    <span class="toggle-label">Dark Mode</span>
-                                </label>
+                            <div id="code-forms-flatpickr" class="code-preview-container">
+                                <button type="button" class="copy-btn" onclick="copySnippet('code-forms-flatpickr-text', this)"><i class="fas fa-copy"></i> Copy</button>
+                                <pre class="code-preview-text" id="code-forms-flatpickr-text">&lt;!-- Flatpickr Integration --&gt;
+&lt;input type="text" id="flatpickr-date" class="w-full border rounded-lg p-2.5" placeholder="Select date..."&gt;
+&lt;script&gt;
+    flatpickr("#flatpickr-date", { dateFormat: "Y-m-d" });
+    flatpickr("#flatpickr-time", { enableTime: true, noCalendar: true, dateFormat: "H:i" });
+    flatpickr("#flatpickr-datetime", { enableTime: true, dateFormat: "Y-m-d H:i" });
+    flatpickr("#flatpickr-range", { mode: "range", dateFormat: "Y-m-d" });
+&lt;/script&gt;</pre>
                             </div>
                         </div>
 
-                        <!-- ===== ROW 8: Checkboxes & Radios ===== -->
+                        <!-- ===== 5. Toggle Switches & Checkboxes & Radios ===== -->
                         <div>
-                            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Checkboxes & Radios</h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-gray-800/30 pb-1.5">
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">5. Toggle Switches, Checkboxes & Radios</h4>
+                                <button type="button" class="text-[10px] font-bold text-primary hover:opacity-80 transition flex items-center gap-1" onclick="toggleCode('code-forms-toggles-checks')">
+                                    <i class="fas fa-code"></i> Code
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="space-y-4">
+                                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Switches</label>
+                                    <div class="space-y-3">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" checked>
+                                            <span class="toggle-slider"></span>
+                                            <span class="toggle-label">Feature Enabled</span>
+                                        </label>
+                                    </div>
+                                </div>
                                 <div class="space-y-2">
+                                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Checkboxes</label>
                                     <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                                         <input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked>
                                         Option 1 (Checked)
@@ -881,6 +918,7 @@
                                     </label>
                                 </div>
                                 <div class="space-y-2">
+                                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">Radios</label>
                                     <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                                         <input type="radio" name="radio-group" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" checked>
                                         Radio 1
@@ -895,11 +933,31 @@
                                     </label>
                                 </div>
                             </div>
+                            <div id="code-forms-toggles-checks" class="code-preview-container">
+                                <button type="button" class="copy-btn" onclick="copySnippet('code-forms-toggles-checks-text', this)"><i class="fas fa-copy"></i> Copy</button>
+                                <pre class="code-preview-text" id="code-forms-toggles-checks-text">&lt;!-- Toggle Switch --&gt;
+&lt;label class="toggle-switch"&gt;
+    &lt;input type="checkbox" checked&gt;
+    &lt;span class="toggle-slider"&gt;&lt;/span&gt;
+    &lt;span class="toggle-label"&gt;Label&lt;/span&gt;
+&lt;/label&gt;
+
+&lt;!-- Tailwind Checkbox --&gt;
+&lt;input type="checkbox" class="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"&gt;
+
+&lt;!-- Tailwind Radio --&gt;
+&lt;input type="radio" name="grp" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"&gt;</pre>
+                            </div>
                         </div>
 
-                        <!-- ===== ROW 9: Range Sliders ===== -->
+                        <!-- ===== 6. Range Sliders ===== -->
                         <div>
-                            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Range Sliders</h4>
+                            <div class="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-gray-800/30 pb-1.5">
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">6. Range Sliders</h4>
+                                <button type="button" class="text-[10px] font-bold text-primary hover:opacity-80 transition flex items-center gap-1" onclick="toggleCode('code-forms-range')">
+                                    <i class="fas fa-code"></i> Code
+                                </button>
+                            </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label class="block text-xs font-bold text-gray-700 dark:text-gray-300">Budget: <span id="budget-val" class="text-primary">50</span> Lakhs</label>
@@ -910,77 +968,30 @@
                                     <input type="range" id="area-range" min="500" max="5000" value="1500" step="100" class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer">
                                 </div>
                             </div>
+                            <div id="code-forms-range" class="code-preview-container">
+                                <button type="button" class="copy-btn" onclick="copySnippet('code-forms-range-text', this)"><i class="fas fa-copy"></i> Copy</button>
+                                <pre class="code-preview-text" id="code-forms-range-text">&lt;!-- Range Slider --&gt;
+&lt;input type="range" min="10" max="250" value="50" class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"&gt;</pre>
+                            </div>
                         </div>
 
-                        <!-- ===== ROW 10: Textarea ===== -->
+                        <!-- ===== 7. Textarea ===== -->
                         <div>
-                            <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Textarea</label>
+                            <div class="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-gray-800/30 pb-1.5">
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">7. Textarea</h4>
+                                <button type="button" class="text-[10px] font-bold text-primary hover:opacity-80 transition flex items-center gap-1" onclick="toggleCode('code-forms-textarea')">
+                                    <i class="fas fa-code"></i> Code
+                                </button>
+                            </div>
                             <textarea rows="3" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2.5" placeholder="Enter your comments here..."></textarea>
+                            <div id="code-forms-textarea" class="code-preview-container">
+                                <button type="button" class="copy-btn" onclick="copySnippet('code-forms-textarea-text', this)"><i class="fas fa-copy"></i> Copy</button>
+                                <pre class="code-preview-text" id="code-forms-textarea-text">&lt;!-- Textarea Input --&gt;
+&lt;textarea rows="3" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5" placeholder="Enter comments..."&gt;&lt;/textarea&gt;</pre>
+                            </div>
                         </div>
 
                     </form>
-
-                    <div id="code-forms-all" class="code-preview-container">
-                        <button class="copy-btn" onclick="copySnippet('code-forms-all-text', this)"><i class="fas fa-copy"></i> Copy</button>
-                        <pre class="code-preview-text" id="code-forms-all-text">&lt;!-- Basic Inputs --&gt;
-&lt;input type="text" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg p-2.5" placeholder="Text"&gt;
-&lt;input type="email" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg p-2.5" placeholder="Email"&gt;
-&lt;input type="number" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg p-2.5" placeholder="Number"&gt;
-
-&lt;!-- Select2 Single --&gt;
-&lt;select id="select2-single" class="w-full"&gt;
-    &lt;option value=""&gt;Select...&lt;/option&gt;
-    &lt;option value="1"&gt;Option 1&lt;/option&gt;
-&lt;/select&gt;
-&lt;script&gt;
-    $('#select2-single').select2({
-        placeholder: 'Select an option',
-        allowClear: true,
-        theme: 'default'
-    });
-&lt;/script&gt;
-
-&lt;!-- Select2 Multiple --&gt;
-&lt;select id="select2-multi" class="w-full" multiple&gt;
-    &lt;option value="1"&gt;Option 1&lt;/option&gt;
-    &lt;option value="2"&gt;Option 2&lt;/option&gt;
-&lt;/select&gt;
-&lt;script&gt;
-    $('#select2-multi').select2({
-        placeholder: 'Select multiple options',
-        allowClear: true,
-        theme: 'default'
-    });
-&lt;/script&gt;
-
-&lt;!-- Flatpickr Date/Time --&gt;
-&lt;input type="text" id="flatpickr-date" placeholder="Select date..."&gt;
-&lt;script&gt;
-    flatpickr("#flatpickr-date", {
-        dateFormat: "Y-m-d",
-        enableTime: false
-    });
-    flatpickr("#flatpickr-datetime", {
-        dateFormat: "Y-m-d H:i",
-        enableTime: true,
-        time_24hr: true
-    });
-    flatpickr("#flatpickr-range", {
-        mode: "range",
-        dateFormat: "Y-m-d"
-    });
-&lt;/script&gt;
-
-&lt;!-- Toggle Switch --&gt;
-&lt;label class="toggle-switch"&gt;
-    &lt;input type="checkbox" checked&gt;
-    &lt;span class="toggle-slider"&gt;&lt;/span&gt;
-    &lt;span class="toggle-label"&gt;Toggle Label&lt;/span&gt;
-&lt;/label&gt;
-
-&lt;!-- Range Slider --&gt;
-&lt;input type="range" min="0" max="100" value="50" class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"&gt;</pre>
-                    </div>
                 </div>
             </section>
 
@@ -990,91 +1001,70 @@
             <section id="section-dxgrid" class="showcase-card scroll-mt-24">
                 <div class="showcase-header">
                     <h2 class="font-extrabold text-lg text-[var(--text)] flex items-center gap-2">
-                        <i class="fas fa-table text-primary"></i> DevExtreme Grids - Advanced Features
+                        <i class="fas fa-table text-primary"></i> DevExtreme Grids - Variations
                     </h2>
-                    <button class="btn-edit text-xs px-3 py-1.5 rounded-lg" onclick="toggleCode('code-dxgrid-all')">
-                        <i class="fas fa-code"></i> Code
-                    </button>
                 </div>
                 <div class="showcase-body space-y-8">
+                    
+                    <div class="vgn-tab-container mb-4" style="overflow-x:auto;overflow-y:visible;scrollbar-width:none;border-bottom:1px solid var(--border);"><div class="flex flex-nowrap min-w-max">
+                        <button class="vgn-tab-btn flex-shrink-0 px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent transition-colors" style="color:var(--text-muted);" onclick="switchGridTab(this, 'grid1')">1. Grouped</button>
+                        <button class="vgn-tab-btn flex-shrink-0 px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent transition-colors" style="color:var(--text-muted);" onclick="switchGridTab(this, 'grid2')">2. Single Col</button>
+                        <button class="vgn-tab-btn flex-shrink-0 px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent transition-colors" style="color:var(--text-muted);" onclick="switchGridTab(this, 'grid3')">3. Export & Chooser</button>
+                        <button class="vgn-tab-btn flex-shrink-0 px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent transition-colors" style="color:var(--text-muted);" onclick="switchGridTab(this, 'grid4')">4. No Export/Chooser</button>
+                        <button class="vgn-tab-btn flex-shrink-0 px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent transition-colors" style="color:var(--text-muted);" onclick="switchGridTab(this, 'grid5')">5. Pagination</button>
+                        <button class="vgn-tab-btn flex-shrink-0 px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent transition-colors" style="color:var(--text-muted);" onclick="switchGridTab(this, 'grid6')">6. No Pagination</button>
+                        <button class="vgn-tab-btn flex-shrink-0 px-4 py-2.5 text-sm font-semibold border-b-2 border-transparent transition-colors" style="color:var(--text-muted);" onclick="switchGridTab(this, 'grid7')">7. With Loader</button>
+                        <button class="vgn-tab-btn active flex-shrink-0 px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors" style="color:var(--primary);border-bottom-color:var(--primary);" onclick="switchGridTab(this, 'grid8')">8. Virtual Scroll</button>
+                    </div></div>
 
-                    <!-- Grid 1: Full Featured with Export -->
-                    <div>
-                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5 flex items-center gap-2">
-                            <i class="fas fa-star"></i> 1. Advanced Grid with PDF & Excel Export
-                        </h4>
+                    <div id="grid1" class="grid-tab-content hidden">
                         <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
-                            <div id="dx-grid-advanced"></div>
+                            <div id="dx-grid-1"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="grid2" class="grid-tab-content hidden">
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+                            <div id="dx-grid-2"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="grid3" class="grid-tab-content hidden">
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+                            <div id="dx-grid-3"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="grid4" class="grid-tab-content hidden">
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+                            <div id="dx-grid-4"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="grid5" class="grid-tab-content hidden">
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+                            <div id="dx-grid-5"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="grid6" class="grid-tab-content hidden">
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+                            <div id="dx-grid-6"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="grid7" class="grid-tab-content hidden">
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+                            <div id="dx-grid-7"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="grid8" class="grid-tab-content block">
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+                            <div id="dx-grid-8"></div>
                         </div>
                     </div>
 
-                    <!-- Grid 2: Grouped with Summary -->
-                    <div>
-                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5 flex items-center gap-2">
-                            <i class="fas fa-layer-group"></i> 2. Grouped Grid with Summary
-                        </h4>
-                        <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
-                            <div id="dx-grid-grouped"></div>
-                        </div>
-                    </div>
-
-                    <!-- Grid 3: Editable Grid -->
-                    <div>
-                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5 flex items-center gap-2">
-                            <i class="fas fa-edit"></i> 3. Inline Editable Grid
-                        </h4>
-                        <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
-                            <div id="dx-grid-editable"></div>
-                        </div>
-                    </div>
-
-                    <!-- Grid 4: Master-Detail -->
-                    <div>
-                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5 flex items-center gap-2">
-                            <i class="fas fa-sitemap"></i> 4. Master-Detail Grid
-                        </h4>
-                        <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
-                            <div id="dx-grid-master-detail"></div>
-                        </div>
-                    </div>
-
-                    <div id="code-dxgrid-all" class="code-preview-container">
-                        <button class="copy-btn" onclick="copySnippet('code-dxgrid-all-text', this)"><i class="fas fa-copy"></i> Copy</button>
-                        <pre class="code-preview-text" id="code-dxgrid-all-text">&lt;!-- DevExtreme Grid with Export --&gt;
-&lt;div id="grid-container"&gt;&lt;/div&gt;
-
-&lt;script&gt;
-    $('#grid-container').dxDataGrid({
-        dataSource: gridData,
-        showBorders: true,
-        hoverStateEnabled: true,
-        filterRow: { visible: true },
-        headerFilter: { visible: true },
-        searchPanel: { visible: true, width: 240 },
-        paging: { pageSize: 10 },
-        pager: {
-            showPageSizeSelector: true,
-            allowedPageSizes: [5, 10, 20, 50],
-            showInfo: true,
-            showNavigationButtons: true
-        },
-        sorting: { mode: 'multiple' },
-        columnChooser: { enabled: true },
-        columnFixing: { enabled: true },
-        export: {
-            enabled: true,
-            fileName: 'VGN_Export',
-            excelFilterEnabled: true,
-            allowExportSelectedData: true
-        },
-        columns: [
-            { dataField: 'Id', caption: 'ID', width: 80 },
-            { dataField: 'Name', caption: 'Name' },
-            { dataField: 'Status', caption: 'Status' }
-        ]
-    });
-&lt;/script&gt;</pre>
-                    </div>
                 </div>
             </section>
 
@@ -1146,36 +1136,7 @@
                                     <button class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 hover:bg-purple-200"><i class="fas fa-comment"></i></button>
                                 </div>
                             </div>
-                            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 text-center shadow-sm">
-                                <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 flex items-center justify-center text-white text-3xl font-bold">MK</div>
-                                <h5 class="mt-3 text-sm font-bold text-gray-900 dark:text-white">Meera Krishnan</h5>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">CRM Executive</p>
-                                <div class="flex justify-center gap-2 mt-3">
-                                    <button class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-200"><i class="fas fa-phone"></i></button>
-                                    <button class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200"><i class="fas fa-envelope"></i></button>
-                                    <button class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 hover:bg-purple-200"><i class="fas fa-comment"></i></button>
-                                </div>
-                            </div>
-                            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 text-center shadow-sm">
-                                <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center text-white text-3xl font-bold">SJ</div>
-                                <h5 class="mt-3 text-sm font-bold text-gray-900 dark:text-white">Stephen Joseph</h5>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">Relationship Manager</p>
-                                <div class="flex justify-center gap-2 mt-3">
-                                    <button class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-200"><i class="fas fa-phone"></i></button>
-                                    <button class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200"><i class="fas fa-envelope"></i></button>
-                                    <button class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 hover:bg-purple-200"><i class="fas fa-comment"></i></button>
-                                </div>
-                            </div>
-                            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 text-center shadow-sm">
-                                <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-r from-pink-500 to-rose-500 flex items-center justify-center text-white text-3xl font-bold">DN</div>
-                                <h5 class="mt-3 text-sm font-bold text-gray-900 dark:text-white">Divya Nair</h5>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">Lead Analyst</p>
-                                <div class="flex justify-center gap-2 mt-3">
-                                    <button class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-200"><i class="fas fa-phone"></i></button>
-                                    <button class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-200"><i class="fas fa-envelope"></i></button>
-                                    <button class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 hover:bg-purple-200"><i class="fas fa-comment"></i></button>
-                                </div>
-                            </div>
+
                         </div>
                     </div>
 
@@ -1193,36 +1154,7 @@
                                     <span class="text-xs text-emerald-500"><i class="fas fa-arrow-up"></i> 12.5%</span>
                                 </div>
                             </div>
-                            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-xl">
-                                    <i class="fas fa-handshake"></i>
-                                </div>
-                                <div>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">Deals Closed</p>
-                                    <p class="text-xl font-bold text-gray-900 dark:text-white">342</p>
-                                    <span class="text-xs text-emerald-500"><i class="fas fa-arrow-up"></i> 8.3%</span>
-                                </div>
-                            </div>
-                            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center text-amber-600 dark:text-amber-400 text-xl">
-                                    <i class="fas fa-building"></i>
-                                </div>
-                                <div>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">Active Projects</p>
-                                    <p class="text-xl font-bold text-gray-900 dark:text-white">18</p>
-                                    <span class="text-xs text-amber-500"><i class="fas fa-arrow-up"></i> 4.2%</span>
-                                </div>
-                            </div>
-                            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center text-purple-600 dark:text-purple-400 text-xl">
-                                    <i class="fas fa-calendar-check"></i>
-                                </div>
-                                <div>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">Site Visits</p>
-                                    <p class="text-xl font-bold text-gray-900 dark:text-white">894</p>
-                                    <span class="text-xs text-purple-500"><i class="fas fa-arrow-up"></i> 6.7%</span>
-                                </div>
-                            </div>
+
                         </div>
                     </div>
 
@@ -1657,11 +1589,11 @@
                             </div>
                             <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800">
                                 <p class="text-xs font-semibold text-gray-500 mb-2">Chart.js - Bar</p>
-                                <canvas id="chartjs-bar" height="200"></canvas>
+                                <div style="position: relative; height: 200px; width: 100%;"><canvas id="chartjs-bar"></canvas></div>
                             </div>
                             <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800">
                                 <p class="text-xs font-semibold text-gray-500 mb-2">Chart.js - Doughnut</p>
-                                <canvas id="chartjs-doughnut" height="200"></canvas>
+                                <div style="position: relative; height: 200px; width: 100%;"><canvas id="chartjs-doughnut"></canvas></div>
                             </div>
                         </div>
                     </div>
@@ -1779,23 +1711,6 @@
     </div>
 </div>
 
-<!-- ===== SCRIPTS ===== -->
-<script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/datepicker.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-<script src="https://cdn3.devexpress.com/jslib/23.1.6/js/dx.all.js"></script>
-
-<!-- Select2 -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-<!-- Flatpickr -->
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 @section Scripts {
     <script>
@@ -1968,171 +1883,38 @@
                 { Id: 110, Name: "Mohan Raj", Contact: "9790223344", Project: "VGN Monte Carlo", Stage: "Negotiation", Status: "Hot", Amount: 45000000, Date: "2026-07-06" }
             ];
 
+            var columnsBase = [
+                { dataField: 'Id', caption: 'ID', width: 70 },
+                { dataField: 'Name', caption: 'Client Name' },
+                { dataField: 'Contact', caption: 'Contact' },
+                { dataField: 'Project', caption: 'Project' },
+                { dataField: 'Stage', caption: 'Stage' },
+                { dataField: 'Status', caption: 'Status' },
+                { dataField: 'Amount', caption: 'Amount', format: 'currency', alignment: 'right' }
+            ];
+
             if (typeof $.fn.dxDataGrid !== 'undefined') {
-                // Grid 1: Advanced with Export
-                $('#dx-grid-advanced').dxDataGrid({
-                    dataSource: gridData,
-                    showBorders: true,
-                    hoverStateEnabled: true,
-                    filterRow: { visible: true, applyFilter: 'auto' },
-                    headerFilter: { visible: true },
-                    searchPanel: { visible: true, width: 240, placeholder: 'Search leads...' },
-                    paging: { pageSize: 5 },
-                    pager: {
-                        showPageSizeSelector: true,
-                        allowedPageSizes: [5, 10, 20, 50],
-                        showInfo: true,
-                        showNavigationButtons: true
-                    },
-                    sorting: { mode: 'multiple' },
-                    columnChooser: { enabled: true },
-                    columnFixing: { enabled: true },
-                    export: {
-                        enabled: true,
-                        fileName: 'VGN_Leads_Export',
-                        excelFilterEnabled: true,
-                        allowExportSelectedData: true
-                    },
-                    selection: { mode: 'multiple' },
-                    columns: [
-                        { dataField: 'Id', caption: 'ID', width: 70, alignment: 'center', allowEditing: false },
-                        { dataField: 'Name', caption: 'Client Name', sortOrder: 'asc' },
-                        { dataField: 'Contact', caption: 'Contact', alignment: 'center' },
-                        {
-                            dataField: 'Project',
-                            caption: 'Project',
-                            lookup: {
-                                dataSource: ['VGN Stafford', 'VGN Fairlight', 'VGN Monte Carlo', 'VGN Coasta'],
-                                valueExpr: this,
-                                displayExpr: this
-                            }
-                        },
-                        {
-                            dataField: 'Stage',
-                            caption: 'Stage',
-                            lookup: {
-                                dataSource: ['Enquiry', 'Visit Scheduled', 'Site Visit', 'Negotiation', 'Booked'],
-                                valueExpr: this,
-                                displayExpr: this
-                            }
-                        },
-                        {
-                            dataField: 'Status',
-                            caption: 'Status',
-                            lookup: {
-                                dataSource: ['Hot', 'Warm', 'Cold', 'Deal'],
-                                valueExpr: this,
-                                displayExpr: this
-                            },
-                            cellTemplate: function(container, options) {
-                                var colors = { 'Hot': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300', 'Warm': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300', 'Cold': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300', 'Deal': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' };
-                                var cls = colors[options.value] || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
-                                $('<span>').addClass('text-xs font-semibold px-2.5 py-0.5 rounded-full ' + cls).text(options.value).appendTo(container);
-                            }
-                        },
-                        { dataField: 'Amount', caption: 'Amount', format: 'currency', alignment: 'right', editorType: 'dxNumberBox' },
-                        { dataField: 'Date', caption: 'Date', dataType: 'date', format: 'dd/MM/yyyy', editorType: 'dxDateBox' }
-                    ],
-                    summary: {
-                        totalItems: [
-                            { column: 'Id', summaryType: 'count', displayFormat: 'Total: {0} Leads' },
-                            { column: 'Amount', summaryType: 'sum', displayFormat: 'Total Value: {0}', alignment: 'right' }
-                        ]
-                    }
+                // 1. Grouped
+                $('#dx-grid-1').dxDataGrid({ 
+                    dataSource: gridData, showBorders: true, grouping: { autoExpandAll: true }, groupPanel: { visible: true },
+                    columns: [ { dataField: 'Id', caption: 'ID', width: 70 }, { dataField: 'Name', caption: 'Client Name' }, { dataField: 'Project', caption: 'Project', groupIndex: 0 }, { dataField: 'Stage', caption: 'Stage' }, { dataField: 'Status', caption: 'Status' }, { dataField: 'Amount', caption: 'Amount', format: 'currency', alignment: 'right' } ]
                 });
-
-                // Grid 2: Grouped
-                $('#dx-grid-grouped').dxDataGrid({
-                    dataSource: gridData,
-                    showBorders: true,
-                    hoverStateEnabled: true,
-                    grouping: { autoExpandAll: true },
-                    groupPanel: { visible: true },
-                    export: { enabled: true, fileName: 'VGN_Grouped_Export' },
-                    columns: [
-                        { dataField: 'Id', caption: 'ID', width: 70 },
-                        { dataField: 'Name', caption: 'Client Name' },
-                        { dataField: 'Project', caption: 'Project', groupIndex: 0 },
-                        { dataField: 'Stage', caption: 'Stage' },
-                        { dataField: 'Status', caption: 'Status' },
-                        { dataField: 'Amount', caption: 'Amount', format: 'currency', alignment: 'right' }
-                    ],
-                    summary: {
-                        groupItems: [
-                            { column: 'Id', summaryType: 'count', displayFormat: '{0} Leads' },
-                            { column: 'Amount', summaryType: 'sum', displayFormat: 'Total: {0}', alignment: 'right' }
-                        ]
-                    }
-                });
-
-                // Grid 3: Editable
-                $('#dx-grid-editable').dxDataGrid({
-                    dataSource: gridData,
-                    showBorders: true,
-                    hoverStateEnabled: true,
-                    editing: {
-                        mode: 'popup',
-                        allowUpdating: true,
-                        allowDeleting: true,
-                        allowAdding: true,
-                        popup: { title: 'Lead Details', showTitle: true, width: 650, height: 450 },
-                        form: { items: ['Name', 'Contact', 'Project', 'Stage', 'Status', 'Amount', 'Date'] }
-                    },
-                    export: { enabled: true, fileName: 'VGN_Editable_Export' },
-                    columns: [
-                        { dataField: 'Name', caption: 'Client Name' },
-                        { dataField: 'Contact', caption: 'Contact' },
-                        { dataField: 'Project', caption: 'Project' },
-                        { dataField: 'Stage', caption: 'Stage' },
-                        { dataField: 'Status', caption: 'Status' },
-                        { dataField: 'Amount', caption: 'Amount', format: 'currency', alignment: 'right' },
-                        { dataField: 'Date', caption: 'Date', dataType: 'date' }
-                    ]
-                });
-
-                // Grid 4: Master-Detail
-                $('#dx-grid-master-detail').dxDataGrid({
-                    dataSource: gridData,
-                    showBorders: true,
-                    hoverStateEnabled: true,
-                    masterDetail: {
-                        enabled: true,
-                        template: function(container, options) {
-                            var d = options.data;
-                            $('<div>').addClass('p-4 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg')
-                                .append($('<h5>').addClass('font-bold text-xs uppercase tracking-wider text-gray-500 mb-2').text('Activity - ' + d.Name))
-                                .append($('<table>').addClass('w-full text-xs text-left text-gray-600 dark:text-gray-400')
-                                    .append($('<thead>').addClass('bg-gray-100 dark:bg-gray-800')
-                                        .append($('<tr>')
-                                            .append($('<th>').addClass('p-2').text('Date'))
-                                            .append($('<th>').addClass('p-2').text('Action'))
-                                            .append($('<th>').addClass('p-2').text('Remarks'))
-                                        )
-                                    )
-                                    .append($('<tbody>')
-                                        .append($('<tr>').addClass('border-b')
-                                            .append($('<td>').addClass('p-2').text(d.Date))
-                                            .append($('<td>').addClass('p-2').text('Follow-up'))
-                                            .append($('<td>').addClass('p-2').text('Call completed. Customer interested.'))
-                                        )
-                                        .append($('<tr>')
-                                            .append($('<td>').addClass('p-2').text(d.Date))
-                                            .append($('<td>').addClass('p-2').text('Email'))
-                                            .append($('<td>').addClass('p-2').text('Sent brochure and pricing.'))
-                                        )
-                                    )
-                                ).appendTo(container);
-                        }
-                    },
-                    export: { enabled: true, fileName: 'VGN_MasterDetail_Export' },
-                    columns: [
-                        { dataField: 'Name', caption: 'Client Name' },
-                        { dataField: 'Project', caption: 'Project' },
-                        { dataField: 'Stage', caption: 'Stage' },
-                        { dataField: 'Status', caption: 'Status' },
-                        { dataField: 'Amount', caption: 'Amount', format: 'currency', alignment: 'right' }
-                    ]
-                });
+                // 2. Single Cols
+                $('#dx-grid-2').dxDataGrid({ dataSource: gridData, showBorders: true, columns: columnsBase });
+                // 3. Export & Chooser
+                $('#dx-grid-3').dxDataGrid({ dataSource: gridData, showBorders: true, columnChooser: { enabled: true }, export: { enabled: true, fileName: "VGN_Data_Export" }, columns: columnsBase });
+                // 4. No Export
+                $('#dx-grid-4').dxDataGrid({ dataSource: gridData, showBorders: true, columnChooser: { enabled: false }, export: { enabled: false }, columns: columnsBase });
+                // 5. Pagination
+                $('#dx-grid-5').dxDataGrid({ dataSource: gridData, showBorders: true, paging: { pageSize: 5 }, pager: { showPageSizeSelector: true, allowedPageSizes: [5, 10, 20] }, columns: columnsBase });
+                // 6. No Pagination
+                $('#dx-grid-6').dxDataGrid({ dataSource: gridData, showBorders: true, paging: { enabled: false }, scrolling: { mode: "standard" }, height: 350, columns: columnsBase });
+                // 7. Loader
+                $('#dx-grid-7').dxDataGrid({ dataSource: gridData, showBorders: true, loadPanel: { enabled: true, text: 'Fetching Data...' }, onInitialized: function(e) { e.component.beginCustomLoading(); setTimeout(function(){ e.component.endCustomLoading(); }, 2000); }, columns: columnsBase });
+                // 8. Virtual Scrolling
+                var largeData = [];
+                for(var i=1; i<=200; i++) { largeData.push({ Id: i, Name: "User " + i, Contact: "9000000" + i, Project: "Project " + (i%5), Stage: "Stage " + (i%3), Status: "Status", Amount: i*10000 }); }
+                $('#dx-grid-8').dxDataGrid({ dataSource: largeData, showBorders: true, scrolling: { mode: "virtual" }, paging: { pageSize: 20 }, height: 350, columns: columnsBase });
             }
 
             // ===== SCROLLSPY =====
@@ -2217,5 +1999,46 @@
             }, 4000);
         }
         function hideLoader() { document.getElementById('full-page-loader').classList.add('hidden'); }
+        window.switchGridTab = function(btn, targetId) {
+            // Reset all tabs to inactive style
+            document.querySelectorAll('.vgn-tab-btn').forEach(function(b) {
+                b.classList.remove('active');
+                b.style.color = 'var(--text-muted)';
+                b.style.borderBottomColor = 'transparent';
+            });
+            // Activate clicked tab
+            btn.classList.add('active');
+            btn.style.color = 'var(--primary)';
+            btn.style.borderBottomColor = 'var(--primary)';
+            // Show/hide grid panels
+            document.querySelectorAll('.grid-tab-content').forEach(function(panel) {
+                panel.classList.add('hidden');
+                panel.classList.remove('block');
+            });
+            var target = document.getElementById(targetId);
+            if (target) { target.classList.remove('hidden'); target.classList.add('block'); }
+            // Repaint DevExtreme grid if present
+            var dxEl = target ? target.querySelector('.dx-datagrid') : null;
+            if (dxEl && $(dxEl).dxDataGrid('instance')) { $(dxEl).dxDataGrid('instance').repaint(); }
+        };
+        
+        (function loadCountryCodes() {
+            fetch("https://countriesnow.space/api/v0.1/countries/codes")
+                .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+                .then(function (result) {
+                    var $sel = $('#country-code');
+                    $sel.empty();
+                    result.data.forEach(function (country) {
+                        if (country.dial_code) {
+                            var code = country.dial_code;
+                            var selected = country.name === 'India' ? ' selected' : '';
+                            $sel.append('<option value="' + code + '"' + selected + '>' + country.name + ' (' + code + ')</option>');
+                        }
+                    });
+                })
+                .catch(function () {
+                    console.warn('[loadCountryCodes] API failed.');
+                });
+        })();
     </script>
 }
