@@ -6,6 +6,8 @@ namespace VGN_CRM_CORE.Models
     public class SourceAnalysisModel
     {
 
+
+
         public string FromDate { get; set; }
         public string DepartmentID { get; set; }
 

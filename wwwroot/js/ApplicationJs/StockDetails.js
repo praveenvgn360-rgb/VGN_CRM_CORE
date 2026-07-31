@@ -3,6 +3,8 @@ $(document).ready(function () {
 
 
 
+
+
     localStorage.clear();
     LoadProjectName("FLAT");
 

@@ -24,5 +24,7 @@ namespace VGN_CRM_CORE.Models
         public DataSet dsEXE = new DataSet();
         public DataSet dsAssistantManager = new DataSet();
 
+
+
     }
 }
