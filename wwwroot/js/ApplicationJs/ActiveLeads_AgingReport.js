@@ -7,6 +7,7 @@ $(document).ready(function () {
     TeamHead_load();
 });
 
+
 var ExeId = "", Assnmanager = "", Teamhead = "", Project = "", Team = "";
 
 // Loader controls
