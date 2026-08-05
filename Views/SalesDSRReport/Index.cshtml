@@ -77,19 +77,24 @@
         to { transform: rotate(360deg); }
     }
 
-    /* DevExtreme overrides matching core layout */
+    /* ── Summary row — distinct primary color ── */
     .dx-footer-row {
-        background: rgba(var(--primary-rgb), .1);
-        color: var(--text);
-        font-weight: bold;
+        background: rgba(var(--primary-rgb), 0.18) !important;
+        border-top: 2px solid var(--primary) !important;
+    }
+    .dx-footer-row td {
+        color: var(--primary) !important;
+        font-weight: 800 !important;
+        font-size: 0.82rem !important;
     }
     .dx-datagrid-summary-item {
-        color: var(--text) !important;
+        color: var(--primary) !important;
+        font-weight: 800 !important;
     }
 
-    /* Modal Tailwind classes */
+    /* Modal — pure Tailwind, no Bootstrap */
     .tw-modal {
-        display: none; /* hidden by default */
+        display: none;
         position: fixed;
         inset: 0;
         z-index: 9999;
@@ -100,6 +105,83 @@
     }
     .tw-modal.show {
         display: flex;
+    }
+
+    /* ── Filter inputs — pure Tailwind-styled, no Bootstrap ── */
+    .filter-input {
+        background-color: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        border-radius: 0.5rem;
+        height: 36px;
+        padding: 0 0.625rem;
+        font-size: 0.8rem;
+        outline: none;
+        transition: border-color .15s;
+    }
+    .filter-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(var(--primary-rgb), .15);
+    }
+
+    /* ── Filter label above input (like VGN_360 style) ── */
+    .filter-field {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    .filter-field .fl-label {
+        font-size: 9px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        white-space: nowrap;
+        line-height: 1;
+    }
+
+    /* Time checkbox */
+    .tw-check {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--primary);
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    /* Time-toggle pill */
+    .time-toggle-pill {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1px dashed var(--border);
+        cursor: pointer;
+        transition: border-color .15s, background .15s;
+        user-select: none;
+        flex-shrink: 0;
+    }
+    .time-toggle-pill:hover {
+        border-color: var(--primary);
+        background: rgba(var(--primary-rgb), .04);
+    }
+    .time-toggle-pill .pill-label {
+        font-size: 9px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        line-height: 1;
+    }
+    .time-toggle-pill .pill-check {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--text-muted);
     }
 </style>
 
@@ -113,66 +195,80 @@
 </div>
 
 <div class="content-section active">
-    <!-- Filters Section -->
-    <div class="theme-card rounded-2xl shadow-sm p-5 mb-5 relative overflow-hidden">
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- ROW 1: Compact Filter Toolbar — all items inline, one row -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <div class="theme-card rounded-xl shadow-sm px-4 py-3 mb-4 relative overflow-hidden" style="border-color: var(--border);">
         <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
 
-        <div class="flex items-center justify-between mb-4 pb-3 border-b relative z-10" style="border-color: var(--border);">
-            <div class="flex items-center gap-3">
-                <div class="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                    <i class="bi bi-funnel-fill"></i>
+        <!-- Single flex row — no wrapping for label+input combos -->
+        <div class="flex flex-wrap items-end gap-3 relative z-10">
+
+            <!-- Funnel icon label -->
+            <div class="flex flex-col items-start gap-0.5 shrink-0">
+                <span class="text-[9px] font-black theme-text-muted uppercase tracking-widest opacity-0">.</span>
+                <div class="flex items-center gap-2 text-primary" style="height:36px;">
+                    <i class="bi bi-funnel-fill text-sm"></i>
+                    <span class="font-bold text-xs uppercase tracking-widest theme-text-muted hidden sm:inline">Filters</span>
                 </div>
-                <h3 class="font-bold theme-text uppercase text-sm tracking-wider m-0">Filters</h3>
             </div>
-        </div>
+            <div class="w-px self-stretch shrink-0 my-0.5" style="background: var(--border);"></div>
 
-        <div class="flex flex-wrap gap-4 items-end relative z-10">
-            <!-- TIME Checkbox -->
-            <div class="group flex items-center mb-3 gap-2">
-                <input type="checkbox" id="chkWithTime" class="form-check-input cursor-pointer rounded">
-                <label for="chkWithTime" class="text-xs font-bold theme-text-muted uppercase tracking-wider mb-0 cursor-pointer">Time</label>
+            <!-- TIME Toggle pill -->
+            <label class="time-toggle-pill" for="chkWithTime">
+                <span class="pill-label">Time</span>
+                <div class="pill-check">
+                    <input type="checkbox" id="chkWithTime" class="tw-check">
+                    <span id="chkTimeLabel" class="text-[11px] font-bold theme-text-muted">Off</span>
+                </div>
+            </label>
+            <div class="w-px self-stretch shrink-0 my-0.5" style="background: var(--border);"></div>
+
+            <!-- FROM — Date -->
+            <div class="filter-field" id="from_date_container">
+                <span class="fl-label">From</span>
+                <input type="date" class="filter-input" id="from_date" style="width:148px;">
             </div>
-
-            <!-- FROM Date -->
-            <div class="group" id="fromDateWrapper">
-                <label for="from_date" class="block text-xs font-bold theme-text-muted uppercase tracking-wider mb-1.5">FROM</label>
-                <input type="date" class="form-control rounded-lg w-[160px] md:w-[180px] h-[40px] px-3" id="from_date">
-            </div>
-
-            <!-- FROM DateTime (hidden) -->
-            <div class="group hidden" id="fromDateTimeWrapper">
-                <label for="from_datetime" class="block text-xs font-bold theme-text-muted uppercase tracking-wider mb-1.5">FROM</label>
-                <input type="datetime-local" class="form-control rounded-lg w-[210px] md:w-[230px] h-[40px] px-3" id="from_datetime">
-            </div>
-
-            <!-- TO Date -->
-            <div class="group" id="toDateWrapper">
-                <label for="to_date" class="block text-xs font-bold theme-text-muted uppercase tracking-wider mb-1.5">TO</label>
-                <input type="date" class="form-control rounded-lg w-[160px] md:w-[180px] h-[40px] px-3" id="to_date">
+            
+            <!-- FROM — Datetime -->
+            <div class="filter-field" id="from_datetime_container" style="display:none;">
+                <span class="fl-label">From</span>
+                <input type="datetime-local" class="filter-input" id="from_datetime" style="width:195px;">
             </div>
 
-            <!-- TO DateTime (hidden) -->
-            <div class="group hidden" id="toDateTimeWrapper">
-                <label for="to_datetime" class="block text-xs font-bold theme-text-muted uppercase tracking-wider mb-1.5">TO</label>
-                <input type="datetime-local" class="form-control rounded-lg w-[210px] md:w-[230px] h-[40px] px-3" id="to_datetime">
+            <!-- TO — Date -->
+            <div class="filter-field" id="to_date_container">
+                <span class="fl-label">To</span>
+                <input type="date" class="filter-input" id="to_date" style="width:148px;">
+            </div>
+            
+            <!-- TO — Datetime -->
+            <div class="filter-field" id="to_datetime_container" style="display:none;">
+                <span class="fl-label">To</span>
+                <input type="datetime-local" class="filter-input" id="to_datetime" style="width:195px;">
             </div>
 
             <!-- TEAM -->
-            <div class="group">
-                <label for="teamSelect" class="block text-xs font-bold theme-text-muted uppercase tracking-wider mb-1.5">TEAM</label>
-                <select class="form-select w-[160px] md:w-[200px] rounded-lg h-[40px] px-3" id="teamSelect">
+            <div class="filter-field flex-1 min-w-[150px]">
+                <span class="fl-label">Team</span>
+                <select class="filter-input w-full" id="teamSelect">
                     <option value="">-- All Teams --</option>
                 </select>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="flex items-center gap-2">
-                <button type="button" class="btn-load px-5 justify-center py-2 h-[40px] rounded-lg" id="btn_refresh">
-                    <i class="bi bi-arrow-repeat"></i> LOAD
-                </button>
-                <button type="button" class="btn-clear px-5 justify-center py-2 h-[40px] rounded-lg" id="btn_clear">
-                    <i class="bi bi-eraser"></i> CLEAR
-                </button>
+            <!-- Action Buttons — aligned to bottom -->
+            <div class="flex items-end gap-2 shrink-0 ml-auto">
+                <div class="flex flex-col gap-0.5">
+                    <span class="text-[9px] font-black theme-text-muted uppercase tracking-widest opacity-0">.</span>
+                    <div class="flex items-center gap-2">
+                        <button type="button" class="btn-load py-1.5 px-4" id="btn_refresh">
+                            <i class="bi bi-arrow-repeat"></i> LOAD
+                        </button>
+                        <button type="button" class="btn-clear py-1.5 px-4" id="btn_clear">
+                            <i class="bi bi-eraser"></i> CLEAR
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -191,7 +287,7 @@
     </div>
 </div>
 
-<!-- Tailwind Modal for Details -->
+<!-- Tailwind Modal for Details — no Bootstrap -->
 <div id="popupContainer" class="tw-modal">
     <div class="theme-card w-full max-w-5xl rounded-2xl shadow-2xl mx-4 flex flex-col max-h-[90vh] overflow-hidden" style="animation: slideUpFade 0.3s ease-out;">
         <!-- Modal Header -->

@@ -250,6 +250,9 @@ namespace VGN_CRM_CORE.Controllers
         // GET: /GeneralDashboard/LoadDaybookData
         // Returns daybook records for the logged-in user.
         // ──────────────────────────────────────────────────────
+
+
+
         [HttpGet]
         public IActionResult LoadDaybookData()
         {
