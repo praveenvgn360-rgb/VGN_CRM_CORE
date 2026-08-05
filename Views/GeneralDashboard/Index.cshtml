@@ -1421,12 +1421,17 @@ else
         const label = document.getElementById('cal_month_label');
         if (!grid || !label) return;
         grid.innerHTML = '';
-        label.textContent = monthLabel(currentDate);
 
         const year  = currentDate.getFullYear();
         const month = currentDate.getMonth();
-        const first = new Date(year, month, 1).getDay();
-        const total = new Date(year, month + 1, 0).getDate();
+
+        const cycleStart = new Date(year, month - 1, 26);
+        const cycleEnd = new Date(year, month, 25);
+        
+        const formatLabelDate = (d) => d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+        label.textContent = formatLabelDate(cycleStart) + ' \u2192 ' + formatLabelDate(cycleEnd);
+
+        const first = cycleStart.getDay();
         const today = new Date();
         const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
 
@@ -1439,16 +1444,19 @@ else
         let cntOn = 0, cntSlight = 0, cntLate = 0, cntAbsent = 0;
         let todayIn = '', todayOut = '';
 
-        for (let d = 1; d <= total; d++) {
-            const dayData = calData.find(x => x.day === d) || {};
+        for (let d = new Date(cycleStart); d <= cycleEnd; d.setDate(d.getDate() + 1)) {
+            const dayNum = d.getDate();
+            const curMonth = d.getMonth();
+            const curYear = d.getFullYear();
+            const dayData = calData.find(x => x.day === dayNum) || {};
             const cls     = classifyInTime(dayData.inTime);
-            const dayOfW  = new Date(year, month, d).getDay();
-            const isToday = isCurrentMonth && d === today.getDate();
+            const dayOfW  = d.getDay();
+            const isToday = today.getFullYear() === curYear && today.getMonth() === curMonth && dayNum === today.getDate();
 
             if (cls === 'on-time')          cntOn++;
             else if (cls === 'slight-late') cntSlight++;
             else if (cls === 'late')        cntLate++;
-            else if (d <= (isCurrentMonth ? today.getDate() : total) && dayOfW !== 0 && dayOfW !== 6)
+            else if (d <= today && dayOfW !== 0 && dayOfW !== 6)
                 cntAbsent++;
 
             if (isToday) { todayIn = dayData.inTime || ''; todayOut = dayData.outTime || ''; }
@@ -1468,9 +1476,9 @@ else
 
             const cell = document.createElement('div');
             cell.className = 'att-day-cell ' + cls + (isToday ? ' today' : '');
-            cell.title     = `${d} ${monthLabel(currentDate)}\nIn: ${dayData.inTime||'--'}  Out: ${dayData.outTime||'--'}`;
+            cell.title     = `${dayNum} ${MONTHS[curMonth]}-${curYear}\nIn: ${dayData.inTime||'--'}  Out: ${dayData.outTime||'--'}`;
             cell.innerHTML = `
-                <div><span class="att-day-num">${d}</span><span class="att-day-name">${DAYS[dayOfW].substring(0,1)}</span></div>
+                <div><span class="att-day-num">${dayNum}</span><span class="att-day-name">${DAYS[dayOfW].substring(0,1)}</span></div>
                 <div class="att-punch">
                     ${dayData.inTime  ? `<span class="att-in">▲ ${dayData.inTime}</span>`  : ''}
                     ${dayData.outTime ? `<span class="att-out">▼ ${dayData.outTime}</span>` : ''}
@@ -1522,12 +1530,17 @@ else
     if (calExport) {
         calExport.addEventListener('click', function () {
             let csv = 'Day,Date,InTime,OutTime\n';
-            const year = currentDate.getFullYear(), month = currentDate.getMonth();
-            const total = new Date(year, month + 1, 0).getDate();
-            for (let d = 1; d <= total; d++) {
-                const row = calData.find(x => x.day === d) || {};
-                const dt  = new Date(year, month, d);
-                csv += `${DAYS[dt.getDay()]},${String(d).padStart(2,'0')}-${MONTHS[month]}-${year},"${row.inTime||''}","${row.outTime||''}"\n`;
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const cycleStart = new Date(year, month - 1, 26);
+            const cycleEnd = new Date(year, month, 25);
+            
+            for (let d = new Date(cycleStart); d <= cycleEnd; d.setDate(d.getDate() + 1)) {
+                const dayNum = d.getDate();
+                const curMonth = d.getMonth();
+                const curYear = d.getFullYear();
+                const row = calData.find(x => x.day === dayNum) || {};
+                csv += `${DAYS[d.getDay()]},${String(dayNum).padStart(2,'0')}-${MONTHS[curMonth]}-${curYear},"${row.inTime||''}","${row.outTime||''}"\n`;
             }
             const a = document.createElement('a');
             a.href = 'data:text/csv,' + encodeURIComponent(csv);
