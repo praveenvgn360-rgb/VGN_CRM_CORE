@@ -903,31 +903,45 @@
         }
 
         /* Search box styling */
+        .sidebar-search-wrap {
+            padding: .55rem .85rem .65rem;
+        }
+
         .sidebar-search-wrap .sidebar-search {
             display: flex;
             align-items: center;
             gap: .5rem;
             background: var(--sidebar-search-bg);
-            border: 1px solid var(--sidebar-search-border);
+            border: 1.5px solid var(--primary);
             border-radius: 10px;
-            padding: .45rem .75rem;
+            padding: .5rem .85rem;
+            box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.08);
+            transition: border-color .2s, box-shadow .2s;
         }
 
+            .sidebar-search-wrap .sidebar-search:focus-within {
+                border-color: var(--primary);
+                box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.18);
+            }
+
             .sidebar-search-wrap .sidebar-search i {
-                color: var(--sidebar-label-color);
+                color: var(--primary);
+                opacity: .75;
+                flex-shrink: 0;
             }
 
             .sidebar-search-wrap .sidebar-search input {
                 background: transparent;
                 border: none;
                 outline: none;
-                color: var(--text) !important;
+                color: var(--sidebar-text) !important;
                 font-size: .85rem;
                 width: 100%;
             }
 
                 .sidebar-search-wrap .sidebar-search input::placeholder {
-                    color: var(--text-muted) !important;
+                    color: var(--sidebar-label-color) !important;
+                    opacity: .85;
                 }
 
         .sidebar-nav {
@@ -1117,7 +1131,7 @@
 
 
         [data-sidebar-view="list"] .list-only-item:not(.collapse):not(.search-result-item) {
-            display: flex !important;
+            display: flex;
         }
 
         /* ════════════════════════════════════════════════════
@@ -3721,6 +3735,8 @@
     </div>
 
     <!-- ██ SIDEBAR ████████████████████████████████████████████ -->
+
+
     <nav id="sidebar">
         <!-- 1. TABS AT THE TOP (as per Screenshot 1) -->
         <div class="sidebar-tabs">
@@ -3747,7 +3763,7 @@
 
         <!-- 3. MAIN NAVIGATION CONTENT -->
         <div class="sidebar-nav" id="sidebar-home">
-            <div class="nav-section list-only-item"><span class="nav-label">Main</span></div>
+            @* "Main" section label intentionally removed — no hardcoded group header needed *@
 
             <!-- Dashboard (Tiles View) -->
             <a class="nav-link-tile tile-blue grid-only-item @(ViewBag.ActiveMenu == "Dashboard" ? "active" : "")" href="/GeneralDashboard/Index" title="Dashboard">
@@ -3794,7 +3810,7 @@
                         <i class="fas fa-chevron-down text-sm" style="transition:transform .2s"></i>
                     </a>
 
-                    <div class="nav-sub list-only-item" id="@safeDeptId" style="display:none;">
+                    <div class="nav-sub list-only-item flex-col" id="@safeDeptId" style="display:none;">
                         @{
                             var moduleTypes = deptGroup
                             .GroupBy(m => m.ModuleType)
@@ -4341,9 +4357,22 @@
                 if (!filter) {
                     sidebar.querySelectorAll('.list-only-item').forEach(function (el) {
                         el.style.display = '';
+                        el.style.order = '';
                     });
                     sidebar.querySelectorAll('.grid-only-item').forEach(function (el) {
                         el.style.display = '';
+                    });
+                    sidebar.querySelectorAll('.nav-sub a.nav-link').forEach(function (el) {
+                        el.style.display = '';
+                    });
+                    
+                    // Collapse all menus on clear
+                    sidebar.querySelectorAll('.nav-sub').forEach(function (el) {
+                        el.style.display = 'none';
+                    });
+                    sidebar.querySelectorAll('a.list-only-item[data-vgn-target]').forEach(function (btn) {
+                        var icon = btn.querySelector('.fa-chevron-down');
+                        if (icon) icon.style.transform = 'rotate(0deg)';
                     });
                     return;
                 }
@@ -4355,28 +4384,35 @@
                         el.style.display = 'none';
                     });
 
-                    // ── Read directly from the live list-view collapse divs ──
-                    // This is more reliable than reading from tile templates because
-                    // the collapse divs are the actual rendered list-view items.
                     var matches = [];
 
-                    // Each dept accordion: a.nav-link[data-bs-toggle=collapse] + div.nav-sub
-                    sidebar.querySelectorAll('a.list-only-item[data-bs-toggle="collapse"]').forEach(function (deptToggle) {
-                        // Get dept label from the inner <span><span> structure
+                    // 1. Check standalone items (like Dashboard)
+                    sidebar.querySelectorAll('a.list-only-item:not(.nav-sub):not([data-vgn-target])').forEach(function (a) {
+                        var label = a.textContent.trim();
+                        if (label.toLowerCase().includes(filter)) {
+                            matches.push({
+                                label: label,
+                                href: a.getAttribute('href'),
+                                dept: 'Main'
+                            });
+                        }
+                    });
+
+                    // 2. Each dept accordion
+                    sidebar.querySelectorAll('a.list-only-item[data-vgn-target]').forEach(function (deptToggle) {
                         var deptSpanOuter = deptToggle.querySelector('span');
                         var deptSpanInner = deptSpanOuter ? deptSpanOuter.querySelector('span') : null;
                         var deptName = (deptSpanInner || deptSpanOuter || deptToggle).textContent.trim();
 
-                        // Find the matching collapse div
-                        var targetId = deptToggle.getAttribute('data-bs-target');
+                        var targetId = deptToggle.getAttribute('data-vgn-target');
                         if (!targetId) return;
                         var collapseDiv = sidebar.querySelector(targetId);
                         if (!collapseDiv) return;
 
                         // Scan all nav-link anchors inside the collapse
                         collapseDiv.querySelectorAll('a.nav-link').forEach(function (a) {
-                            var spanEl = a.querySelector('span');
-                            var label = spanEl ? spanEl.textContent.trim() : a.textContent.trim();
+                            var spans = a.querySelectorAll('span');
+                            var label = spans.length > 1 ? spans[1].textContent.trim() : a.textContent.trim();
                             if (label.toLowerCase().includes(filter)) {
                                 matches.push({
                                     label: label,
@@ -4674,16 +4710,33 @@
 
             function vgnToggle(btn, targetSelector) {
                 var target = document.querySelector(targetSelector);
-                if (target) {
-                    if (target.style.display === 'none' || target.style.display === '') {
-                        target.style.display = 'block';
-                        var icon = btn.querySelector('.fa-chevron-down');
-                        if(icon) icon.style.transform = 'rotate(180deg)';
-                    } else {
-                        target.style.display = 'none';
-                        var icon = btn.querySelector('.fa-chevron-down');
-                        if(icon) icon.style.transform = 'rotate(0deg)';
+                if (!target) return;
+
+                var isOpen = target.style.display !== 'none' && target.style.display !== '';
+
+                // ── ACCORDION: collapse every other open department first ──
+                document.querySelectorAll('#sidebar-home .nav-sub.list-only-item').forEach(function (sub) {
+                    if (sub !== target && (sub.style.display === 'flex' || sub.style.display === 'block')) {
+                        sub.style.display = 'none';
+                        // rotate chevron of the matching toggle button back to 0°
+                        var siblingId = sub.id;
+                        var siblingBtn = document.querySelector('a[data-vgn-target="#' + siblingId + '"]');
+                        if (siblingBtn) {
+                            var sibIcon = siblingBtn.querySelector('.fa-chevron-down');
+                            if (sibIcon) sibIcon.style.transform = 'rotate(0deg)';
+                        }
                     }
+                });
+
+                // ── Now toggle the clicked department ──
+                if (isOpen) {
+                    target.style.display = 'none';
+                    var icon = btn.querySelector('.fa-chevron-down');
+                    if (icon) icon.style.transform = 'rotate(0deg)';
+                } else {
+                    target.style.display = 'flex';
+                    var icon = btn.querySelector('.fa-chevron-down');
+                    if (icon) icon.style.transform = 'rotate(180deg)';
                 }
             }
 
@@ -4839,7 +4892,7 @@
                 // On clicking a menu link, hide sidebar
                 sidebarEl.addEventListener('click', function(e) {
                     var link = e.target.closest('a.nav-link, .nav-link-tile, a.srch-item');
-                    if (link && link.getAttribute('href') && link.getAttribute('href') !== '#' && !link.hasAttribute('data-bs-toggle')) {
+                    if (link && link.getAttribute('href') && link.getAttribute('href') !== '#' && !link.hasAttribute('data-vgn-target')) {
 
                         if (link.classList.contains('srch-item')) {
                             var menuSearch = document.getElementById('menuSearch');
@@ -4966,10 +5019,11 @@
                 }
             });
             */
-
-
-
             // ── Auto-repaint DevExtreme grids on window resize (handles zoom, fullscreen, etc.)
+
+
+
+
             (function () {
                 var resizeTimer;
                 window.addEventListener('resize', function () {
@@ -5693,3 +5747,4 @@
 
 </body>
 </html>
+
