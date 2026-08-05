@@ -4,132 +4,54 @@ $(document).ready(function () {
     DataGridFunction(0);
     load_Team();
 
-    // Set default date values (today's date)
+    // Set default date = today
+    var tzoffset = (new Date()).getTimezoneOffset() * 60000;
     var now = new Date();
-    var today = now.toISOString().split('T')[0];
+    var todayStr = (new Date(now - tzoffset)).toISOString().slice(0, 10);
+    
+    var fromDT = new Date(now); fromDT.setHours(0, 0, 0, 0);
+    var toDT   = new Date(now); toDT.setHours(23, 59, 0, 0);
+    var fromIso = (new Date(fromDT - tzoffset)).toISOString().slice(0, 16);
+    var toIso = (new Date(toDT - tzoffset)).toISOString().slice(0, 16);
 
-    // Set from date to today
-    $('#from_date').val(today);
+    $('#from_date').val(todayStr);
+    $('#to_date').val(todayStr);
+    $('#from_datetime').val(fromIso);
+    $('#to_datetime').val(toIso);
 
-    // Set to date to today
-    $('#to_date').val(today);
-
-    // Set default datetime values (today's date with time)
-    var fromDate = new Date(now);
-    fromDate.setHours(0, 0, 0, 0);
-    var fromStr = fromDate.toISOString().slice(0, 16);
-    $('#from_datetime').val(fromStr);
-
-
-
-    var toDate = new Date(now);
-    toDate.setHours(23, 59, 0, 0);
-    var toStr = toDate.toISOString().slice(0, 16);
-    $('#to_datetime').val(toStr);
-    //--
-    // Handle checkbox toggle - ONLY 2 inputs visible at a time
+    // Handle Time checkbox — toggle visibility
     $('#chkWithTime').change(function () {
+        var label = document.getElementById('chkTimeLabel');
+
         if ($(this).is(':checked')) {
-            // Hide date inputs, show datetime inputs
-            $('#fromDateWrapper').addClass('hidden');
-            $('#toDateWrapper').addClass('hidden');
-            $('#fromDateTimeWrapper').removeClass('hidden');
-            $('#toDateTimeWrapper').removeClass('hidden');
-
-            // Set default times when switching to time mode
-            var now = new Date();
-            var fromDate = new Date(now);
-            fromDate.setHours(0, 0, 0, 0);
-            $('#from_datetime').val(fromDate.toISOString().slice(0, 16));
-
-            var toDate = new Date(now);
-            toDate.setHours(23, 59, 0, 0);
-            $('#to_datetime').val(toDate.toISOString().slice(0, 16));
+            // Show datetime, hide date
+            $('#from_date_container, #to_date_container').hide();
+            $('#from_datetime_container, #to_datetime_container').show();
+            if (label) label.textContent = 'On';
         } else {
-            // Show date inputs, hide datetime inputs
-            $('#fromDateWrapper').removeClass('hidden');
-            $('#toDateWrapper').removeClass('hidden');
-            $('#fromDateTimeWrapper').addClass('hidden');
-            $('#toDateTimeWrapper').addClass('hidden');
-
-            // Set default dates when switching to date mode
-            var now = new Date();
-            var today = now.toISOString().split('T')[0];
-            $('#from_date').val(today);
-            $('#to_date').val(today);
+            // Show date, hide datetime
+            $('#from_date_container, #to_date_container').show();
+            $('#from_datetime_container, #to_datetime_container').hide();
+            if (label) label.textContent = 'Off';
         }
     });
 
-    // Validation for From and To dates - must be same date
-    function validateSameDate(fromVal, toVal) {
-        if (!fromVal || !toVal) return true;
-
-        var fromDate = new Date(fromVal);
-        var toDate = new Date(toVal);
-
-        // Compare only date part (year, month, day)
-        var fromDateOnly = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
-        var toDateOnly = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
-
-        return fromDateOnly.getTime() === toDateOnly.getTime();
-    }
-
-    // Validation for From and To datetime - must be same date
-    function validateSameDateTime(fromVal, toVal) {
-        if (!fromVal || !toVal) return true;
-
-        var fromDate = new Date(fromVal);
-        var toDate = new Date(toVal);
-
-        // Compare only date part (year, month, day)
-        var fromDateOnly = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
-        var toDateOnly = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
-
-        return fromDateOnly.getTime() === toDateOnly.getTime();
-    }
-
-    // Add change event listeners for date validation
-    $('#from_date, #to_date').change(function () {
-        var fromVal = $('#from_date').val();
-        var toVal = $('#to_date').val();
-
-        if (fromVal && toVal) {
-            if (!validateSameDate(fromVal, toVal)) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Invalid Date Range',
-                    text: 'From Date and To Date must be the same date. Please select the same date.',
-                    confirmButtonText: 'OK'
-                });
-                // Reset the changed field to the other field's value
-                if ($(this).attr('id') === 'from_date') {
-                    $('#from_date').val(toVal);
-                } else {
-                    $('#to_date').val(fromVal);
-                }
-            }
-        }
-    });
-
-    $('#from_datetime, #to_datetime').change(function () {
-        var fromVal = $('#from_datetime').val();
-        var toVal = $('#to_datetime').val();
-
-        if (fromVal && toVal) {
-            if (!validateSameDateTime(fromVal, toVal)) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Invalid Date Range',
-                    text: 'From Date and To Date must be the same date. Please select the same date.',
-                    confirmButtonText: 'OK'
-                });
-                // Reset the changed field to the other field's value
-                if ($(this).attr('id') === 'from_datetime') {
-                    $('#from_datetime').val(toVal);
-                } else {
-                    $('#to_datetime').val(fromVal);
-                }
-            }
+    // Live validation — only enforce To >= From
+    $('#from_date, #to_date, #from_datetime, #to_datetime').on('change', function () {
+        var includeTime = $('#chkWithTime').is(':checked');
+        var fromVal = includeTime ? $('#from_datetime').val() : $('#from_date').val();
+        var toVal   = includeTime ? $('#to_datetime').val() : $('#to_date').val();
+        
+        if (fromVal && toVal && new Date(toVal) < new Date(fromVal)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Invalid Date Range',
+                text: 'To Date cannot be earlier than From Date.',
+                confirmButtonText: 'OK'
+            });
+            var changedId = $(this).attr('id');
+            if (changedId === 'to_date') $('#to_date').val(fromVal);
+            if (changedId === 'to_datetime') $('#to_datetime').val(fromVal);
         }
     });
 });
@@ -167,19 +89,12 @@ function load_Team() {
     });
 }
 
-// Helper function to get date/time value based on mode
+// Helper: get from/to values from the inputs
 function getDateTimeValue(includeTime) {
-    var fromValue, toValue;
-
-    if (includeTime) {
-        fromValue = $('#from_datetime').val();
-        toValue = $('#to_datetime').val();
-    } else {
-        fromValue = $('#from_date').val();
-        toValue = $('#to_date').val();
-    }
-
-    return { fromValue: fromValue, toValue: toValue };
+    return {
+        fromValue: includeTime ? $('#from_datetime').val() : $('#from_date').val(),
+        toValue:   includeTime ? $('#to_datetime').val() : $('#to_date').val()
+    };
 }
 
 // Helper function to format date/time for API
@@ -262,73 +177,24 @@ function formatDateForPopup(dateStr, includeTime, isToDate = false) {
     }
 }
 
-// Refresh Button Click - Load Data with Date and Time
+// Refresh Button Click
 $('#btn_refresh').click(function () {
     var includeTime = $('#chkWithTime').is(':checked');
-    var fromValue, toValue;
+    var fromValue = includeTime ? $('#from_datetime').val() : $('#from_date').val();
+    var toValue   = includeTime ? $('#to_datetime').val() : $('#to_date').val();
 
-    if (includeTime) {
-        fromValue = $('#from_datetime').val();
-        toValue = $('#to_datetime').val();
+    if (!fromValue) { alert(includeTime ? 'Select From Date and Time' : 'Select From Date'); return false; }
+    if (!toValue)   { alert(includeTime ? 'Select To Date and Time'   : 'Select To Date');   return false; }
 
-        // Validate From Date Time
-        if (!fromValue || fromValue == '') {
-            alert('Select From Date and Time');
-            return false;
-        }
-
-        // Validate To Date Time
-        if (!toValue || toValue == '') {
-            alert('Select To Date and Time');
-            return false;
-        }
-
-        // Validate same date for datetime
-        var fromDate = new Date(fromValue);
-        var toDate = new Date(toValue);
-        var fromDateOnly = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
-        var toDateOnly = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
-
-        if (fromDateOnly.getTime() !== toDateOnly.getTime()) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Invalid Date Range',
-                text: 'From Date and To Date must be the same date. Please select the same date.',
-                confirmButtonText: 'OK'
-            });
-            return false;
-        }
-    } else {
-        fromValue = $('#from_date').val();
-        toValue = $('#to_date').val();
-
-        // Validate From Date
-        if (!fromValue || fromValue == '') {
-            alert('Select From Date');
-            return false;
-        }
-
-        // Validate To Date
-        if (!toValue || toValue == '') {
-            alert('Select To Date');
-            return false;
-        }
-
-        // Validate same date for date
-        var fromDate = new Date(fromValue);
-        var toDate = new Date(toValue);
-        var fromDateOnly = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
-        var toDateOnly = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
-
-        if (fromDateOnly.getTime() !== toDateOnly.getTime()) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Invalid Date Range',
-                text: 'From Date and To Date must be the same date. Please select the same date.',
-                confirmButtonText: 'OK'
-            });
-            return false;
-        }
+    // Only restriction: To must not be before From
+    if (new Date(toValue) < new Date(fromValue)) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Invalid Date Range',
+            text: 'To Date cannot be earlier than From Date.',
+            confirmButtonText: 'OK'
+        });
+        return false;
     }
 
     // Format dates with or without time for backend
@@ -394,30 +260,24 @@ $('#btn_refresh').click(function () {
 
 // Clear Button
 $('#btn_clear').click(function () {
+    var tzoffset = (new Date()).getTimezoneOffset() * 60000;
     var now = new Date();
-    var today = now.toISOString().split('T')[0];
+    var todayStr = (new Date(now - tzoffset)).toISOString().slice(0, 10);
+    
+    var fromDT = new Date(now); fromDT.setHours(0, 0, 0, 0);
+    var toDT   = new Date(now); toDT.setHours(23, 59, 0, 0);
+    var fromIso = (new Date(fromDT - tzoffset)).toISOString().slice(0, 16);
+    var toIso = (new Date(toDT - tzoffset)).toISOString().slice(0, 16);
 
-    // Reset date inputs
-    $('#from_date').val(today);
-    $('#to_date').val(today);
+    // Uncheck time toggle
+    $('#chkWithTime').prop('checked', false).trigger('change');
 
-    // Reset datetime inputs
-    var fromDate = new Date(now);
-    fromDate.setHours(0, 0, 0, 0);
-    $('#from_datetime').val(fromDate.toISOString().slice(0, 16));
-
-    var toDate = new Date(now);
-    toDate.setHours(23, 59, 0, 0);
-    $('#to_datetime').val(toDate.toISOString().slice(0, 16));
+    $('#from_date').val(todayStr);
+    $('#to_date').val(todayStr);
+    $('#from_datetime').val(fromIso);
+    $('#to_datetime').val(toIso);
 
     $('#teamSelect').val('');
-    $('#chkWithTime').prop('checked', false);
-
-    // Show date inputs, hide datetime inputs
-    $('#fromDateWrapper').removeClass('hidden');
-    $('#toDateWrapper').removeClass('hidden');
-    $('#fromDateTimeWrapper').addClass('hidden');
-    $('#toDateTimeWrapper').addClass('hidden');
 
     DataGridFunction(0);
 });
@@ -437,6 +297,12 @@ function DataGridFunction(data) {
     var orders = [];
     if (data != 0) {
         orders = data;
+    }
+    // Destroy existing instance to ensure summary row stays attached
+    var $grid = $('#gridContainer');
+    if ($grid.length > 0 && $grid.hasClass('dx-datagrid')) {
+        var existingInstance = $grid.dxDataGrid('instance');
+        if (existingInstance) { existingInstance.dispose(); }
     }
     $(function () {
         const dataGrid = $('#gridContainer').dxDataGrid({
