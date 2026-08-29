@@ -78,12 +78,10 @@ namespace VGN_CRM_CORE.Controllers
                         cmd.CommandType = CommandType.StoredProcedure;
 
                         string flag = obj_data.WithTime ? "SALES_WITHTIME" : "SALES";
-
                         cmd.Parameters.Add("@Flag", SqlDbType.VarChar).Value = flag;
                         cmd.Parameters.Add("@FromDate", SqlDbType.DateTime).Value = fromDate;
                         cmd.Parameters.Add("@ToDate", SqlDbType.DateTime).Value = toDate;
                         cmd.Parameters.Add("@TeamId", SqlDbType.VarChar).Value = string.IsNullOrEmpty(obj_data.TeamId) ? (object)DBNull.Value : obj_data.TeamId;
-
                         SqlDataAdapter da = new SqlDataAdapter(cmd);
                         da.Fill(obj_data.dsGrd);
                     }
@@ -270,6 +268,3 @@ namespace VGN_CRM_CORE.Controllers
         }
     }
 }
-
-
-
