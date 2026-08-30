@@ -129,6 +129,9 @@
                 filterRow: {
                     visible: false
                 },
+                headerFilter: {
+                    visible: true   /* Enable filter popup on click — icon is hidden via CSS, shown on hover */
+                },
                 onToolbarPreparing: function(e) {
                     var toolbarItems = e.toolbarOptions.items;
                     toolbarItems.unshift({
@@ -158,9 +161,142 @@
                     if(badge.length) {
                         badge.text(formatIndian(count));
                     }
+
+                    // ── Dynamic header text fitting ──────────────────────────────
+                    // Runs every time grid is ready (initial load, column resize, etc.)
+                    if (typeof window.vgnFitGridHeaders === 'function') {
+                        window.vgnFitGridHeaders(e.element[0]);
+                    }
                 }
             }
         });
+    </script>
+
+    <!-- ═══ VGN: Dynamic DataGrid Column Header Auto-Fit ═══
+         vgnFitGridHeaders(gridEl) — call with a .dx-datagrid DOM element
+         - Reads current --font-size-base (user setting)
+         - Measures each header cell's available width vs text width
+         - Shrinks font size in 0.5px steps to fit; minimum = 9px
+         - Sets native title="" on the <td> for full-text tooltip
+         - Hooked into: onContentReady (all grids) + setFontSize (on change)
+    ═══════════════════════════════════════════════════════════════ -->
+    <script>
+        (function () {
+            // Measure text width using an off-screen Canvas (fast, no reflow)
+            var _canvas = document.createElement('canvas');
+            var _ctx = _canvas.getContext('2d');
+
+            function measureText(text, fontStr) {
+                _ctx.font = fontStr;
+                return _ctx.measureText(text).width;
+            }
+
+            function getBaseFontPx() {
+                // Read --font-size-grid-header (grid-specific) from :root
+                // Falls back to --font-size-base if not set, default 12.5px
+                var raw = getComputedStyle(document.documentElement)
+                    .getPropertyValue('--font-size-grid-header').trim();
+                if (!raw) {
+                    // fallback: use base and scale it
+                    raw = getComputedStyle(document.documentElement)
+                        .getPropertyValue('--font-size-base').trim();
+                    var base = parseFloat(raw) || 14;
+                    return Math.round(base * 0.893 * 10) / 10;
+                }
+                if (raw.endsWith('px')) return parseFloat(raw);
+                if (raw.endsWith('rem')) return parseFloat(raw) * 16;
+                return parseFloat(raw) || 12.5;
+            }
+
+            function getFontFamily() {
+                var raw = getComputedStyle(document.documentElement)
+                    .getPropertyValue('--font-family').trim();
+                return raw || "'Segoe UI', system-ui, sans-serif";
+            }
+
+            window.vgnFitGridHeaders = function (gridEl) {
+                if (!gridEl) return;
+                var headerCells = gridEl.querySelectorAll(
+                    '.dx-header-row .dx-datagrid-text-content'
+                );
+                if (!headerCells.length) return;
+
+                var basePx     = getBaseFontPx();
+                var fontFamily = getFontFamily();
+                var MIN_PX     = 9;   // never go below 9px
+                var STEP       = 0.5; // shrink granularity
+
+                headerCells.forEach(function (span) {
+                    var td = span.closest('td');
+                    if (!td) return;
+
+                    var text = span.textContent.trim();
+                    if (!text) return;
+
+                    // ── Measure the actual available width for text ──────────────
+                    // DevExtreme places the text-content span inside a container
+                    // that already accounts for sort/filter icons. Use the span's
+                    // own offsetWidth (which DX constrains) as the real budget.
+                    // Fallback: td width minus icon space (sort=18px, filter=20px,
+                    // padding=12px → 50px total reserve).
+                    var available;
+                    var spanW = span.offsetWidth;
+                    if (spanW > 0) {
+                        available = spanW - 4; // tiny buffer for rounding
+                    } else {
+                        var cellW = td.getBoundingClientRect().width;
+                        if (cellW <= 0) return;
+                        // Count icons inside the td (sort arrow + header filter)
+                        var iconCount = td.querySelectorAll(
+                            '.dx-sort, .dx-sort-up, .dx-sort-down, .dx-header-filter'
+                        ).length;
+                        var iconPad = 12 + (iconCount * 20); // base padding + per-icon
+                        available = Math.max(cellW - iconPad, 20);
+                    }
+
+                    // ── Reset any previous fitted size before re-measuring ───────
+                    span.style.fontSize = '';
+
+                    // ── Shrink from base until text fits ─────────────────────────
+                    var fitted = basePx;
+                    while (fitted > MIN_PX) {
+                        var fontStr = '700 ' + fitted + 'px ' + fontFamily;
+                        var textW = measureText(text, fontStr);
+                        if (textW <= available) break;
+                        fitted -= STEP;
+                    }
+                    fitted = Math.max(fitted, MIN_PX);
+
+                    // ── Apply ────────────────────────────────────────────────────
+                    if (fitted < basePx - 0.4) {
+                        span.style.fontSize = fitted + 'px';
+                        span.setAttribute('data-fitted', 'true');
+                    } else {
+                        span.removeAttribute('data-fitted'); // let CSS var rule
+                    }
+
+                    // Native tooltip so full text is always accessible
+                    td.title = text;
+                });
+            };
+
+            // Re-fit headers when window is resized (column widths change)
+            var _resizeTimer;
+            window.addEventListener('resize', function () {
+                clearTimeout(_resizeTimer);
+                _resizeTimer = setTimeout(function () {
+                    document.querySelectorAll('.dx-datagrid').forEach(function (g) {
+                        // Reset fitted flags so we remeasure from base
+                        g.querySelectorAll('.dx-header-row .dx-datagrid-text-content[data-fitted]')
+                            .forEach(function (el) {
+                                el.removeAttribute('data-fitted');
+                                el.style.fontSize = '';
+                            });
+                        window.vgnFitGridHeaders(g);
+                    });
+                }, 150);
+            });
+        })();
     </script>
 
     <style>
@@ -375,6 +511,38 @@
             background: transparent !important;
         }
 
+        /* ══════════════════════════════════════════════════════════
+           DYNAMIC COLUMN HEADER TEXT — scales with user font setting
+           Base size = --font-size-base (set in Settings → Font Size)
+           Overflowing headers shrink via JS (vgnFitGridHeaders)
+           ══════════════════════════════════════════════════════════ */
+
+        /* Header row cell */
+        .dx-datagrid .dx-header-row > td {
+            vertical-align: middle !important;
+        }
+
+        /* The actual visible text span inside each header cell
+           Uses --font-size-grid-header (slightly smaller than body base)
+           so grid headers feel compact relative to form textboxes */
+        .dx-datagrid .dx-header-row .dx-datagrid-text-content {
+            font-size: var(--font-size-grid-header) !important;
+            font-family: var(--font-family) !important;
+            font-weight: 700 !important;
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: unset !important;
+            display: block !important;
+            word-break: break-word !important;
+            line-height: 1.25 !important;
+            transition: font-size 0.15s ease !important;
+        }
+
+        /* When JS has applied a fitted size, keep it smooth */
+        .dx-datagrid .dx-header-row .dx-datagrid-text-content[data-fitted="true"] {
+            /* size set inline by vgnFitGridHeaders() — no override here */
+        }
+
         /* ── LIGHT THEME ────────────────────────────────── */
         :root {
             --primary: #4680FF;
@@ -386,6 +554,9 @@
             --trans: .22s ease;
             --font-family: 'Segoe UI', system-ui, sans-serif;
             --font-size-base: 14px;
+            /* Grid-specific sizes: smaller than form controls for visual balance */
+            --font-size-grid: 12px;          /* ~85% of base — data cell rows        */
+            --font-size-grid-header: 12.5px; /* ~89% of base — column header text    */
             /* LIGHT theme colors */
             --bg: #f4f6fb;
             --surface: #ffffff;
@@ -2864,9 +3035,34 @@
                 display: block !important;
             }
         /* ── DevExtreme Theme Integration ───────────────────── */
-        .dx-widget, .dx-datagrid, .dx-datagrid-headers, .dx-datagrid-rowsview, .dx-datagrid-filter-row {
+        /* Base widget font — use grid-specific size so grid is visually smaller
+           than form textboxes, keeping the page visually even. */
+        .dx-widget, .dx-datagrid {
             font-family: var(--font-family) !important;
-            font-size: var(--font-size-base) !important;
+            font-size: var(--font-size-grid) !important;
+            background-color: var(--surface) !important;
+            color: var(--text) !important;
+        }
+
+        /* Data rows and filter row explicitly use grid size */
+        .dx-datagrid-rowsview,
+        .dx-datagrid-filter-row,
+        .dx-datagrid-rowsview .dx-row > td,
+        .dx-datagrid-filter-row td {
+            font-family: var(--font-family) !important;
+            font-size: var(--font-size-grid) !important;
+            color: var(--text) !important;
+        }
+
+        /* Pager uses grid size too */
+        .dx-pager .dx-page, .dx-pager .dx-pages, .dx-pager .dx-page-sizes {
+            font-size: var(--font-size-grid) !important;
+        }
+
+        /* Headers stay slightly larger for readability but still smaller than base */
+        .dx-datagrid-headers {
+            font-family: var(--font-family) !important;
+            font-size: var(--font-size-grid-header) !important;
             background-color: var(--surface) !important;
             color: var(--text) !important;
         }
@@ -2881,6 +3077,22 @@
             color: #ffffff !important;
             border-bottom: 1px solid var(--border) !important;
             font-weight: 600;
+            /* Explicit font-size so this higher-specificity rule wins over page styles */
+            font-size: var(--font-size-grid-header) !important;
+            font-family: var(--font-family) !important;
+        }
+
+        /* Header text content span — also gets grid-header size explicitly */
+        .dx-datagrid-headers .dx-header-row > td .dx-datagrid-text-content,
+        .dx-datagrid .dx-header-row > td .dx-datagrid-text-content {
+            font-size: var(--font-size-grid-header) !important;
+            font-family: var(--font-family) !important;
+        }
+
+        /* Data rows: explicit rule that tracks --font-size-grid */
+        .dx-datagrid .dx-data-row > td {
+            font-size: var(--font-size-grid) !important;
+            font-family: var(--font-family) !important;
         }
 
         /* All icons/text inside column headers — always white on primary bg */
@@ -4825,7 +5037,31 @@
                 document.querySelectorAll('.font-size-btn').forEach(function (b) { b.classList.remove('active'); });
                 if (btn) btn.classList.add('active');
                 document.documentElement.style.setProperty('--font-size-base', size);
+
+                // ── Derive grid-specific sizes dynamically from the new base ──────
+                // Grid data cells = 85% of base (e.g. 14px → 11.9px ≈ 12px)
+                // Grid header text = 89% of base (e.g. 14px → 12.5px)
+                // This keeps the grid visually compact vs form textboxes.
+                var basePx = parseFloat(size) || 14;
+                var gridPx   = Math.round(basePx * 0.857 * 10) / 10;  // 85.7%
+                var hdrPx    = Math.round(basePx * 0.893 * 10) / 10;  // 89.3%
+                document.documentElement.style.setProperty('--font-size-grid',        gridPx + 'px');
+                document.documentElement.style.setProperty('--font-size-grid-header', hdrPx  + 'px');
+
                 saveSettings();
+                // Re-fit all currently rendered grid headers with the new base size
+                setTimeout(function() {
+                    document.querySelectorAll('.dx-datagrid').forEach(function(grid) {
+                        if (typeof window.vgnFitGridHeaders === 'function') {
+                            // Reset any previously fitted sizes so CSS variable takes effect first
+                            grid.querySelectorAll('.dx-header-row .dx-datagrid-text-content[data-fitted]').forEach(function(el) {
+                                el.removeAttribute('data-fitted');
+                                el.style.fontSize = '';
+                            });
+                            window.vgnFitGridHeaders(grid);
+                        }
+                    });
+                }, 50);
             }
 
             var fontFamilyMap = {
