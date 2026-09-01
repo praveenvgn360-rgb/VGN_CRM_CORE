@@ -1,0 +1,253 @@
+@{
+    ViewData["Title"] = "Project Layout Visualizer";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Hidden inputs for project context -->
+<input type="hidden" id="HProjectId" value="@Context.Request.Query["ProjectId"]" />
+<input type="hidden" id="HProjectName" value="@Context.Request.Query["ProjectName"]" />
+<input type="hidden" id="HLayoutType" value="@Context.Request.Query["Type"]" />
+
+<div class="flex flex-col h-[660px] overflow-hidden gap-3">
+    
+    <!-- Main Content: Controls & Visualizer + Manager Panel -->
+    <div class="flex flex-1 overflow-hidden relative gap-3">
+        
+        <!-- Left: Visualizer -->
+        <div class="flex-1 flex flex-col h-full gap-3 overflow-hidden">
+            <!-- Top Control Bar -->
+            <div class="glass-card p-3 rounded-xl flex flex-wrap items-center justify-between gap-4 sticky top-0 z-40">
+                
+                <!-- Filters -->
+                <div class="flex items-center gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer group">
+                        <input type="checkbox" id="chklayoutavailable" class="w-4 h-4 rounded text-slate-400 focus:ring-slate-400 border-slate-300 cursor-pointer" checked>
+                        <span class="text-xs font-bold text-slate-600 dark:text-slate-300 group-hover:text-slate-800 transition-colors">AVAILABLE</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer group">
+                        <input type="checkbox" id="chklayoutbooked" value="2" class="w-4 h-4 rounded text-amber-500 focus:ring-amber-500 border-amber-300 cursor-pointer" checked>
+                        <span class="text-xs font-bold text-slate-600 dark:text-slate-300 group-hover:text-amber-600 transition-colors">BOOKED</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer group">
+                        <input type="checkbox" id="chklayoutregistered" value="3" class="w-4 h-4 rounded text-emerald-500 focus:ring-emerald-500 border-emerald-300 cursor-pointer" checked>
+                        <span class="text-xs font-bold text-slate-600 dark:text-slate-300 group-hover:text-emerald-600 transition-colors">REGISTERED</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer group">
+                        <input type="checkbox" id="chklayoutblocked" value="4" class="w-4 h-4 rounded text-rose-500 focus:ring-rose-500 border-rose-300 cursor-pointer" checked>
+                        <span class="text-xs font-bold text-slate-600 dark:text-slate-300 group-hover:text-rose-600 transition-colors">BLOCKED</span>
+                    </label>
+                </div>
+
+                <!-- Zoom Controls -->
+                <div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-inner">
+                    <button id="btnZoomOut" class="w-7 h-7 flex items-center justify-center bg-white dark:bg-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 shadow-sm transition-transform active:scale-95" title="Zoom Out">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+                    </button>
+                    <span id="zoomLabel" class="text-xs font-black text-slate-600 dark:text-slate-300 min-w-[3rem] text-center">100%</span>
+                    <button id="btnZoomIn" class="w-7 h-7 flex items-center justify-center bg-white dark:bg-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 shadow-sm transition-transform active:scale-95" title="Zoom In">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    </button>
+                    <div class="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+                    <button id="btnZoomReset" class="w-7 h-7 flex items-center justify-center bg-white dark:bg-slate-700 rounded hover:bg-slate-50 dark:hover:bg-slate-600 text-indigo-600 dark:text-indigo-400 shadow-sm transition-transform active:scale-95" title="Reset Zoom">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    </button>
+                </div>
+
+                <!-- X/Y Coordinates & Actions -->
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <span class="text-xs font-bold text-slate-500">X:</span>
+                        <input type="text" id="layoutxaxis" class="w-16 bg-transparent border-none p-0 text-xs font-mono font-bold text-slate-700 dark:text-slate-200 focus:ring-0" readonly placeholder="---" />
+                        <span class="text-slate-300 dark:text-slate-600">|</span>
+                        <span class="text-xs font-bold text-slate-500">Y:</span>
+                        <input type="text" id="layoutyaxis" class="w-16 bg-transparent border-none p-0 text-xs font-mono font-bold text-slate-700 dark:text-slate-200 focus:ring-0" readonly placeholder="---" />
+                    </div>
+
+                    <button id="exportPicture" class="flex items-center gap-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors" title="Export as Image">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        IMG
+                    </button>
+                    <button id="exportPicture_pdf" class="flex items-center gap-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 border border-rose-500/30 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors" title="Export as PDF">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        PDF
+                    </button>
+                    <button id="btn_open_manager" class="btn-load text-xs py-1.5 px-3 flex items-center">
+                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        MANAGER
+                    </button>
+                </div>
+            </div>
+
+            <!-- Status Counts (Moved above Canvas) -->
+            <div class="flex items-center gap-4 overflow-x-auto shrink-0">
+                <!-- Project Name Display -->
+                <div class="glass-card px-4 py-2 rounded-xl border border-indigo-100 dark:border-indigo-800/30 bg-indigo-50/50 dark:bg-indigo-900/10 min-w-[200px]">
+                    <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block">Project Name</span>
+                    <div id="displayProjectName" class="text-sm font-black text-indigo-700 dark:text-indigo-300 truncate">@Context.Request.Query["ProjectName"]</div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="glass-card px-4 py-2 rounded-xl flex items-center gap-4 border-l-4 border-l-amber-500 shadow-sm flex-1 min-w-[150px]">
+                    <div class="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-500 shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">Booked</div>
+                        <div class="text-xl font-black text-slate-800 dark:text-white leading-tight" id="layoutbooked">0</div>
+                    </div>
+                </div>
+
+                <div class="glass-card px-4 py-2 rounded-xl flex items-center gap-4 border-l-4 border-l-emerald-500 shadow-sm flex-1 min-w-[150px]">
+                    <div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-500 shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">Registered</div>
+                        <div class="text-xl font-black text-slate-800 dark:text-white leading-tight" id="layoutregistrated">0</div>
+                    </div>
+                </div>
+
+                <div class="glass-card px-4 py-2 rounded-xl flex items-center gap-4 border-l-4 border-l-rose-500 shadow-sm flex-1 min-w-[150px]">
+                    <div class="w-8 h-8 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-500 shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">Blocked</div>
+                        <div class="text-xl font-black text-slate-800 dark:text-white leading-tight" id="layoutblocked">0</div>
+                    </div>
+                </div>
+
+                <div class="glass-card px-4 py-2 rounded-xl flex items-center gap-4 border-l-4 border-l-slate-400 shadow-sm flex-1 min-w-[150px]">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">Available</div>
+                        <div class="text-xl font-black text-slate-800 dark:text-white leading-tight" id="layoutavailable">0</div>
+                    </div>
+                </div>
+
+                <div class="glass-card px-4 py-2 rounded-xl flex items-center gap-4 border-l-4 border-l-indigo-500 shadow-sm bg-indigo-50/30 dark:bg-indigo-900/10 flex-1 min-w-[150px]">
+                    <div>
+                        <div class="text-[10px] font-bold text-indigo-500 uppercase tracking-wider leading-tight">Total Units</div>
+                        <div class="text-2xl font-black text-indigo-700 dark:text-indigo-300 leading-tight" id="layouttotal">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Canvas Container -->
+            <div class="glass-card rounded-xl border border-slate-200 dark:border-slate-700 flex-1 overflow-hidden relative shadow-inner bg-slate-100/50 dark:bg-slate-900/50">
+                <div class="absolute inset-0 overflow-auto pointer-events-auto panel-scroll-container" id="panelScrollContainer">
+                    <div id="panel" class="relative origin-top-left bg-white border border-slate-300 shadow-lg cursor-crosshair transition-transform duration-100 ease-out" style="width: 2400px; height: 2400px; margin: 2rem auto;">
+                        <img id="image" src="" alt="Project Layout" class="w-full h-full block select-none pointer-events-none object-fill" />
+                    </div>
+                </div>
+                
+                <!-- Hidden canvas for export -->
+                <canvas id="canvas" class="hidden"></canvas>
+                
+                <div class="absolute bottom-4 left-4 right-4 pointer-events-none flex justify-center">
+                    <div class="bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-medium py-2 px-4 rounded-full shadow-lg border border-white/10 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Use zoom controls to enlarge, then click anywhere on the map to pinpoint a coordinate.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Layout Manager Docked Panel -->
+        <div id="layoutManagerPanel" class="hidden w-96 xl:w-[450px] flex-shrink-0 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl flex-col h-full overflow-hidden transition-all duration-300">
+            <div class="px-5 py-3 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <h3 class="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+                    Layout Data Manager
+                </h3>
+                <button class="text-slate-400 hover:text-rose-500 transition-colors close-manager">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="p-4 overflow-y-auto flex-1 flex flex-col gap-4">
+                <!-- Upload Section -->
+                <div class="bg-indigo-50/50 dark:bg-indigo-900/10 p-4 rounded-xl border border-indigo-100 dark:border-indigo-800/30 flex flex-col gap-3">
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-800 dark:text-white mb-0.5">Layout Image Source</h4>
+                        <p class="text-[10px] text-slate-500 dark:text-slate-400">Upload a high-resolution map image for this project.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="btn_attachlayout" class="btn-apply text-xs py-1.5 flex-1">
+                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            Upload Image
+                        </button>
+                        <input type="file" accept="image/*" id="entry_filelayout" class="hidden">
+                        
+                        <button id="btnsavelayoutaxis" class="btn-load text-xs py-1.5 flex-1">
+                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                            Save Coordinates
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden flex-1 flex flex-col min-h-[300px]">
+                    <div class="bg-slate-50 dark:bg-slate-800/50 px-3 py-2 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase">Unit Coordinates Mapping</span>
+                    </div>
+                    <div class="overflow-auto flex-1">
+                        <table id="layoutentry_table" class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                            <thead class="bg-slate-50 dark:bg-slate-800/80 sticky top-0 z-10">
+                                <tr>
+                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Unit No</th>
+                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider w-20">X.Axis</th>
+                                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-500 uppercase tracking-wider w-20">Y.Axis</th>
+                                    <th hidden></th>
+                                    <th hidden></th>
+                                    <th hidden></th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <style>
+        .panel-scroll-container {
+            /* custom scrollbar for panel */
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 transparent;
+        }
+        .panel-scroll-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .panel-scroll-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .panel-scroll-container::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+        .dark .panel-scroll-container::-webkit-scrollbar-thumb {
+            background-color: #475569;
+        }
+        
+        .marker-anim {
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        @@keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 0, 0, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="~/js/applicationjs/LayoutVisualizer.js"></script>
+}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -70,6 +70,20 @@ namespace VGN_CRM_CORE.Models
         public string ToRange { get; set; }
 
 
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       LayoutDetails — Used by Save_layoutaxisDetails & Save_layoutaxisDetails_combine
+    ═══════════════════════════════════════════════════════════════════════ */
+    public class LayoutDetails
+    {
+        public string ProjectID { get; set; }
+        public string PlotTranid { get; set; }
+        public string PlotNo { get; set; }
+        public string PlotStatus { get; set; }
+        public double XAxis { get; set; }
+        public double YAxis { get; set; }
+        public string LayoutTranid { get; set; }
     }
 
 }
