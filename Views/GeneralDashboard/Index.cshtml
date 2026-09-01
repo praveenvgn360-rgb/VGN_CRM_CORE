@@ -377,26 +377,30 @@
         background: var(--surface) !important;
         color: var(--text) !important;
         border: 1px solid var(--border) !important;
-        border-radius: 6px;
-        padding: 6px 8px;
-        font-size: 12px;
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-size: 11px;
+        height: 28px !important;
+        min-height: 28px !important;
         width: 100%;
         outline: none;
-        transition: border-color var(--trans);
+        box-shadow: none !important;
+        transition: all 0.2s ease-in-out;
     }
 
         .theme-form-control:focus {
             border-color: var(--primary) !important;
-            box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
+            box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.15) !important;
         }
 
     .theme-label {
         display: block;
-        margin-bottom: 4px;
-        font-size: 11px;
-        font-weight: 600;
+        margin-bottom: 2px;
+        font-size: 10.5px;
+        font-weight: 700;
         color: var(--text-muted);
         text-transform: uppercase;
+        letter-spacing: 0.3px;
     }
 
     .erp-stat-pill {
@@ -503,6 +507,7 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             position: relative;
+            border: 1px solid var(--border) !important; /* ← Add this */
         }
 
         .journey-card:hover {
@@ -554,9 +559,11 @@
             gap: 1.5rem;
         }
 
+      
+
         .pillar-card {
             background: linear-gradient(145deg, #ffffff, #f8fafc);
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border) !important; /* ← Changed from #e2e8f0 to var(--border) */
             border-radius: 16px;
             padding: 2rem;
             text-align: center;
@@ -602,6 +609,7 @@
             position: relative;
             overflow: hidden;
             box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.3);
+            border: 1px solid var(--border) !important; /* ← Add this */
         }
         
         .success-banner::before {
@@ -805,11 +813,11 @@ else
 {
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
     <div class="col-span-1">
-        <div class="erp-card-inner" style="padding:1.25rem;">
-            <div class="erp-card-title mb-4">
+        <div class="erp-card-inner" style="padding:1rem;">
+            <div class="erp-card-title mb-3">
                 <i class="bi bi-person-plus text-[var(--primary)] me-2 text-lg"></i> NEW LEAD / ENQUIRY
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-3 flex-1">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-x-3 gap-y-2 flex-1">
                 <div class="md:col-span-12">
                     <label class="theme-label">CUSTOMER NAME</label>
                     <input class="theme-form-control" type="text" id="txtCUSTOMERNAME">
@@ -873,11 +881,11 @@ else
         </div>
     </div>
     <div class="col-span-1">
-        <div class="erp-card-inner" style="padding:1.25rem;">
-            <div class="erp-card-title mb-4">
+        <div class="erp-card-inner" style="padding:1rem;">
+            <div class="erp-card-title mb-3">
                 <i class="bi bi-info-circle text-[var(--primary)] me-2 text-lg"></i> ADDITIONAL DETAILS
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-x-4 gap-y-3 flex-1">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-x-3 gap-y-2 flex-1">
                 <div class="md:col-span-6">
                     <label class="theme-label">EMAIL ID</label>
                     <input class="theme-form-control" type="email" id="txt_EMAIL">
@@ -896,7 +904,7 @@ else
                 </div>
                 <div class="md:col-span-12 flex flex-col">
                     <label class="theme-label">REMARKS</label>
-                    <textarea class="theme-form-control" id="txt_Remarks"></textarea>
+                    <textarea class="theme-form-control" id="txt_Remarks" style="height: 60px !important; min-height: 60px !important; resize: none;"></textarea>
                 </div>
             </div>
             <div class="mt-4 flex justify-end gap-3">

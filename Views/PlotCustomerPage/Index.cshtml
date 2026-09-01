@@ -1,0 +1,501 @@
+@{
+    ViewBag.Title = "Plot Customer Page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+    @@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .compact-card {
+        background-color: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+        margin-bottom: 0.5rem;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    
+    .compact-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.4rem;
+        padding-bottom: 0.25rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        margin-bottom: 0.15rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .form-control-compact {
+        width: 100%;
+        background-color: transparent;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 0.15rem 0.4rem;
+        font-size: 0.75rem;
+        height: 26px;
+        color: var(--text);
+        transition: border-color 0.15s;
+    }
+
+    .form-control-compact:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+
+    .form-control-compact:read-only, .form-control-compact:disabled {
+        background-color: rgba(0,0,0,0.02);
+        color: var(--text-muted);
+    }
+    
+    [data-theme="dark"] .form-control-compact:read-only, [data-theme="dark"] .form-control-compact:disabled {
+        background-color: rgba(255,255,255,0.02);
+    }
+
+    .compact-tabs {
+        display: flex;
+        gap: 0.25rem;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0px;
+    }
+
+    .compact-tab-btn {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+    }
+
+    .compact-tab-btn:hover {
+        color: var(--primary);
+    }
+
+    .compact-tab-btn.active {
+        color: var(--primary);
+        border-bottom: 2px solid var(--primary);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.2s ease-out; }
+
+    .dx-datagrid { border-radius: 4px; border: 1px solid var(--border); }
+    
+    /* Utility overrides for incredibly tight spacing */
+    .gap-tight { gap: 0.35rem; }
+</style>
+
+<!-- Hidden Fields -->
+<input type="hidden" id="Hclient_id" value="@Context.Request.Query["Client_id"]" />
+<input type="hidden" id="HProjectId" value="@Context.Request.Query["ProjectId"]" />
+<input type="hidden" id="HProjectTranId" value="@Context.Request.Query["ProjectTranId"]" />
+<input type="hidden" id="HExtent" value="" />
+<input type="hidden" id="HPlotValue" value="@Context.Request.Query["Plotvalue"]" />
+<input type="hidden" id="HBookValue" value="" />
+<input type="hidden" id="HAvailability" value="@Context.Request.Query["PlotStatus"]" />
+<input type="hidden" id="HUserType" value="@VGN_CRM_CORE.CommonFunctions.SessionHelper.GetUserSession(Context.Session)?.Role" />
+<input type="hidden" id="HUserID" value="@VGN_CRM_CORE.CommonFunctions.SessionHelper.GetUserSession(Context.Session)?.UserId" />
+
+<div class="p-2 w-full mx-auto animate-fade-in">
+    
+    <!-- Top Action Bar -->
+    <div class="flex items-center justify-between mb-2">
+        <h1 class="text-sm font-bold text-[color:var(--text)] flex items-center gap-1.5 uppercase tracking-wide">
+            <i class="fas fa-user-circle text-[color:var(--primary)] text-base"></i> Plot Customer Profile
+        </h1>
+        <div class="flex items-center gap-1.5">
+            <button class="btn-cancel !text-[11px] !py-1 !px-2"><i class="fas fa-arrow-left"></i> Back</button>
+            <button class="btn-edit !text-[11px] !py-1 !px-2" id="btnEdit" disabled><i class="far fa-edit"></i> Edit</button>
+            <button class="btn-update !text-[11px] !py-1 !px-2" id="btnMaster_Update" disabled><i class="fas fa-sync"></i> Update</button>
+            <button class="btn-save !text-[11px] !py-1 !px-2" id="btnMaster_save"><i class="far fa-save"></i> Save</button>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="compact-tabs">
+        <button class="compact-tab-btn active" data-target="tab-customer-form"><i class="fas fa-address-card mr-1"></i>Customer Form</button>
+        <button class="compact-tab-btn" data-target="tab-payment-receipts"><i class="fas fa-receipt mr-1"></i>Payment Receipts</button>
+        <button class="compact-tab-btn" data-target="tab-booking-status"><i class="fas fa-tasks mr-1"></i>Booking to Registration</button>
+    </div>
+
+    <!-- TAB 1: CUSTOMER FORM -->
+    <div id="tab-customer-form" class="tab-content active">
+        
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-2">
+            <!-- Left Column: Master Details -->
+            <div class="xl:col-span-10 flex flex-col gap-2">
+                
+                <!-- Project Details -->
+                <div class="compact-card">
+                    <h3 class="compact-title"><i class="fas fa-building text-[color:var(--primary)]"></i> Project Info</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-3 gap-y-1.5">
+                        <div class="form-group col-span-2">
+                            <label>Project Name</label>
+                            <input type="text" class="form-control-compact font-bold" id="txtPROJECT_NAME" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label>Project Site</label>
+                            <input type="text" class="form-control-compact" id="txt_PROJECT_SITE" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label>Project Zone</label>
+                            <input type="text" class="form-control-compact" id="txt_PROJECT_ZONE" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label>Plot No</label>
+                            <input type="text" class="form-control-compact font-bold text-[color:var(--primary)]" id="txt_PLOT_NO" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label>Extent</label>
+                            <input type="text" class="form-control-compact" id="txt_EXTEND" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label>Survey No</label>
+                            <input type="text" class="form-control-compact" id="txt_SURVEY_NO" readonly />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Executive Details -->
+                <div class="compact-card">
+                    <div class="flex justify-between items-center border-b border-[color:var(--border)] pb-1 mb-1.5">
+                        <h3 class="compact-title !border-0 !mb-0 !pb-0"><i class="fas fa-user-tie text-[color:var(--primary)]"></i> Executive & Source</h3>
+                        <div class="flex gap-2">
+                            <label class="flex items-center gap-1 cursor-pointer text-[10px] font-bold">
+                                <input type="checkbox" id="eoiCheckbox" class="w-3 h-3 text-[color:var(--primary)] rounded" /> EOI
+                            </label>
+                            <label class="flex items-center gap-1 cursor-pointer text-[10px] font-bold">
+                                <input type="checkbox" id="cppayCheckbox" class="w-3 h-3 text-[color:var(--primary)] rounded" /> CP Paid
+                            </label>
+                            <div class="flex items-center gap-1 ml-2" id="divCpPaidAmount" style="display:none;">
+                                <input type="text" class="form-control-compact w-20 !h-5 !text-[10px] text-right" id="txt_CpPaidAmount" placeholder="Amount" />
+                                <button class="btn-update !text-[9px] !py-0.5 !px-1.5 !h-5" id="Cp_PayStatusUpdate">Update</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-3 gap-y-1.5">
+                        <div class="form-group">
+                            <label>Client ID</label>
+                            <input type="text" class="form-control-compact font-bold" id="txt_CLIENT_ID" readonly />
+                        </div>
+                        <div class="form-group col-span-2">
+                            <label>Client Name</label>
+                            <input type="text" class="form-control-compact" id="txt_CLIENT_NAME" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label>Executive Name</label>
+                            <input type="text" class="form-control-compact" id="txt_EXEC_NAME" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label>Team Leader</label>
+                            <input type="text" class="form-control-compact" id="txt_TEAM_LEADER" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label>CRM Head</label>
+                            <input type="text" class="form-control-compact" id="dd_TEAM_LEAD" readonly />
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Customer Care</label>
+                            <input type="text" class="form-control-compact" id="txt_CUSTOMER_CARE" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label>Customer Type</label>
+                            <input type="text" class="form-control-compact" id="txt_CUSTOMER_TYPE" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select class="form-control-compact" id="dd_exe_status" disabled>
+                                <option>--Select--</option>
+                                <option>Registered</option>
+                                <option>Cancelled</option>
+                                <option>Booked</option>
+                                <option>Blocked</option>
+                                <option>Transferred</option>
+                                <option>Receipts Awaited</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status Date</label>
+                            <input type="date" class="form-control-compact" id="txt_statusdate" disabled />
+                        </div>
+                        <div class="form-group">
+                            <label>Source Group</label>
+                            <input type="text" class="form-control-compact" id="txt_EnquiryHeadSource" disabled />
+                        </div>
+                        <div class="form-group">
+                            <label>Enquiry Source</label>
+                            <input type="text" class="form-control-compact" id="txt_EnquirySource" disabled />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Timelines & Quick Actions -->
+                <div class="compact-card">
+                    <div class="flex justify-between items-center border-b border-[color:var(--border)] pb-1 mb-1.5">
+                        <h3 class="compact-title !border-0 !mb-0 !pb-0"><i class="far fa-calendar-check text-[color:var(--primary)]"></i> Timelines</h3>
+                        <div class="flex gap-1">
+                            <button class="btn-apply !text-[10px] !py-0.5 !px-2"><i class="fas fa-file-invoice-dollar"></i> Pmt Schedule</button>
+                            <button class="btn-apply !text-[10px] !py-0.5 !px-2"><i class="fas fa-file-signature"></i> Sale Deed</button>
+                            <button class="btn-apply !text-[10px] !py-0.5 !px-2"><i class="fas fa-envelope-open-text"></i> Welcome Mail</button>
+                            <button class="btn-apply !text-[10px] !py-0.5 !px-2"><i class="fas fa-paperclip"></i> Attachments</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 md:grid-cols-6 gap-x-3 gap-y-1.5">
+                        <div class="form-group">
+                            <label>Booked</label>
+                            <input type="text" class="form-control-compact" id="txt_BOOKED" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label>CMD Apvd</label>
+                            <input type="text" class="form-control-compact" id="txt_CMD_APVD" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label>Registered</label>
+                            <input type="text" class="form-control-compact" id="txt_REGISTERED" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label>Cancelled</label>
+                            <input type="text" class="form-control-compact" id="txtCANCELLED" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label>Transferred</label>
+                            <input type="text" class="form-control-compact" id="txt_TRANSFERED" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label>Welcome Mail</label>
+                            <input type="text" class="form-control-compact" id="txt_welcomeMaildate" readonly />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Profile Images -->
+            <div class="xl:col-span-2">
+                <div class="compact-card h-full flex flex-col items-center">
+                    <h3 class="compact-title w-full"><i class="fas fa-images text-[color:var(--primary)]"></i> Photos</h3>
+                    <div class="flex xl:flex-col gap-2 mt-1 w-full items-center">
+                        <div class="relative w-20 h-24 xl:w-full xl:h-32 rounded border border-[color:var(--border)] overflow-hidden bg-[color:var(--surface)]">
+                            <img src="/images/placeholder-user.png" id="Cusimage1" class="w-full h-full object-cover" onerror="this.src='/images/placeholder-user.png'"/>
+                        </div>
+                        <div class="relative w-20 h-24 xl:w-full xl:h-32 rounded border border-[color:var(--border)] overflow-hidden bg-[color:var(--surface)]">
+                            <img src="/images/placeholder-user.png" id="Cusimage2" class="w-full h-full object-cover" onerror="this.src='/images/placeholder-user.png'"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail Grids Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-2 mt-2">
+            
+            <!-- Personal Details -->
+            <div class="compact-card flex flex-col">
+                <div class="flex justify-between items-center mb-1.5">
+                    <h3 class="compact-title !mb-0 !border-0 !pb-0"><i class="fas fa-user-friends text-[color:var(--primary)]"></i> Personal</h3>
+                    <div class="flex gap-1">
+                        <button class="btn-apply !text-[9px] !py-0.5 !px-1.5" id="AddCus_Tbl_Row"><i class="fas fa-plus"></i> Add</button>
+                        <button class="btn-delete !text-[9px] !py-0.5 !px-1.5" id="RemoveCus_Tbl_Row"><i class="fas fa-minus"></i> Remove</button>
+                    </div>
+                </div>
+                <div id="gridPersonalDetails" class="w-full flex-grow"></div>
+            </div>
+            
+            <!-- Contact Details -->
+            <div class="compact-card flex flex-col">
+                <h3 class="compact-title"><i class="fas fa-phone-alt text-[color:var(--primary)]"></i> Contact</h3>
+                <div id="gridContactDetails" class="w-full flex-grow"></div>
+            </div>
+
+            <!-- Address Details -->
+            <div class="compact-card flex flex-col">
+                <h3 class="compact-title"><i class="fas fa-map-marked-alt text-[color:var(--primary)]"></i> Address</h3>
+                <div id="gridAddressDetails" class="w-full flex-grow"></div>
+            </div>
+
+            <!-- Profile & POA -->
+            <div class="flex flex-col gap-2">
+                <div class="compact-card flex-grow flex flex-col">
+                    <h3 class="compact-title"><i class="fas fa-id-card-alt text-[color:var(--primary)]"></i> Profile ID</h3>
+                    <div id="gridProfileDetails" class="w-full flex-grow"></div>
+                </div>
+                
+                <div class="compact-card flex-grow flex flex-col">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <div class="flex items-center gap-2">
+                            <h3 class="compact-title !mb-0 !border-0 !pb-0"><i class="fas fa-handshake text-[color:var(--primary)]"></i> POA</h3>
+                            <select class="form-control-compact w-16 !h-5 !text-[10px] !py-0" id="POA_yesno">
+                                <option>No</option>
+                                <option>Yes</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-1">
+                            <button class="btn-apply !text-[9px] !py-0.5 !px-1.5" id="POAAddCus_Tbl_Row"><i class="fas fa-plus"></i></button>
+                            <button class="btn-delete !text-[9px] !py-0.5 !px-1.5" id="POARemoveCus_Tbl_Row"><i class="fas fa-minus"></i></button>
+                            <button class="btn-save !text-[9px] !py-0.5 !px-1.5" id="btnPOA_save">Save</button>
+                        </div>
+                    </div>
+                    <div id="gridPOADetails" class="w-full flex-grow"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employment & Income -->
+        <div class="compact-card mt-2">
+            <h3 class="compact-title"><i class="fas fa-briefcase text-[color:var(--primary)]"></i> Employment & Income</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-3 gap-y-1.5">
+                <div class="form-group">
+                    <label>Employment</label>
+                    <select class="form-control-compact" id="dd_JOB_TYPE">
+                        <option value="">--Select--</option>
+                        <option>Salaried</option>
+                        <option>Self-Employed</option>
+                        <option>Retired</option>
+                        <option>Student</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Industry</label>
+                    <select class="form-control-compact" id="dd_INDUSTRY_STATUS">
+                        <option value="">--Select--</option>
+                        <option>Private</option>
+                        <option>Public</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Sector</label>
+                    <select class="form-control-compact" id="dd_SECTOR">
+                        <option value="">--Select--</option>
+                        <option>IT</option>
+                        <option>Healthcare</option>
+                        <option>Finance</option>
+                        <option>Others</option>
+                    </select>
+                </div>
+                <div class="form-group col-span-1 md:col-span-2 lg:col-span-1">
+                    <label>Company</label>
+                    <input type="text" class="form-control-compact" id="txt_COMPANY" />
+                </div>
+                <div class="form-group col-span-1 md:col-span-2 lg:col-span-1">
+                    <label>Designation</label>
+                    <input type="text" class="form-control-compact" id="txt_DESIGNATION" />
+                </div>
+                <div class="form-group">
+                    <label>Income/Annum</label>
+                    <select class="form-control-compact" id="dd_Income">
+                        <option value="">--Select--</option>
+                        <option>3-6 Lakhs</option>
+                        <option>6-12 Lakhs</option>
+                        <option>12+ Lakhs</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- TAB 2: PAYMENT RECEIPTS -->
+    <div id="tab-payment-receipts" class="tab-content">
+        <div class="compact-card h-[300px] flex items-center justify-center text-[color:var(--text-muted)]">
+            <div class="text-center">
+                <i class="fas fa-file-invoice-dollar text-3xl mb-2 opacity-30"></i>
+                <h3 class="text-sm font-semibold">Payment Receipts</h3>
+            </div>
+        </div>
+    </div>
+    
+    <!-- TAB 3: BOOKING STATUS -->
+    <div id="tab-booking-status" class="tab-content">
+        <div class="compact-card h-[300px] flex items-center justify-center text-[color:var(--text-muted)]">
+            <div class="text-center">
+                <i class="fas fa-tasks text-3xl mb-2 opacity-30"></i>
+                <h3 class="text-sm font-semibold">Booking to Registration</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Tab Switching Logic
+            $('.compact-tab-btn').on('click', function () {
+                $('.compact-tab-btn').removeClass('active');
+                $(this).addClass('active');
+                
+                var target = $(this).data('target');
+                $('.tab-content').removeClass('active');
+                $('#' + target).addClass('active');
+                
+                // Refresh DX Grids
+                setTimeout(function() {
+                    $('.dx-datagrid').each(function() {
+                        var instance = $(this).dxDataGrid('instance');
+                        if(instance) instance.repaint();
+                    });
+                }, 50);
+            });
+
+            // CP Paid Checkbox Toggle
+            $('#cppayCheckbox').on('change', function() {
+                if ($(this).is(':checked')) {
+                    $('#divCpPaidAmount').fadeIn(150);
+                } else {
+                    $('#divCpPaidAmount').fadeOut(150);
+                }
+            });
+
+            // Initialize compact grids
+            var gridConfig = {
+                dataSource: [],
+                showBorders: true,
+                columnAutoWidth: true,
+                rowAlternationEnabled: true,
+                noDataText: "No data",
+                height: 180,
+                paging: { enabled: false },
+                headerFilter: { visible: false }
+            };
+
+            $('#gridPersonalDetails').dxDataGrid($.extend({}, gridConfig, {
+                columns: ['Prefix', 'Name', 'Age', 'Relation', 'PAN', 'Aadhar']
+            }));
+            
+            $('#gridContactDetails').dxDataGrid($.extend({}, gridConfig, {
+                columns: ['Mobile 1', 'Mobile 2', 'Email ID']
+            }));
+            
+            $('#gridAddressDetails').dxDataGrid($.extend({}, gridConfig, {
+                columns: ['Permanent', 'Communication', 'Registration']
+            }));
+            
+            $('#gridProfileDetails').dxDataGrid($.extend({}, gridConfig, {
+                columns: ['Profile', 'Bank', 'Mode of Sale']
+            }));
+            
+            $('#gridPOADetails').dxDataGrid($.extend({}, gridConfig, {
+                columns: ['POA Name', 'Relation', 'PAN']
+            }));
+        });
+    </script>
+}

@@ -686,6 +686,396 @@ namespace VGN_CRM_CORE.Controllers
 
 
 
+        /* ═══════════════════════════════════════════════════════════════════════
+           PLOT LAYOUT — Individual (flag = "LoadPlotLayout")
+           Loads per-plot XAxis / YAxis + status data for the layout viewer.
+        ═══════════════════════════════════════════════════════════════════════ */
+        [HttpPost]
+        public IActionResult LoadPlotLayout([FromBody] MicroLevelProjectSiteViewModel objVal)
+        {
+            try
+            {
+                objVal.dsplotlayout.Clear();
+                using (SqlConnection conn = new SqlConnection(ConnectionString))
+                {
+                    conn.Open();
+                    using (SqlCommand cmdE = new SqlCommand("Web_PlotCustomerLedgerPaymentDetails", conn))
+                    {
+                        cmdE.CommandTimeout = 500;
+                        cmdE.CommandType = CommandType.StoredProcedure;
+                        cmdE.Parameters.AddWithValue("@ProjectId", objVal.ProjectID);
+                        cmdE.Parameters.AddWithValue("@Flag", "LoadPlotLayout");
+                        SqlDataAdapter daE = new SqlDataAdapter(cmdE);
+                        daE.Fill(objVal.dsplotlayout);
+                    }
+                    conn.Close();
+
+                    if (objVal.dsplotlayout.Tables.Count > 0 && objVal.dsplotlayout.Tables[0].Rows.Count > 0)
+                        return Content(JsonConvert.SerializeObject(new { status = true, msg = "Success", data = objVal.dsplotlayout }), "application/json");
+                    else
+                        return Content(JsonConvert.SerializeObject(new { status = false, msg = "False", data = objVal.dsplotlayout }), "application/json");
+                }
+            }
+            catch (Exception) { }
+            return Content(JsonConvert.SerializeObject(new { status = false, msg = "Error" }), "application/json");
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════════
+           PLOT LAYOUT — Combined (flag = "LoadPlotLayoutCombine")
+        ═══════════════════════════════════════════════════════════════════════ */
+        [HttpPost]
+        public IActionResult LoadPlotLayout_combine([FromBody] MicroLevelProjectSiteViewModel objVal)
+        {
+            try
+            {
+                objVal.dsplotlayout.Clear();
+                using (SqlConnection conn = new SqlConnection(ConnectionString))
+                {
+                    conn.Open();
+                    using (SqlCommand cmdE = new SqlCommand("Web_PlotCustomerLedgerPaymentDetails", conn))
+                    {
+                        cmdE.CommandTimeout = 500;
+                        cmdE.CommandType = CommandType.StoredProcedure;
+                        cmdE.Parameters.AddWithValue("@ProjectId", objVal.ProjectID);
+                        cmdE.Parameters.AddWithValue("@Flag", "LoadPlotLayoutCombine");
+                        SqlDataAdapter daE = new SqlDataAdapter(cmdE);
+                        daE.Fill(objVal.dsplotlayout);
+                    }
+                    conn.Close();
+
+                    if (objVal.dsplotlayout.Tables.Count > 0 && objVal.dsplotlayout.Tables[0].Rows.Count > 0)
+                        return Content(JsonConvert.SerializeObject(new { status = true, msg = "Success", data = objVal.dsplotlayout }), "application/json");
+                    else
+                        return Content(JsonConvert.SerializeObject(new { status = false, msg = "False", data = objVal.dsplotlayout }), "application/json");
+                }
+            }
+            catch (Exception) { }
+            return Content(JsonConvert.SerializeObject(new { status = false, msg = "Error" }), "application/json");
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════════
+           PLOT LAYOUT IMAGE — Individual
+        ═══════════════════════════════════════════════════════════════════════ */
+        [HttpPost]
+        public IActionResult LoadPlotLayoutImage([FromBody] MicroLevelProjectSiteViewModel objVal)
+        {
+            try
+            {
+                objVal.dsplotlayout.Clear();
+                using (SqlConnection conn = new SqlConnection(ConnectionString))
+                {
+                    conn.Open();
+                    using (SqlCommand cmdE = new SqlCommand("Web_PlotCustomerLedgerPaymentDetails", conn))
+                    {
+                        cmdE.CommandTimeout = 500;
+                        cmdE.CommandType = CommandType.StoredProcedure;
+                        cmdE.Parameters.AddWithValue("@ProjectId", objVal.ProjectID);
+                        cmdE.Parameters.AddWithValue("@Flag", "LoadLayoutImage");
+                        SqlDataAdapter daE = new SqlDataAdapter(cmdE);
+                        daE.Fill(objVal.dsplotlayout);
+                    }
+                    conn.Close();
+
+                    if (objVal.dsplotlayout.Tables.Count > 0 && objVal.dsplotlayout.Tables[0].Rows.Count > 0)
+                        return Content(JsonConvert.SerializeObject(new { status = true, msg = "Success", data = objVal.dsplotlayout }), "application/json");
+                    else
+                        return Content(JsonConvert.SerializeObject(new { status = false, msg = "False", data = objVal.dsplotlayout }), "application/json");
+                }
+            }
+            catch (Exception ex) { 
+                return Content(JsonConvert.SerializeObject(new { status = false, msg = ex.Message }), "application/json");
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════════
+           PLOT LAYOUT IMAGE — Combined
+        ═══════════════════════════════════════════════════════════════════════ */
+        [HttpPost]
+        public IActionResult LoadPlotLayoutImage_combine([FromBody] MicroLevelProjectSiteViewModel objVal)
+        {
+            try
+            {
+                objVal.dsplotlayout.Clear();
+                using (SqlConnection conn = new SqlConnection(ConnectionString))
+                {
+                    conn.Open();
+                    using (SqlCommand cmdE = new SqlCommand("Web_PlotCustomerLedgerPaymentDetails", conn))
+                    {
+                        cmdE.CommandTimeout = 500;
+                        cmdE.CommandType = CommandType.StoredProcedure;
+                        cmdE.Parameters.AddWithValue("@ProjectId", objVal.ProjectID);
+                        cmdE.Parameters.AddWithValue("@Flag", "LoadLayoutImage_Combine");
+                        SqlDataAdapter daE = new SqlDataAdapter(cmdE);
+                        daE.Fill(objVal.dsplotlayout);
+                    }
+                    conn.Close();
+
+                    if (objVal.dsplotlayout.Tables.Count > 0 && objVal.dsplotlayout.Tables[0].Rows.Count > 0)
+                        return Content(JsonConvert.SerializeObject(new { status = true, msg = "Success", data = objVal.dsplotlayout }), "application/json");
+                    else
+                        return Content(JsonConvert.SerializeObject(new { status = false, msg = "False", data = objVal.dsplotlayout }), "application/json");
+                }
+            }
+            catch (Exception ex) { 
+                return Content(JsonConvert.SerializeObject(new { status = false, msg = ex.Message }), "application/json");
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════════
+           SAVE LAYOUT AXIS — Individual
+        ═══════════════════════════════════════════════════════════════════════ */
+        [HttpPost]
+        public IActionResult Save_layoutaxisDetails([FromBody] List<LayoutDetails> SaveDocument)
+        {
+            try
+            {
+                var userId = HttpContext.Session.GetString("UserId") ?? "";
+                var sDateTime = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+
+                foreach (var item in SaveDocument)
+                {
+                    var flag = (item.LayoutTranid != null && item.LayoutTranid != "0" && item.LayoutTranid != "null")
+                        ? "Update_PlotLayoutAxisDetails"
+                        : "Save_PlotLayoutAxisDetails";
+
+                    using (SqlConnection conn = new SqlConnection(ConnectionString))
+                    {
+                        conn.Open();
+                        using (SqlCommand cmd = new SqlCommand("Web_PlotCustomerLedgerPaymentDetails", conn))
+                        {
+                            cmd.CommandType = CommandType.StoredProcedure;
+                            cmd.Parameters.AddWithValue("@Projectid", item.ProjectID ?? "");
+                            cmd.Parameters.AddWithValue("@Plottranid", item.PlotTranid ?? "");
+                            cmd.Parameters.AddWithValue("@XAxis", item.XAxis);
+                            cmd.Parameters.AddWithValue("@YAxis", item.YAxis);
+                            cmd.Parameters.AddWithValue("@Status", "1");
+                            cmd.Parameters.AddWithValue("@LogEmpid", userId);
+                            cmd.Parameters.AddWithValue("@LogDatetime", sDateTime);
+                            cmd.Parameters.AddWithValue("@LogIpaddr", "");
+                            cmd.Parameters.AddWithValue("@LogHostname", "");
+                            if (flag == "Update_PlotLayoutAxisDetails")
+                                cmd.Parameters.AddWithValue("@LayoutTranid", item.LayoutTranid);
+                            cmd.Parameters.AddWithValue("@Flag", flag);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+                return Content(JsonConvert.SerializeObject(new { status = true, msg = "Success" }), "application/json");
+            }
+            catch (Exception ex)
+            {
+                return Content(JsonConvert.SerializeObject(new { status = false, msg = ex.Message }), "application/json");
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════════
+           SAVE LAYOUT AXIS — Combined
+        ═══════════════════════════════════════════════════════════════════════ */
+        [HttpPost]
+        public IActionResult Save_layoutaxisDetails_combine([FromBody] List<LayoutDetails> SaveDocument)
+        {
+            try
+            {
+                var userId = HttpContext.Session.GetString("UserId") ?? "";
+                var sDateTime = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+
+                foreach (var item in SaveDocument)
+                {
+                    var flag = (item.LayoutTranid != null && item.LayoutTranid != "0" && item.LayoutTranid != "null")
+                        ? "Update_PlotLayoutAxisDetails_Combine"
+                        : "Save_PlotLayoutAxisDetails_Combine";
+
+                    using (SqlConnection conn = new SqlConnection(ConnectionString))
+                    {
+                        conn.Open();
+                        using (SqlCommand cmd = new SqlCommand("Web_PlotCustomerLedgerPaymentDetails", conn))
+                        {
+                            cmd.CommandType = CommandType.StoredProcedure;
+                            cmd.Parameters.AddWithValue("@Projectid", item.ProjectID ?? "");
+                            cmd.Parameters.AddWithValue("@Plottranid", item.PlotTranid ?? "");
+                            cmd.Parameters.AddWithValue("@XAxis", item.XAxis);
+                            cmd.Parameters.AddWithValue("@YAxis", item.YAxis);
+                            cmd.Parameters.AddWithValue("@Status", "1");
+                            cmd.Parameters.AddWithValue("@LogEmpid", userId);
+                            cmd.Parameters.AddWithValue("@LogDatetime", sDateTime);
+                            cmd.Parameters.AddWithValue("@LogIpaddr", "");
+                            cmd.Parameters.AddWithValue("@LogHostname", "");
+                            if (flag == "Update_PlotLayoutAxisDetails_Combine")
+                                cmd.Parameters.AddWithValue("@LayoutTranid", item.LayoutTranid);
+                            cmd.Parameters.AddWithValue("@Flag", flag);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+                return Content(JsonConvert.SerializeObject(new { status = true, msg = "Success" }), "application/json");
+            }
+            catch (Exception ex)
+            {
+                return Content(JsonConvert.SerializeObject(new { status = false, msg = ex.Message }), "application/json");
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════════
+           ATTACH LAYOUT IMAGE — Individual
+        ═══════════════════════════════════════════════════════════════════════ */
+        [HttpPost]
+        public IActionResult PlotlayoutAttachment(IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                    return Content(JsonConvert.SerializeObject(new { status = false, msg = "No file provided" }), "application/json");
+
+                string projectId = Request.Query["ProjectId"].ToString();
+                string category = Request.Query["Category"].ToString();
+
+                byte[] fileBytes;
+                using (var binaryReader = new BinaryReader(file.OpenReadStream()))
+                    fileBytes = binaryReader.ReadBytes((int)file.Length);
+
+                string binaryString = Convert.ToBase64String(fileBytes);
+
+                using (SqlConnection connFile = new SqlConnection(ConstringFile))
+                {
+                    connFile.Open();
+                    string existingDoc = null;
+                    using (SqlCommand chkCmd = new SqlCommand("SELECT DocumentName FROM PlotLayoutAxisDetails_Image WHERE projectid=@pid AND Status='1'", connFile))
+                    {
+                        chkCmd.Parameters.AddWithValue("@pid", projectId);
+                        var reader = chkCmd.ExecuteReader();
+                        if (reader.Read()) existingDoc = reader["DocumentName"]?.ToString();
+                        reader.Close();
+                    }
+
+                    if (string.IsNullOrEmpty(existingDoc))
+                    {
+                        using (SqlCommand insCmd = new SqlCommand("INSERT INTO PlotLayoutAxisDetails_Image VALUES(@dt,@pid,@docname,@ip,@host,@status,@ct,@data,@cat)", connFile))
+                        {
+                            insCmd.Parameters.AddWithValue("@dt", DateTime.Now);
+                            insCmd.Parameters.AddWithValue("@pid", projectId);
+                            insCmd.Parameters.AddWithValue("@docname", file.FileName);
+                            insCmd.Parameters.AddWithValue("@ip", "");
+                            insCmd.Parameters.AddWithValue("@host", "");
+                            insCmd.Parameters.AddWithValue("@status", "1");
+                            insCmd.Parameters.AddWithValue("@ct", file.ContentType);
+                            insCmd.Parameters.AddWithValue("@data", fileBytes);
+                            insCmd.Parameters.AddWithValue("@cat", category);
+                            insCmd.ExecuteNonQuery();
+                        }
+                    }
+                    else
+                    {
+                        using (SqlCommand updCmd = new SqlCommand("UPDATE PlotLayoutAxisDetails_Image SET Entrydatetime=@dt,DocumentName=@docname,IpAddress=@ip,HostName=@host,Status=@status,ContentType=@ct,Data=@data WHERE ProjectId=@pid", connFile))
+                        {
+                            updCmd.Parameters.AddWithValue("@dt", DateTime.Now);
+                            updCmd.Parameters.AddWithValue("@pid", projectId);
+                            updCmd.Parameters.AddWithValue("@docname", file.FileName);
+                            updCmd.Parameters.AddWithValue("@ip", "");
+                            updCmd.Parameters.AddWithValue("@host", "");
+                            updCmd.Parameters.AddWithValue("@status", "1");
+                            updCmd.Parameters.AddWithValue("@ct", file.ContentType);
+                            updCmd.Parameters.AddWithValue("@data", fileBytes);
+                            updCmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+
+                return Content(JsonConvert.SerializeObject(new
+                {
+                    status = true,
+                    msg = "Success",
+                    binaryImg = binaryString,
+                    fileName = file.FileName,
+                    contentType = file.ContentType
+                }), "application/json");
+            }
+            catch (Exception ex)
+            {
+                return Content(JsonConvert.SerializeObject(new { status = false, msg = ex.Message }), "application/json");
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════════
+           ATTACH LAYOUT IMAGE — Combined
+        ═══════════════════════════════════════════════════════════════════════ */
+        [HttpPost]
+        public IActionResult PlotlayoutAttachment_combine(IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                    return Content(JsonConvert.SerializeObject(new { status = false, msg = "No file provided" }), "application/json");
+
+                string projectId = Request.Query["ProjectId"].ToString();
+                string category = Request.Query["Category"].ToString();
+
+                byte[] fileBytes;
+                using (var binaryReader = new BinaryReader(file.OpenReadStream()))
+                    fileBytes = binaryReader.ReadBytes((int)file.Length);
+
+                string binaryString = Convert.ToBase64String(fileBytes);
+
+                using (SqlConnection connFile = new SqlConnection(ConstringFile))
+                {
+                    connFile.Open();
+                    string existingDoc = null;
+                    using (SqlCommand chkCmd = new SqlCommand("SELECT DocumentName FROM PlotLayoutAxisDetails_Image_Combine WHERE projectid=@pid AND Status='1'", connFile))
+                    {
+                        chkCmd.Parameters.AddWithValue("@pid", projectId);
+                        var reader = chkCmd.ExecuteReader();
+                        if (reader.Read()) existingDoc = reader["DocumentName"]?.ToString();
+                        reader.Close();
+                    }
+
+                    if (string.IsNullOrEmpty(existingDoc))
+                    {
+                        using (SqlCommand insCmd = new SqlCommand("INSERT INTO PlotLayoutAxisDetails_Image_Combine VALUES(@dt,@pid,@docname,@ip,@host,@status,@ct,@data,@cat)", connFile))
+                        {
+                            insCmd.Parameters.AddWithValue("@dt", DateTime.Now);
+                            insCmd.Parameters.AddWithValue("@pid", projectId);
+                            insCmd.Parameters.AddWithValue("@docname", file.FileName);
+                            insCmd.Parameters.AddWithValue("@ip", "");
+                            insCmd.Parameters.AddWithValue("@host", "");
+                            insCmd.Parameters.AddWithValue("@status", "1");
+                            insCmd.Parameters.AddWithValue("@ct", file.ContentType);
+                            insCmd.Parameters.AddWithValue("@data", fileBytes);
+                            insCmd.Parameters.AddWithValue("@cat", category);
+                            insCmd.ExecuteNonQuery();
+                        }
+                    }
+                    else
+                    {
+                        using (SqlCommand updCmd = new SqlCommand("UPDATE PlotLayoutAxisDetails_Image_Combine SET Entrydatetime=@dt,DocumentName=@docname,IpAddress=@ip,HostName=@host,Status=@status,ContentType=@ct,Data=@data WHERE ProjectId=@pid", connFile))
+                        {
+                            updCmd.Parameters.AddWithValue("@dt", DateTime.Now);
+                            updCmd.Parameters.AddWithValue("@pid", projectId);
+                            updCmd.Parameters.AddWithValue("@docname", file.FileName);
+                            updCmd.Parameters.AddWithValue("@ip", "");
+                            updCmd.Parameters.AddWithValue("@host", "");
+                            updCmd.Parameters.AddWithValue("@status", "1");
+                            updCmd.Parameters.AddWithValue("@ct", file.ContentType);
+                            updCmd.Parameters.AddWithValue("@data", fileBytes);
+                            updCmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+
+                return Content(JsonConvert.SerializeObject(new
+                {
+                    status = true,
+                    msg = "Success",
+                    binaryImg = binaryString,
+                    fileName = file.FileName,
+                    contentType = file.ContentType
+                }), "application/json");
+            }
+            catch (Exception ex)
+            {
+                return Content(JsonConvert.SerializeObject(new { status = false, msg = ex.Message }), "application/json");
+            }
+        }
+
+
         //public IActionResult LoadPlotLayout(MicroLevelProjectSiteViewModel objVal)
         //{
         //    try
