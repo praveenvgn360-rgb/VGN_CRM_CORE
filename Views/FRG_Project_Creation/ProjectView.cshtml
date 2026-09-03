@@ -1,0 +1,708 @@
+@{
+    ViewBag.Title = "Projects Directory — VGN ERP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles {
+    <style>
+        .grid-stat-card {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .grid-stat-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(var(--primary-rgb), 0.4);
+        }
+
+        .btn-grid-edit {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            border-radius: 6px;
+            color: var(--primary);
+            background-color: rgba(var(--primary-rgb), 0.1);
+            border: 1px solid rgba(var(--primary-rgb), 0.25);
+            transition: all 0.2s ease;
+            text-decoration: none !important;
+            cursor: pointer;
+        }
+
+        .btn-grid-edit:hover {
+            background-color: var(--primary);
+            color: #ffffff !important;
+            transform: scale(1.04);
+            box-shadow: 0 2px 6px rgba(var(--primary-rgb), 0.35);
+        }
+
+        /* ── Header Alignment & Colors (Prevent White/Zig-Zag Appearance) ── */
+        .dx-datagrid-headers .dx-header-row > td,
+        .dx-datagrid-headers .dx-header-row > td:hover,
+        .dx-datagrid-headers .dx-header-row > td.dx-state-focused,
+        .dx-datagrid-headers .dx-header-row > td.dx-state-active,
+        .dx-datagrid-headers .dx-header-row > td.cell-align-center {
+            height: 44px !important;
+            vertical-align: middle !important;
+            padding: 6px 10px !important;
+            background: var(--primary) !important;
+            background-color: var(--primary) !important;
+            color: #ffffff !important;
+        }
+
+        .dx-datagrid-headers .dx-header-row .dx-datagrid-text-content {
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            line-height: 1.2 !important;
+            vertical-align: middle !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.03em !important;
+            text-transform: uppercase !important;
+            color: #ffffff !important;
+        }
+
+        .dx-datagrid-headers .dx-column-indicators {
+            vertical-align: middle !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            color: #ffffff !important;
+        }
+
+        .dx-datagrid-headers .dx-header-filter,
+        .dx-datagrid-headers .dx-sort {
+            color: #ffffff !important;
+        }
+
+        /* ── Native & Custom Scrollbar Styling ── */
+        #dxGridProjects .dx-scrollable-container::-webkit-scrollbar,
+        #dxGridProjects .dx-datagrid-rowsview::-webkit-scrollbar {
+            width: 8px !important;
+            height: 8px !important;
+        }
+
+        #dxGridProjects .dx-scrollable-container::-webkit-scrollbar-track,
+        #dxGridProjects .dx-datagrid-rowsview::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05) !important;
+            border-radius: 4px;
+        }
+
+        #dxGridProjects .dx-scrollable-container::-webkit-scrollbar-thumb,
+        #dxGridProjects .dx-datagrid-rowsview::-webkit-scrollbar-thumb {
+            background: var(--primary) !important;
+            border-radius: 4px;
+        }
+
+        [data-theme="dark"] #dxGridProjects .dx-scrollable-container::-webkit-scrollbar-track,
+        [data-theme="dark"] #dxGridProjects .dx-datagrid-rowsview::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.06) !important;
+        }
+
+        /* ── Dark Mode Text, Checkbox, Radio, and Filter Popup Fixes ── */
+        [data-theme="dark"] .dx-header-filter-menu,
+        [data-theme="dark"] .dx-header-filter-menu .dx-popup-content,
+        [data-theme="dark"] .dx-column-chooser {
+            background-color: var(--surface) !important;
+            color: var(--text) !important;
+        }
+
+        [data-theme="dark"] .dx-header-filter-menu .dx-list-item-content,
+        [data-theme="dark"] .dx-header-filter-menu .dx-treeview-item-content,
+        [data-theme="dark"] .dx-header-filter-menu .dx-checkbox-text,
+        [data-theme="dark"] .dx-column-chooser .dx-list-item,
+        [data-theme="dark"] .dx-checkbox-text,
+        [data-theme="dark"] .dx-radiobutton-text {
+            color: var(--text) !important;
+        }
+
+        [data-theme="dark"] .dx-checkbox-icon,
+        [data-theme="dark"] .dx-radiobutton-icon {
+            border-color: var(--border) !important;
+            background-color: var(--bg) !important;
+        }
+
+        [data-theme="dark"] .dx-checkbox-checked .dx-checkbox-icon {
+            background-color: var(--primary) !important;
+            border-color: var(--primary) !important;
+        }
+
+        [data-theme="dark"] input[type="radio"],
+        [data-theme="dark"] input[type="checkbox"] {
+            accent-color: var(--primary) !important;
+        }
+    </style>
+}
+
+<div class="w-full px-4 sm:px-6 pb-12 pt-3">
+
+    <!-- ── TOP HEADER (TITLE & ACTION CONTROLS) ── -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 bg-[var(--surface)] p-4 rounded-xl border border-[var(--border)] shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-[rgba(var(--primary-rgb),0.12)] border border-[rgba(var(--primary-rgb),0.25)] flex items-center justify-center text-primary text-lg">
+                <i class="fas fa-layer-group"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-lg font-bold text-[var(--text)] tracking-tight">Project Kickoff Directory</h1>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20" id="totalRecordsBadge">
+                        Loading...
+                    </span>
+                </div>
+                <p class="text-[11px] text-[var(--text-muted)]">View, search, export, and edit all registered project kickoff records</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+            <button type="button" class="btn-clear !text-xs !py-2 !px-3.5" id="btnRefreshGrid" title="Refresh Grid Data">
+                <i class="fas fa-sync-alt text-[11px]"></i> Refresh
+            </button>
+            <a href="/FRG_Project_Creation/Create" class="btn-save !text-xs !py-2 !px-4 !inline-flex !items-center !gap-2 text-white no-underline shadow-md">
+                <i class="fas fa-plus"></i> Create New Project
+            </a>
+        </div>
+    </div>
+
+    <!-- ── STATS SUMMARY STRIP ── -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5 mb-4">
+        <div class="grid-stat-card">
+            <div>
+                <span class="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Total Projects</span>
+                <span class="text-xl font-black text-[var(--text)] mt-0.5 block" id="statTotal">0</span>
+            </div>
+            <div class="w-9 h-9 rounded-lg bg-[rgba(var(--primary-rgb),0.1)] text-primary flex items-center justify-center text-sm">
+                <i class="fas fa-folder"></i>
+            </div>
+        </div>
+        <div class="grid-stat-card">
+            <div>
+                <span class="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Sale Type</span>
+                <span class="text-xl font-black text-blue-600 dark:text-blue-400 mt-0.5 block" id="statSale">0</span>
+            </div>
+            <div class="w-9 h-9 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center text-sm">
+                <i class="fas fa-hand-holding-usd"></i>
+            </div>
+        </div>
+        <div class="grid-stat-card">
+            <div>
+                <span class="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Lease Type</span>
+                <span class="text-xl font-black text-purple-600 dark:text-purple-400 mt-0.5 block" id="statLease">0</span>
+            </div>
+            <div class="w-9 h-9 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center text-sm">
+                <i class="fas fa-file-signature"></i>
+            </div>
+        </div>
+        <div class="grid-stat-card">
+            <div>
+                <span class="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Total Builtup (Sq.ft)</span>
+                <span class="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5 block" id="statBuiltup">0</span>
+            </div>
+            <div class="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-sm">
+                <i class="fas fa-building"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── DEVAUTOMATED DEVIEXTREME GRID CARD ── -->
+    <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-md p-4 sm:p-5">
+        <div id="dxGridProjects"></div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        var gridInstance = null;
+
+        $(document).ready(function () {
+            loadProjectsData();
+
+            $('#btnRefreshGrid').on('click', function () {
+                loadProjectsData();
+            });
+        });
+
+        function loadProjectsData() {
+            var $grid = $('#dxGridProjects');
+            if (gridInstance) {
+                gridInstance.beginCustomLoading('Loading project directory...');
+            }
+
+            $.ajax({
+                url: '/FRG_Project_Creation/FetchProjects',
+                type: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    var list = [];
+                    if (typeof response === 'string') {
+                        try { list = JSON.parse(response); } catch (e) { list = []; }
+                    } else if (Array.isArray(response)) {
+                        list = response;
+                    }
+
+                    updateGridStats(list);
+                    initOrUpdateGrid(list);
+
+                    if (gridInstance) {
+                        gridInstance.endCustomLoading();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    if (gridInstance) {
+                        gridInstance.endCustomLoading();
+                    }
+                    console.error('Error fetching projects list:', error);
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: 'Data Load Failed',
+                            text: 'Could not fetch projects: ' + error,
+                            icon: 'error',
+                            confirmButtonColor: 'var(--primary)'
+                        });
+                    }
+                }
+            });
+        }
+
+        function initOrUpdateGrid(data) {
+            if (gridInstance) {
+                gridInstance.option('dataSource', data);
+                return;
+            }
+
+            gridInstance = $('#dxGridProjects').dxDataGrid({
+                dataSource: data,
+                keyExpr: 'ProjectKickoffId',
+                height: 'calc(100vh - 220px)',
+                showBorders: true,
+                showRowLines: true,
+                columnAutoWidth: true,
+                wordWrapEnabled: false,
+                rowAlternationEnabled: true,
+                hoverStateEnabled: true,
+                allowColumnResizing: true,
+                allowColumnReordering: true,
+                columnHidingEnabled: false,
+                scrolling: {
+                    mode: 'standard',
+                    useNative: true,
+                    showScrollbar: 'always'
+                },
+                loadPanel: {
+                    enabled: true,
+                    text: 'Loading data, Please wait...',
+                    shading: true,
+                    shadingColor: 'rgba(0,0,0,0.15)'
+                },
+                filterRow: {
+                    visible: false
+                },
+                filterPanel: {
+                    visible: false
+                },
+                headerFilter: {
+                    visible: true,
+                    allowSearch: true
+                },
+                searchPanel: {
+                    visible: true,
+                    width: 260,
+                    placeholder: 'Search projects...'
+                },
+                columnChooser: {
+                    enabled: true,
+                    mode: 'select',
+                    title: 'Show / Hide Columns'
+                },
+                export: {
+                    enabled: true,
+                    fileName: 'Project_Kickoff_Directory'
+                },
+                onExporting: function (e) {
+                    var fileName = 'Project_Kickoff_Directory_' + new Date().toISOString().slice(0, 10);
+                    if (typeof ExcelJS !== 'undefined' && typeof DevExpress.excelExporter !== 'undefined') {
+                        var workbook = new ExcelJS.Workbook();
+                        var worksheet = workbook.addWorksheet('Projects');
+                        DevExpress.excelExporter.exportDataGrid({
+                            component: e.component,
+                            worksheet: worksheet,
+                            autoFilterEnabled: true
+                        }).then(function () {
+                            workbook.xlsx.writeBuffer().then(function (buffer) {
+                                saveAs(new Blob([buffer], { type: 'application/octet-stream' }), fileName + '.xlsx');
+                            });
+                        });
+                        e.cancel = true;
+                    } else {
+                        e.cancel = true;
+                        var columns = e.component.getVisibleColumns().filter(function (c) {
+                            return c.dataField && c.allowExporting !== false;
+                        });
+                        var items = e.component.getDataSource().items();
+                        var chunks = ['\uFEFF'];
+                        var header = columns.map(function (c) {
+                            return '"' + (c.caption || c.dataField).replace(/"/g, '""') + '"';
+                        }).join(',');
+                        chunks.push(header + '\n');
+
+                        for (var i = 0; i < items.length; i++) {
+                            var row = [];
+                            for (var j = 0; j < columns.length; j++) {
+                                var col = columns[j];
+                                var val = '';
+                                if (typeof col.calculateCellValue === 'function') {
+                                    val = col.calculateCellValue(items[i]);
+                                } else if (col.dataField) {
+                                    val = items[i][col.dataField];
+                                }
+                                if (val === null || val === undefined) val = '';
+                                var str = String(val).replace(/"/g, '""').replace(/\r?\n|\r/g, ' ');
+                                row.push('"' + str + '"');
+                            }
+                            chunks.push(row.join(',') + '\n');
+                        }
+
+                        var blob = new Blob(chunks, { type: 'text/csv;charset=utf-8;' });
+                        saveAs(blob, fileName + '.csv');
+                    }
+                },
+                paging: {
+                    enabled: true,
+                    pageSize: 15
+                },
+                pager: {
+                    showPageSizeSelector: true,
+                    allowedPageSizes: [10, 15, 25, 50, 100],
+                    showInfo: true,
+                    showNavigationButtons: true
+                },
+                columns: [
+                    {
+                        caption: 'ACTION',
+                        width: 85,
+                        cssClass: 'cell-align-center',
+                        fixed: true,
+                        fixedPosition: 'left',
+                        allowFiltering: false,
+                        allowSorting: false,
+                        allowExporting: false,
+                        cellTemplate: function (container, options) {
+                            var r = options.data || {};
+                            var id = r.ProjectKickoffId || r.projectKickoffId;
+                            var editUrl = '/FRG_Project_Creation/Index?id=' + id;
+                            var $btn = $('<a class="btn-grid-edit" title="Edit Project">')
+                                .attr('href', editUrl)
+                                .html('<i class="fas fa-edit"></i> Edit');
+                            container.append($btn);
+                        }
+                    },
+                    {
+                        dataField: 'ProjectKickoffId',
+                        caption: 'ID',
+                        width: 75,
+                        cssClass: 'cell-align-center',
+                        sortOrder: 'desc',
+                        calculateCellValue: function (r) {
+                            return r.ProjectKickoffId || r.projectKickoffId || '';
+                        }
+                    },
+                    {
+                        dataField: 'ProjectName',
+                        caption: 'PROJECT NAME',
+                        width: 220,
+                        calculateCellValue: function (r) {
+                            return r.ProjectName || r.projectName || '—';
+                        },
+                        cellTemplate: function (container, options) {
+                            var r = options.data || {};
+                            var id = r.ProjectKickoffId || r.projectKickoffId;
+                            var name = options.value || '—';
+                            var editUrl = '/FRG_Project_Creation/Index?id=' + id;
+                            var $link = $('<a class="font-bold text-primary hover:underline" title="Click to Edit">')
+                                .attr('href', editUrl)
+                                .text(name);
+                            container.append($link);
+                        }
+                    },
+                    {
+                        dataField: 'ProjectSiteName',
+                        caption: 'SITE / LAND NAME',
+                        width: 180,
+                        calculateCellValue: function (r) {
+                            return r.ProjectSiteName || r.projectSiteName || '—';
+                        }
+                    },
+                    {
+                        dataField: 'CompanyName',
+                        caption: 'COMPANY',
+                        width: 220,
+                        calculateCellValue: function (r) {
+                            return r.CompanyName || r.companyName || r.CompId || r.compId || '—';
+                        }
+                    },
+                    {
+                        dataField: 'ProjectTypeName',
+                        caption: 'PROJECT TYPE',
+                        width: 140,
+                        calculateCellValue: function (r) {
+                            return r.ProjectTypeName || r.projectTypeName || r.ProjectType || r.projectType || '—';
+                        }
+                    },
+                    {
+                        dataField: 'ProjectLevelType',
+                        caption: 'PROPERTY TYPE',
+                        width: 130,
+                        cssClass: 'cell-align-center',
+                        calculateCellValue: function (r) {
+                            return r.ProjectLevelType || r.projectLevelType || '';
+                        },
+                        cellTemplate: function (container, options) {
+                            var val = options.value || '';
+                            var badgeCls = 'bg-blue-500/10 text-blue-600 border-blue-500/20';
+                            if (val === 'Lease') {
+                                badgeCls = 'bg-purple-500/10 text-purple-600 border-purple-500/20';
+                            } else if (val === 'SaleCumLease') {
+                                badgeCls = 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
+                            }
+                            var $badge = $('<span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full border ' + badgeCls + '">')
+                                .text(val || '—');
+                            container.append($badge);
+                        }
+                    },
+                    {
+                        dataField: 'Address',
+                        caption: 'ADDRESS',
+                        width: 200,
+                        calculateCellValue: function (r) {
+                            return r.Address || r.address || r.ProjectAddress || r.projectAddress || '—';
+                        }
+                    },
+                    {
+                        dataField: 'City',
+                        caption: 'CITY',
+                        width: 120,
+                        calculateCellValue: function (r) {
+                            return r.City || r.city || r.ProjectCity || r.projectCity || '—';
+                        }
+                    },
+                    {
+                        dataField: 'State',
+                        caption: 'STATE',
+                        width: 120,
+                        calculateCellValue: function (r) {
+                            return r.State || r.state || r.ProjectState || r.projectState || '—';
+                        }
+                    },
+                    {
+                        dataField: 'Pincode',
+                        caption: 'PINCODE',
+                        width: 95,
+                        cssClass: 'cell-align-center',
+                        calculateCellValue: function (r) {
+                            return r.Pincode || r.pincode || r.ProjectPincode || r.projectPincode || '—';
+                        }
+                    },
+                    {
+                        dataField: 'LandArea',
+                        caption: 'LAND AREA',
+                        width: 115,
+                        cssClass: 'cell-align-right',
+                        calculateCellValue: function (r) {
+                            var v = r.LandArea !== undefined ? r.LandArea : r.landArea;
+                            return v !== null && v !== undefined && v !== '' ? v : '0.0';
+                        }
+                    },
+                    {
+                        dataField: 'BuiltupArea',
+                        caption: 'BUILTUP AREA',
+                        width: 130,
+                        cssClass: 'cell-align-right',
+                        calculateCellValue: function (r) {
+                            var v = r.BuiltupArea !== undefined ? r.BuiltupArea : r.builtupArea;
+                            var num = parseFloat(v);
+                            return !isNaN(num) ? num.toLocaleString() : '0';
+                        }
+                    },
+                    {
+                        dataField: 'SaleableArea',
+                        caption: 'SALEABLE AREA',
+                        width: 130,
+                        cssClass: 'cell-align-right',
+                        calculateCellValue: function (r) {
+                            var v = r.SaleableArea !== undefined ? r.SaleableArea : r.saleableArea;
+                            var num = parseFloat(v);
+                            return !isNaN(num) ? num.toLocaleString() : '0';
+                        }
+                    },
+                    {
+                        dataField: 'LeasableArea',
+                        caption: 'LEASABLE AREA',
+                        width: 130,
+                        cssClass: 'cell-align-right',
+                        calculateCellValue: function (r) {
+                            var v = r.LeasableArea !== undefined ? r.LeasableArea : r.leasableArea;
+                            var num = parseFloat(v);
+                            return !isNaN(num) ? num.toLocaleString() : '0';
+                        }
+                    },
+                    {
+                        dataField: 'BasementArea',
+                        caption: 'BASEMENT AREA',
+                        width: 130,
+                        cssClass: 'cell-align-right',
+                        calculateCellValue: function (r) {
+                            var v = r.BasementArea !== undefined ? r.BasementArea : r.basementArea;
+                            var num = parseFloat(v);
+                            return !isNaN(num) ? num.toLocaleString() : '0';
+                        }
+                    },
+                    {
+                        dataField: 'SuperBuiltupArea',
+                        caption: 'SUPER BUILTUP',
+                        width: 140,
+                        cssClass: 'cell-align-right',
+                        calculateCellValue: function (r) {
+                            var v = r.SuperBuiltupArea !== undefined ? r.SuperBuiltupArea : r.superBuiltupArea;
+                            var num = parseFloat(v);
+                            return !isNaN(num) ? num.toLocaleString() : '0';
+                        }
+                    },
+                    {
+                        dataField: 'FSI',
+                        caption: 'FSI',
+                        width: 95,
+                        cssClass: 'cell-align-right',
+                        calculateCellValue: function (r) {
+                            return r.FSI || r.fsi || '—';
+                        }
+                    },
+                    {
+                        dataField: 'NoofFloors',
+                        caption: 'FLOORS',
+                        width: 90,
+                        cssClass: 'cell-align-center',
+                        calculateCellValue: function (r) {
+                            var v = r.NoofFloors !== undefined ? r.NoofFloors : r.noofFloors;
+                            return v !== null && v !== undefined ? v : '—';
+                        }
+                    },
+                    {
+                        dataField: 'NoofCarParking',
+                        caption: 'CAR PARKING',
+                        width: 110,
+                        cssClass: 'cell-align-center',
+                        calculateCellValue: function (r) {
+                            var v = r.NoofCarParking !== undefined ? r.NoofCarParking : r.noofCarParking;
+                            return v !== null && v !== undefined ? v : '—';
+                        }
+                    },
+                    {
+                        caption: 'FILES',
+                        width: 130,
+                        cssClass: 'cell-align-center',
+                        allowFiltering: false,
+                        allowSorting: false,
+                        allowExporting: false,
+                        cellTemplate: function (container, options) {
+                            var r = options.data || {};
+                            var drawingPath = r.DrawingFilePath || r.drawingFilePath;
+                            var drawingName = r.DrawingName || r.drawingName || 'Project_Drawing';
+                            var docPath = r.DocFilePath || r.docFilePath;
+                            var docName = r.DocName || r.docName || 'Project_Document';
+
+                            var $wrap = $('<div class="flex items-center justify-center gap-1.5 text-xs">');
+
+                            if (drawingPath) {
+                                var drawUrl = '/FRG_Project_Creation/DownloadFile?filePath=' + encodeURIComponent(drawingPath) + '&fileName=' + encodeURIComponent(drawingName);
+                                var $btnDraw = $('<a target="_blank" class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-500/20 inline-flex items-center gap-1 text-[11px] font-bold no-underline transition-colors" title="Download Drawing: ' + drawingName + '">')
+                                    .attr('href', drawUrl)
+                                    .html('<i class="fas fa-drafting-compass"></i> Plan');
+                                $wrap.append($btnDraw);
+                            }
+
+                            if (docPath) {
+                                var docUrl = '/FRG_Project_Creation/DownloadFile?filePath=' + encodeURIComponent(docPath) + '&fileName=' + encodeURIComponent(docName);
+                                var $btnDoc = $('<a target="_blank" class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 hover:bg-emerald-600 hover:text-white border border-emerald-500/20 inline-flex items-center gap-1 text-[11px] font-bold no-underline transition-colors" title="Download Document: ' + docName + '">')
+                                    .attr('href', docUrl)
+                                    .html('<i class="fas fa-file-contract"></i> Doc');
+                                $wrap.append($btnDoc);
+                            }
+
+                            if (!drawingPath && !docPath) {
+                                $wrap.append($('<span class="text-[10px] text-[var(--text-muted)]">—</span>'));
+                            }
+
+                            container.append($wrap);
+                        }
+                    },
+                    {
+                        dataField: 'CreatedDate',
+                        caption: 'CREATED DATE',
+                        dataType: 'date',
+                        format: 'dd/MM/yyyy',
+                        width: 135,
+                        cssClass: 'cell-align-center',
+                        calculateCellValue: function (r) {
+                            var raw = r.CreatedDate || r.createdDate;
+                            if (!raw) return null;
+                            if (raw instanceof Date) return raw;
+                            var dt = new Date(raw);
+                            return isNaN(dt.getTime()) ? null : dt;
+                        },
+                        headerFilter: {
+                            allowSearch: true,
+                            groupInterval: null
+                        }
+                    },
+                    {
+                        dataField: 'Status',
+                        caption: 'STATUS',
+                        width: 95,
+                        cssClass: 'cell-align-center',
+                        calculateCellValue: function (r) {
+                            return r.Status !== undefined ? r.Status : r.status;
+                        },
+                        cellTemplate: function (container, options) {
+                            var isAct = options.value === '1' || options.value === 1 || options.value === 'Active';
+                            var $badge = $('<span class="text-[10px] font-bold px-2 py-0.5 rounded-full ' +
+                                (isAct ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20') + '">')
+                                .text(isAct ? 'Active' : 'Inactive');
+                            container.append($badge);
+                        }
+                    }
+                ]
+            }).dxDataGrid('instance');
+        }
+
+        function updateGridStats(data) {
+            var total = data.length;
+            var sale = 0;
+            var lease = 0;
+            var totalBuiltup = 0;
+
+            $.each(data, function (i, item) {
+                var pType = (item.ProjectLevelType || item.projectLevelType || '').toLowerCase();
+                if (pType.indexOf('sale') !== -1) sale++;
+                if (pType.indexOf('lease') !== -1) lease++;
+
+                var bArea = parseFloat(item.BuiltupArea || item.builtupArea) || 0;
+                totalBuiltup += bArea;
+            });
+
+            $('#totalRecordsBadge').text(total + ' Projects');
+            $('#statTotal').text(total);
+            $('#statSale').text(sale);
+            $('#statLease').text(lease);
+            $('#statBuiltup').text(Math.round(totalBuiltup).toLocaleString());
+        }
+    </script>
+}

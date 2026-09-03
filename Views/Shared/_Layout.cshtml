@@ -95,6 +95,7 @@
 
     <!-- DevExtreme Global Dependencies -->
     <script src="~/js/jquery.min.js"></script>
+    <script src="~/js/jszip.min.js"></script>
     <script src="~/js/dx.all.js"></script>
     <script src="~/js/exceljs.min.js"></script>
     <script src="~/js/FileSaver.min.js"></script>
@@ -493,6 +494,411 @@
                 background: var(--primary) !important;
                 border-color: var(--primary) !important;
             }
+
+        /* ── DevExtreme Popups, Header Filters, Checkboxes & Radios (Dark/Light Theme) ── */
+        .dx-header-filter-menu,
+        .dx-header-filter-menu .dx-popup-content,
+        .dx-header-filter-menu .dx-popup-title,
+        .dx-header-filter-menu .dx-popup-bottom,
+        .dx-header-filter-menu .dx-list,
+        .dx-header-filter-menu .dx-treeview,
+        .dx-overlay-content.dx-popup-normal {
+            background-color: var(--surface) !important;
+            color: var(--text) !important;
+            border-color: var(--border) !important;
+        }
+
+        .dx-header-filter-menu .dx-list-item-content,
+        .dx-header-filter-menu .dx-treeview-item-content,
+        .dx-header-filter-menu .dx-checkbox-text,
+        .dx-checkbox-text,
+        .dx-radiobutton-text {
+            color: var(--text) !important;
+        }
+
+        .dx-checkbox-icon,
+        .dx-radiobutton-icon {
+            border-color: var(--border) !important;
+            background-color: var(--surface) !important;
+        }
+
+        .dx-checkbox-checked .dx-checkbox-icon {
+            background-color: var(--primary) !important;
+            border-color: var(--primary) !important;
+        }
+
+        .dx-checkbox-checked .dx-checkbox-icon::before {
+            color: #ffffff !important;
+        }
+
+        .dx-radiobutton-icon-checked .dx-radiobutton-icon-dot {
+            background-color: var(--primary) !important;
+        }
+
+        [data-theme="dark"] input[type="radio"],
+        [data-theme="dark"] input[type="checkbox"] {
+            accent-color: var(--primary) !important;
+        }
+
+        [data-theme="dark"] .dx-empty-message {
+            color: var(--text-muted) !important;
+        }
+
+        [data-theme="dark"] .dx-header-filter-menu .dx-state-hover {
+            background-color: rgba(var(--primary-rgb), 0.12) !important;
+            color: #ffffff !important;
+        }
+
+        /* ══════════════════════════════════════════════════════════
+           VGN CRM CORE COMMON MODULE SYSTEM (Forms, Grids, Cards, Theme)
+           Used commonly across Project Creation, Masters, & Reports
+           ══════════════════════════════════════════════════════════ */
+
+        /* ── Action Buttons ── */
+        .btn-save {
+            background-color: var(--primary) !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            border-radius: 8px !important;
+            padding: 8px 18px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 6px !important;
+            transition: all 0.2s ease !important;
+            border: none !important;
+            cursor: pointer !important;
+            box-shadow: 0 2px 6px rgba(var(--primary-rgb), 0.25) !important;
+            text-decoration: none !important;
+        }
+        .btn-save:hover {
+            opacity: 0.92 !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.35) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-clear {
+            background-color: var(--surface) !important;
+            color: var(--text) !important;
+            border: 1px solid var(--border) !important;
+            font-weight: 600 !important;
+            border-radius: 8px !important;
+            padding: 8px 16px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 6px !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer !important;
+            text-decoration: none !important;
+        }
+        .btn-clear:hover {
+            border-color: var(--primary) !important;
+            color: var(--primary) !important;
+            background-color: rgba(var(--primary-rgb), 0.05) !important;
+        }
+
+        .btn-cancel {
+            background-color: transparent !important;
+            color: var(--text-muted) !important;
+            border: 1px solid var(--border) !important;
+            font-weight: 600 !important;
+            border-radius: 8px !important;
+            padding: 8px 16px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 6px !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer !important;
+            text-decoration: none !important;
+        }
+        .btn-cancel:hover {
+            color: var(--text) !important;
+            background-color: rgba(0, 0, 0, 0.04) !important;
+        }
+        [data-theme="dark"] .btn-cancel:hover {
+            background-color: rgba(255, 255, 255, 0.06) !important;
+        }
+
+        .btn-grid-edit {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 5px !important;
+            padding: 4px 10px !important;
+            font-size: 0.74rem !important;
+            font-weight: 700 !important;
+            border-radius: 6px !important;
+            color: var(--primary) !important;
+            background-color: rgba(var(--primary-rgb), 0.1) !important;
+            border: 1px solid rgba(var(--primary-rgb), 0.25) !important;
+            transition: all 0.2s ease !important;
+            text-decoration: none !important;
+            cursor: pointer !important;
+        }
+        .btn-grid-edit:hover {
+            background-color: var(--primary) !important;
+            color: #ffffff !important;
+            transform: scale(1.04) !important;
+            box-shadow: 0 2px 6px rgba(var(--primary-rgb), 0.35) !important;
+        }
+
+        /* ── Form Inputs, Selects & Labels ── */
+        .form-label-core {
+            display: block !important;
+            font-size: 0.76rem !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.02em !important;
+            color: var(--text) !important;
+            margin-bottom: 5px !important;
+            text-transform: uppercase !important;
+        }
+        .form-label-core .req {
+            color: #ef4444 !important;
+            margin-left: 2px !important;
+        }
+
+        .form-input-core, .form-select-core {
+            width: 100% !important;
+            height: 40px !important;
+            padding: 0 12px !important;
+            font-size: 0.82rem !important;
+            color: var(--text) !important;
+            background-color: var(--bg) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 8px !important;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+            outline: none !important;
+        }
+        .form-input-core:focus, .form-select-core:focus {
+            border-color: var(--primary) !important;
+            background-color: var(--surface) !important;
+            box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15) !important;
+        }
+
+        .input-icon-wrap {
+            position: relative !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+        .input-icon-wrap .icon {
+            position: absolute !important;
+            left: 12px !important;
+            color: var(--text-muted) !important;
+            font-size: 0.82rem !important;
+            pointer-events: none !important;
+            transition: color 0.2s ease !important;
+        }
+        .input-icon-wrap .form-input-core {
+            padding-left: 36px !important;
+        }
+        .input-icon-wrap:focus-within .icon {
+            color: var(--primary) !important;
+        }
+
+        /* ── Section Cards (Accordion / Fieldsets) ── */
+        .sec-card {
+            background-color: var(--surface) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 12px !important;
+            margin-bottom: 1rem !important;
+            overflow: hidden !important;
+            box-shadow: var(--card-shadow) !important;
+            transition: border-color 0.2s ease !important;
+        }
+        .sec-hdr {
+            padding: 12px 18px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            cursor: pointer !important;
+            user-select: none !important;
+            background-color: var(--primary) !important;
+            color: #ffffff !important;
+        }
+        .sec-body {
+            padding: 18px !important;
+            background-color: var(--surface) !important;
+        }
+
+        /* ── Stat Summary Cards ── */
+        .grid-stat-card {
+            background-color: var(--surface) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 12px !important;
+            padding: 1rem 1.25rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            box-shadow: var(--card-shadow) !important;
+            transition: transform 0.2s ease, border-color 0.2s ease !important;
+        }
+        .grid-stat-card:hover {
+            transform: translateY(-2px) !important;
+            border-color: rgba(var(--primary-rgb), 0.4) !important;
+        }
+
+        /* ── Custom Theme Toggle Switch ── */
+        .core-toggle {
+            position: relative !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            cursor: pointer !important;
+            user-select: none !important;
+        }
+        .core-toggle input {
+            position: absolute !important;
+            opacity: 0 !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
+        .core-toggle-slider {
+            width: 50px !important;
+            height: 26px !important;
+            background-color: var(--border) !important;
+            border-radius: 26px !important;
+            position: relative !important;
+            transition: background-color 0.25s ease !important;
+            display: flex !important;
+            align-items: center !important;
+            padding: 0 7px !important;
+            justify-content: flex-end !important;
+            font-size: 8.5px !important;
+            font-weight: 800 !important;
+            color: #ffffff !important;
+            letter-spacing: 0.03em !important;
+        }
+        .core-toggle-slider::before {
+            content: '' !important;
+            position: absolute !important;
+            width: 20px !important;
+            height: 20px !important;
+            left: 3px !important;
+            top: 3px !important;
+            background-color: #ffffff !important;
+            border-radius: 50% !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25) !important;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .core-toggle input:checked + .core-toggle-slider {
+            background-color: var(--primary) !important;
+            justify-content: flex-start !important;
+        }
+        .core-toggle input:checked + .core-toggle-slider::before {
+            transform: translateX(24px) !important;
+        }
+        .core-toggle .t-on, .core-toggle .t-off { pointer-events: none !important; }
+        .core-toggle input:checked + .core-toggle-slider .t-off { display: none !important; }
+        .core-toggle input:not(:checked) + .core-toggle-slider .t-on { display: none !important; }
+
+        /* ── WBS Interactive Cards ── */
+        .wbs-card {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            padding: 10px 14px !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 8px !important;
+            cursor: pointer !important;
+            background-color: var(--bg) !important;
+            transition: all 0.2s ease !important;
+            user-select: none !important;
+        }
+        .wbs-card:hover {
+            border-color: var(--primary) !important;
+            background-color: var(--surface) !important;
+            transform: translateY(-1px) !important;
+        }
+        .wbs-card input { display: none !important; }
+        .wbs-checkbox-box {
+            width: 20px !important;
+            height: 20px !important;
+            border: 1.5px solid var(--border) !important;
+            border-radius: 5px !important;
+            flex-shrink: 0 !important;
+            background-color: var(--surface) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 10px !important;
+            color: #ffffff !important;
+            font-weight: 900 !important;
+            transition: all 0.2s ease !important;
+        }
+        .wbs-card.on {
+            border-color: var(--primary) !important;
+            background-color: rgba(var(--primary-rgb), 0.08) !important;
+        }
+        .wbs-card.on .wbs-checkbox-box {
+            background-color: var(--primary) !important;
+            border-color: var(--primary) !important;
+        }
+        .wbs-card-title {
+            font-size: 0.8rem !important;
+            font-weight: 600 !important;
+            color: var(--text) !important;
+        }
+
+        /* ── DevExtreme Unified Header & Filter Alignment ── */
+        .dx-datagrid-headers .dx-header-row > td,
+        .dx-datagrid-headers .dx-header-row > td:hover,
+        .dx-datagrid-headers .dx-header-row > td.dx-state-focused,
+        .dx-datagrid-headers .dx-header-row > td.dx-state-active,
+        .dx-datagrid-headers .dx-header-row > td.cell-align-center {
+            height: 44px !important;
+            vertical-align: middle !important;
+            padding: 0 10px !important;
+            background: var(--primary) !important;
+            background-color: var(--primary) !important;
+            color: #ffffff !important;
+        }
+        .dx-datagrid-headers .dx-header-row .dx-datagrid-text-content {
+            font-size: var(--font-size-grid-header) !important;
+            font-family: var(--font-family) !important;
+            font-weight: 700 !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            line-height: normal !important;
+            vertical-align: middle !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.03em !important;
+            float: left !important;
+            text-align: left !important;
+            color: #ffffff !important;
+        }
+        .dx-datagrid-headers .dx-header-row .dx-column-indicators {
+            vertical-align: middle !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            float: right !important;
+            margin-left: 6px !important;
+            color: #ffffff !important;
+        }
+        .dx-datagrid-headers .dx-header-filter,
+        .dx-datagrid-headers .dx-sort {
+            color: #ffffff !important;
+        }
+        /* Data Row Numeric & Center Alignment */
+        .dx-datagrid .dx-data-row > td.cell-align-right {
+            text-align: right !important;
+        }
+        .dx-datagrid .dx-data-row > td.cell-align-center {
+            text-align: center !important;
+        }
+
+        /* ── Global Dark Mode Support ── */
+        [data-theme="dark"] .form-label-core { color: #f1f5f9 !important; }
+        [data-theme="dark"] .wbs-card-title { color: #f1f5f9 !important; }
+        [data-theme="dark"] .wbs-card { background-color: #1e293b !important; border-color: #334155 !important; }
+        [data-theme="dark"] .wbs-card:hover { background-color: #334155 !important; border-color: var(--primary) !important; }
+        [data-theme="dark"] .wbs-card.on { background-color: rgba(var(--primary-rgb), 0.18) !important; border-color: var(--primary) !important; }
+        [data-theme="dark"] .wbs-checkbox-box { background-color: #0f172a !important; border-color: #475569 !important; }
+        [data-theme="dark"] .core-toggle-slider { background-color: #334155 !important; color: #ffffff !important; }
+        [data-theme="dark"] .core-toggle input:checked + .core-toggle-slider { background-color: var(--primary) !important; }
+        [data-theme="dark"] input[type="radio"], [data-theme="dark"] input[type="checkbox"] { accent-color: var(--primary) !important; }
+        [data-theme="dark"] label { color: #f1f5f9 !important; }
 
         /* ── Grid overall background / borders ─────────────── */
         .dx-datagrid {
