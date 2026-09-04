@@ -1,0 +1,1050 @@
+@{
+    ViewBag.Title = "Project Creation — VGN ERP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles {
+    <style>
+        /* ══════════════════════════════════════════════════════════════════
+           PAGE-SPECIFIC ADJUSTABLE STYLES (ADOPTS CORE PROJECT THEME)
+           All styles dynamically inherit CSS variables from _Layout.cshtml:
+           --primary, --surface, --bg, --border, --text, --text-muted
+           ══════════════════════════════════════════════════════════════════ */
+
+        /* ── Modern Form Validation States & Feedback Styling ── */
+        .form-input-core.is-invalid,
+        .form-select-core.is-invalid,
+        .form-textarea-core.is-invalid {
+            border-color: #ef4444 !important;
+            background-color: rgba(239, 68, 68, 0.03) !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+        }
+
+        .input-icon-wrap.has-error .icon {
+            color: #ef4444 !important;
+        }
+
+        .select2-container.has-error .select2-selection--single,
+        .select2-container.has-error .select2-selection--multiple {
+            border-color: #ef4444 !important;
+            background-color: rgba(239, 68, 68, 0.03) !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+        }
+
+        .validation-msg {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #ef4444;
+            margin-top: 5px;
+            animation: valFadeIn 0.2s ease-out forwards;
+        }
+
+        @@keyframes valFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-3px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .sec-card.has-error {
+            border-color: rgba(239, 68, 68, 0.45) !important;
+            box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.2), var(--card-shadow) !important;
+        }
+
+        .sec-err-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background-color: #ef4444;
+            color: #ffffff;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            letter-spacing: 0.02em;
+            box-shadow: 0 1px 4px rgba(239, 68, 68, 0.4);
+            animation: badgePulse 2s infinite ease-in-out;
+        }
+
+        @@keyframes badgePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.85; transform: scale(0.97); }
+        }
+
+        .field-shake {
+            animation: fieldShake 0.4s ease-in-out !important;
+        }
+
+        @@keyframes fieldShake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* ── Section Cards & Animations ── */
+        .sec-card {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 1.25rem;
+            overflow: hidden;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .sec-card:hover {
+            border-color: rgba(var(--primary-rgb), 0.35);
+        }
+
+        .sec-hdr {
+            background: linear-gradient(135deg, var(--primary) 0%, rgba(var(--primary-rgb), 0.82) 100%);
+            color: #ffffff;
+            padding: 0.75rem 1.25rem;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .sec-hdr:hover {
+            opacity: 0.96;
+        }
+
+        .sec-card.collapsed .sec-chev {
+            transform: rotate(-90deg);
+        }
+
+        .sec-card.collapsed .sec-body {
+            display: none;
+        }
+
+        /* ── Core Form Inputs & Labels ── */
+        .form-label-core {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+        }
+
+        .form-label-core .req {
+            color: #ef4444;
+            font-size: 0.85rem;
+        }
+
+        .form-input-core,
+        .form-select-core,
+        .form-textarea-core {
+            width: 100%;
+            height: 40px;
+            padding: 0 12px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text);
+            background-color: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        }
+
+        .form-textarea-core {
+            height: auto;
+            min-height: 90px;
+            padding: 10px 12px;
+            resize: vertical;
+        }
+
+        .form-input-core:focus,
+        .form-select-core:focus,
+        .form-textarea-core:focus {
+            border-color: var(--primary);
+            background-color: var(--surface);
+            box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.14);
+        }
+
+        .form-input-core::placeholder,
+        .form-textarea-core::placeholder {
+            color: var(--text-muted);
+            opacity: 0.6;
+        }
+
+        /* ── Input with Left Icon ── */
+        .input-icon-wrap {
+            position: relative;
+        }
+
+        .input-icon-wrap .icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            pointer-events: none;
+            transition: color 0.2s ease;
+        }
+
+        .input-icon-wrap .form-input-core {
+            padding-left: 36px;
+        }
+
+        .input-icon-wrap:focus-within .icon {
+            color: var(--primary);
+        }
+
+        /* ── Custom Theme-Aware Toggle Switch ── */
+        .core-toggle {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .core-toggle input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .core-toggle-slider {
+            width: 50px;
+            height: 26px;
+            background-color: var(--border);
+            border-radius: 26px;
+            position: relative;
+            transition: background-color 0.25s ease;
+            display: flex;
+            align-items: center;
+            padding: 0 7px;
+            justify-content: flex-end;
+            font-size: 8.5px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.03em;
+        }
+
+        .core-toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            left: 3px;
+            top: 3px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .core-toggle input:checked + .core-toggle-slider {
+            background-color: var(--primary);
+            justify-content: flex-start;
+        }
+
+        .core-toggle input:checked + .core-toggle-slider::before {
+            transform: translateX(24px);
+        }
+
+        .core-toggle .t-on,
+        .core-toggle .t-off {
+            pointer-events: none;
+        }
+
+        .core-toggle input:checked + .core-toggle-slider .t-off { display: none; }
+        .core-toggle input:not(:checked) + .core-toggle-slider .t-on { display: none; }
+
+        /* ── WBS Interactive Cards ── */
+        .wbs-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: var(--bg);
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .wbs-card:hover {
+            border-color: var(--primary);
+            background-color: var(--surface);
+            transform: translateY(-1px);
+        }
+
+        .wbs-card input {
+            display: none;
+        }
+
+        .wbs-checkbox-box {
+            width: 20px;
+            height: 20px;
+            border: 1.5px solid var(--border);
+            border-radius: 5px;
+            flex-shrink: 0;
+            background-color: var(--surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #ffffff;
+            font-weight: 900;
+            transition: all 0.2s ease;
+        }
+
+        .wbs-card.on {
+            border-color: var(--primary);
+            background-color: rgba(var(--primary-rgb), 0.07);
+        }
+
+        .wbs-card.on .wbs-checkbox-box {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .wbs-card-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* ── Separate File Upload Dropzones ── */
+        .upload-file-card {
+            background-color: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.25rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .upload-file-card:hover {
+            border-color: rgba(var(--primary-rgb), 0.4);
+        }
+
+        .upload-dropzone {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 1.25rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            background-color: var(--surface);
+            transition: all 0.2s ease;
+        }
+
+        .upload-dropzone:hover {
+            border-color: var(--primary);
+            background-color: rgba(var(--primary-rgb), 0.04);
+        }
+
+        .file-status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: rgba(var(--primary-rgb), 0.08);
+            border: 1px solid rgba(var(--primary-rgb), 0.25);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            color: var(--text);
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .file-status-chip .btn-remove-file {
+            cursor: pointer;
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-left: 4px;
+            transition: transform 0.15s ease;
+        }
+
+        .file-status-chip .btn-remove-file:hover {
+            transform: scale(1.25);
+        }
+
+        /* ── Select2 Adaptation to Core Theme ── */
+        .select2-container {
+            width: 100% !important;
+        }
+
+        .select2-container--default .select2-selection--single {
+            height: 40px !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 8px !important;
+            background-color: var(--bg) !important;
+            outline: none !important;
+            display: flex !important;
+            align-items: center !important;
+            padding: 0 12px !important;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .select2-container--default.select2-container--open .select2-selection--single,
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: var(--primary) !important;
+            background-color: var(--surface) !important;
+            box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.14) !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: var(--text) !important;
+            font-size: 0.82rem !important;
+            font-weight: 500 !important;
+            padding: 0 !important;
+            line-height: normal !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__placeholder {
+            color: var(--text-muted) !important;
+            opacity: 0.7;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 38px !important;
+            right: 8px !important;
+        }
+
+        .select2-container--default .select2-selection--multiple {
+            min-height: 40px !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 8px !important;
+            background-color: var(--bg) !important;
+            padding: 3px 8px !important;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--multiple {
+            border-color: var(--primary) !important;
+            background-color: var(--surface) !important;
+            box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.14) !important;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: var(--primary) !important;
+            border: none !important;
+            color: #ffffff !important;
+            border-radius: 14px !important;
+            padding: 2px 10px !important;
+            font-size: 0.75rem !important;
+            font-weight: 600 !important;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: rgba(255, 255, 255, 0.85) !important;
+            margin-right: 5px !important;
+        }
+
+        .select2-dropdown {
+            background-color: var(--surface) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 8px !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+            overflow: hidden !important;
+            z-index: 99999 !important;
+        }
+
+        .select2-search--dropdown {
+            padding: 8px !important;
+            background-color: var(--bg) !important;
+        }
+
+        .select2-search--dropdown .select2-search__field {
+            height: 34px !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 6px !important;
+            padding: 0 8px !important;
+            font-size: 0.8rem !important;
+            background-color: var(--surface) !important;
+            color: var(--text) !important;
+            outline: none !important;
+        }
+
+        .select2-results__option {
+            padding: 8px 12px !important;
+            font-size: 0.82rem !important;
+            color: var(--text) !important;
+        }
+
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: var(--primary) !important;
+            color: #ffffff !important;
+        }
+
+        .select2-container--default .select2-results__option[aria-selected=true] {
+            background-color: rgba(var(--primary-rgb), 0.12) !important;
+            color: var(--primary) !important;
+            font-weight: 700 !important;
+        }
+
+        /* ── Dark Mode Text, Checkbox, Radio, and Toggle Enhancements ── */
+        [data-theme="dark"] .form-label-core {
+            color: #f1f5f9 !important;
+        }
+
+        [data-theme="dark"] .wbs-card-title {
+            color: #f1f5f9 !important;
+        }
+
+        [data-theme="dark"] .wbs-card {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+        }
+
+        [data-theme="dark"] .wbs-card:hover {
+            background-color: #334155 !important;
+            border-color: var(--primary) !important;
+        }
+
+        [data-theme="dark"] .wbs-card.on {
+            background-color: rgba(var(--primary-rgb), 0.18) !important;
+            border-color: var(--primary) !important;
+        }
+
+        [data-theme="dark"] .wbs-checkbox-box {
+            background-color: #0f172a !important;
+            border-color: #475569 !important;
+        }
+
+        [data-theme="dark"] .core-toggle-slider {
+            background-color: #334155 !important;
+            color: #ffffff !important;
+        }
+
+        [data-theme="dark"] .core-toggle input:checked + .core-toggle-slider {
+            background-color: var(--primary) !important;
+        }
+
+        [data-theme="dark"] input[type="radio"],
+        [data-theme="dark"] input[type="checkbox"] {
+            accent-color: var(--primary) !important;
+        }
+
+        [data-theme="dark"] label {
+            color: #f1f5f9 !important;
+        }
+    </style>
+}
+
+<!-- ── MAIN PAGE CONTAINER ── -->
+<div class="max-w-6xl mx-auto px-4 sm:px-6 pb-16 pt-4">
+
+    <!-- ── HIDDEN ID FOR EDIT MODE ── -->
+    <input type="hidden" id="hdnProjectKickoffId" value="@(ViewBag.ProjectKickoffId ?? "")" />
+
+    <!-- ── TOP HEADER (TITLE, MODE BADGE, VIEW LIST LINK & CONTROLS) ── -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 bg-[var(--surface)] p-4 rounded-xl border border-[var(--border)] shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-[rgba(var(--primary-rgb),0.12)] border border-[rgba(var(--primary-rgb),0.25)] flex items-center justify-center text-primary text-lg" id="headerIcon">
+                <i class="fas fa-folder-plus"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-lg font-bold text-[var(--text)] tracking-tight" id="pageMainHeading">Project Creation</h1>
+                    <span id="pageModeBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20">
+                        Create Mode
+                    </span>
+                </div>
+                <p class="text-[11px] text-[var(--text-muted)]" id="pageSubHeading">Configure project kickoff parameters, norms, material consumption, and user assignments</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+            <a href="/FRG_Project_Creation/ProjectView" class="btn-clear !text-xs !py-1.5 !px-3 no-underline !inline-flex !items-center !gap-1.5" title="View all registered projects">
+                <i class="fas fa-table-list text-[11px] text-primary"></i> Projects List
+            </a>
+            <button type="button" class="btn-clear !text-xs !py-1.5 !px-3" id="btnExpAll">
+                <i class="fas fa-expand-alt text-[10px]"></i> Expand All
+            </button>
+            <button type="button" class="btn-clear !text-xs !py-1.5 !px-3" id="btnColAll">
+                <i class="fas fa-compress-alt text-[10px]"></i> Collapse All
+            </button>
+        </div>
+    </div>
+
+    <!-- ── CARD 1 — BASIC INFO ── -->
+    <div class="sec-card" id="c1">
+        <div class="sec-hdr" data-card="c1">
+            <div class="flex items-center gap-3">
+                <div class="w-7 h-7 bg-white/15 border border-white/20 rounded-lg flex items-center justify-center text-white text-xs">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <span class="text-xs font-bold tracking-wide">1. Basic Project Information</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="sec-err-badge hidden" id="secErr1"><i class="fas fa-exclamation-circle"></i> <span class="err-count">0</span> required</span>
+                <i class="fas fa-chevron-down text-white/80 text-xs sec-chev transition-transform duration-200"></i>
+            </div>
+        </div>
+        <div class="sec-body p-5 space-y-4">
+            <!-- Row 1: Core Project Identifiers -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                    <label class="form-label-core">
+                        Project Name <span class="req">*</span>
+                    </label>
+                    <div class="input-icon-wrap">
+                        <i class="fas fa-building icon"></i>
+                        <input type="text" class="form-input-core" id="txtProjName" placeholder="e.g. VGN Arcadia Phase 2" />
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label-core">
+                        Name of the Land <span class="req">*</span>
+                    </label>
+                    <div class="input-icon-wrap">
+                        <i class="fas fa-map-marker-alt icon"></i>
+                        <input type="text" class="form-input-core" id="txtLandName" placeholder="e.g. Survey No. 42, Sholinganallur" />
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label-core">
+                        Company Name <span class="req">*</span>
+                    </label>
+                    <select class="trackable" id="ddlCompany">
+                        <option value="">— Select Company —</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label-core">
+                        Business Type <span class="req">*</span>
+                    </label>
+                    <select class="trackable" id="ddlBizType">
+                        <option value="">— Select Business Type —</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label-core">
+                        Property Type <span class="req">*</span>
+                    </label>
+                    <select class="form-select-core" id="ddlPropType">
+                        <option value="">— Select Property Type —</option>
+                        <option value="Sale">Sale</option>
+                        <option value="Lease">Lease</option>
+                        <option value="SaleCumLease">Sale Cum Lease</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label-core">
+                        Project Type <span class="req">*</span>
+                    </label>
+                    <select class="trackable" id="ddlProjType">
+                        <option value="">— Select Project Type —</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Row 2: Location & Address Information -->
+            <div class="pt-3 border-t border-[var(--border)]">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] block mb-3">
+                    <i class="fas fa-location-arrow text-primary mr-1"></i> Project Location &amp; Address Details
+                </span>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="md:col-span-2 lg:col-span-1">
+                        <label class="form-label-core">Project Address</label>
+                        <div class="input-icon-wrap">
+                            <i class="fas fa-map-pin icon"></i>
+                            <input type="text" class="form-input-core" id="txtProjAddress" placeholder="Door No, Street Name" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label-core">Project City</label>
+                        <div class="input-icon-wrap">
+                            <i class="fas fa-city icon"></i>
+                            <input type="text" class="form-input-core" id="txtProjCity" placeholder="e.g. Chennai" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label-core">Project State</label>
+                        <div class="input-icon-wrap">
+                            <i class="fas fa-flag icon"></i>
+                            <input type="text" class="form-input-core" id="txtProjState" placeholder="e.g. Tamil Nadu" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label-core">Project Pincode</label>
+                        <div class="input-icon-wrap">
+                            <i class="fas fa-mail-bulk icon"></i>
+                            <input type="text" class="form-input-core" id="txtProjPincode" placeholder="e.g. 600034" maxlength="6" inputmode="numeric" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CARD 2 — GOVT NORMS ── -->
+    <div class="sec-card" id="c2">
+        <div class="sec-hdr" data-card="c2">
+            <div class="flex items-center gap-3">
+                <div class="w-7 h-7 bg-white/15 border border-white/20 rounded-lg flex items-center justify-center text-white text-xs">
+                    <i class="fas fa-landmark"></i>
+                </div>
+                <span class="text-xs font-bold tracking-wide">2. Government Norms</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="sec-err-badge hidden" id="secErr2"><i class="fas fa-exclamation-circle"></i> <span class="err-count">0</span> error</span>
+                <i class="fas fa-chevron-down text-white/80 text-xs sec-chev transition-transform duration-200"></i>
+            </div>
+        </div>
+        <div class="sec-body p-0">
+            <div class="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[var(--border)]">
+                <!-- Left Details -->
+                <div class="lg:col-span-4 p-5 space-y-4">
+                    <div>
+                        <label class="form-label-core">Soil Type</label>
+                        <select class="trackable" id="ddlSoilType">
+                            <option value="">— Select Soil Type —</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center justify-between py-2 border-b border-[var(--border)]">
+                        <span class="text-xs font-semibold text-[var(--text)]">Ground Water Level</span>
+                        <select class="form-select-core !h-8 !w-32 !py-0 !text-xs" id="ddlGroundWater">
+                            <option value="Good">Good</option>
+                            <option value="Average">Average</option>
+                            <option value="Poor">Poor</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center justify-between py-2 border-b border-[var(--border)]">
+                        <span class="text-xs font-semibold text-[var(--text)]">Govt Water Supply</span>
+                        <label class="core-toggle">
+                            <input type="checkbox" class="trackable" id="chkGovtWater" />
+                            <span class="core-toggle-slider"><span class="t-on">Yes</span><span class="t-off">No</span></span>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between py-2">
+                        <span class="text-xs font-semibold text-[var(--text)]">Availability of Electricity</span>
+                        <label class="core-toggle">
+                            <input type="checkbox" class="trackable" id="chkElectricity" />
+                            <span class="core-toggle-slider"><span class="t-on">Yes</span><span class="t-off">No</span></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Right Norms Grid -->
+                <div class="lg:col-span-8 p-5 bg-[var(--bg)]/50">
+                    <div class="flex justify-between items-center mb-3.5 pb-2 border-b border-[var(--border)]">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Norms Details</span>
+                        <div class="flex items-center gap-2">
+                            <label class="text-[11px] font-bold text-[var(--text-muted)] uppercase">Area in:</label>
+                            <select id="ddlAreaIn" class="form-select-core !h-8 !w-36 !py-0 !text-xs">
+                                <option value="">— Select Unit —</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        <div>
+                            <label class="form-label-core !text-[10px]">Land Area</label>
+                            <input type="number" class="form-input-core text-right" value="0.0" step="0.01" id="txtLandArea" />
+                        </div>
+                        <div>
+                            <label class="form-label-core !text-[10px]">FSI</label>
+                            <input type="number" class="form-input-core text-right" value="0.000" step="0.001" id="txtFSI" />
+                        </div>
+                        <div>
+                            <label class="form-label-core !text-[10px]">Premium FSI</label>
+                            <input type="number" class="form-input-core text-right" value="0.000" step="0.001" id="txtPremiumFSI" />
+                        </div>
+                        <div>
+                            <label class="form-label-core !text-[10px]">Expandable FSI %</label>
+                            <input type="number" class="form-input-core text-right" value="0.000" step="0.001" id="txtExpandableFSI" />
+                        </div>
+                        <div>
+                            <label class="form-label-core !text-[10px]">Max No. of Floors</label>
+                            <input type="number" class="form-input-core text-right" value="0" id="txtMaxFloors" />
+                        </div>
+                        <div>
+                            <label class="form-label-core !text-[10px]">Guideline Value</label>
+                            <input type="number" class="form-input-core text-right" value="0.000" step="0.001" id="txtGuidelineValue" />
+                        </div>
+                        <div>
+                            <label class="form-label-core !text-[10px]">Builtup Area</label>
+                            <input type="number" class="form-input-core text-right" value="0.0" step="0.01" id="txtBuiltupArea" />
+                        </div>
+                        <div>
+                            <label class="form-label-core !text-[10px]">Saleable Area</label>
+                            <input type="number" class="form-input-core text-right" value="0.0" step="0.01" id="txtSaleableArea" />
+                        </div>
+                        <div>
+                            <label class="form-label-core !text-[10px]">Leasable Area</label>
+                            <input type="number" class="form-input-core text-right" value="0.0" step="0.01" id="txtLeasableArea" />
+                        </div>
+                        <div>
+                            <label class="form-label-core !text-[10px]">Basement Area</label>
+                            <input type="number" class="form-input-core text-right" value="0.0" step="0.01" id="txtBasementArea" />
+                        </div>
+                        <div>
+                            <label class="form-label-core !text-[10px]">SuperBuiltUp Area</label>
+                            <input type="number" class="form-input-core text-right" value="0.0" step="0.01" id="txtSuperBuiltupArea" />
+                        </div>
+                        <div>
+                            <label class="form-label-core !text-[10px]">No of Car Parking</label>
+                            <input type="number" class="form-input-core text-right" value="0" id="txtCarParking" />
+                        </div>
+                        <div>
+                            <label class="form-label-core !text-[10px]">Parking Area / Car</label>
+                            <input type="number" class="form-input-core text-right" value="0.0" step="0.01" id="txtParkingAreaPerCar" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CARD 3 — SPECIFICATIONS & FILE ATTACHMENTS ── -->
+    <div class="sec-card" id="c3">
+        <div class="sec-hdr" data-card="c3">
+            <div class="flex items-center gap-3">
+                <div class="w-7 h-7 bg-white/15 border border-white/20 rounded-lg flex items-center justify-center text-white text-xs">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <span class="text-xs font-bold tracking-wide">3. Project Specification &amp; File Attachments</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <i class="fas fa-chevron-down text-white/80 text-xs sec-chev transition-transform duration-200"></i>
+            </div>
+        </div>
+        <div class="sec-body p-5 space-y-5">
+            <!-- Project Specification Long Text Area -->
+            <div>
+                <label class="form-label-core">
+                    <i class="fas fa-clipboard-list text-primary mr-1"></i> Project Specification
+                </label>
+                <textarea class="form-textarea-core" id="txtProjectSpecification" placeholder="Enter detailed project specifications, architectural highlights, construction guidelines, materials, and special structural requirements..."></textarea>
+                <small class="text-[11px] text-[var(--text-muted)] block mt-1">Detailed text description regarding project kickoff specifications.</small>
+            </div>
+
+            <!-- Two Separate File Upload Cards: Drawing Type & Document Type -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-[var(--border)]">
+                
+                <!-- 1. Drawing File Upload (Separate Name & Description) -->
+                <div class="upload-file-card">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-6 h-6 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center text-xs">
+                            <i class="fas fa-drafting-compass"></i>
+                        </div>
+                        <span class="text-xs font-bold text-[var(--text)]">1. Drawing File Upload</span>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <label class="form-label-core !text-[10px]">Drawing Name</label>
+                            <input type="text" class="form-input-core" id="txtDrawingName" placeholder="e.g. Master Floor Plan v1.0" />
+                        </div>
+                        <div>
+                            <label class="form-label-core !text-[10px]">Drawing Description</label>
+                            <input type="text" class="form-input-core" id="txtDrawingDesc" placeholder="e.g. Ground and 1st floor architectural layout" />
+                        </div>
+                        <div>
+                            <div class="upload-dropzone" id="dropZoneDrawing" onclick="document.getElementById('fileDrawing').click()">
+                                <i class="fas fa-cloud-upload-alt text-2xl text-blue-500 block mb-1"></i>
+                                <p class="text-xs font-semibold text-[var(--text)]">
+                                    <span class="text-blue-500 font-bold">Choose Drawing File</span> or drag here
+                                </p>
+                                <small class="text-[10px] text-[var(--text-muted)] block mt-0.5">Supports any format (DWG, DXF, PDF, JPG, PNG, etc.)</small>
+                            </div>
+                            <input type="file" id="fileDrawing" style="display:none;" />
+                            <div id="drawingFileChip"></div>
+                            <div id="existingDrawingLink" class="mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Document File Upload (Separate Name & Description) -->
+                <div class="upload-file-card">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-xs">
+                            <i class="fas fa-file-contract"></i>
+                        </div>
+                        <span class="text-xs font-bold text-[var(--text)]">2. Document File Upload</span>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <label class="form-label-core !text-[10px]">Document Name</label>
+                            <input type="text" class="form-input-core" id="txtDocName" placeholder="e.g. Government Approval Certificate" />
+                        </div>
+                        <div>
+                            <label class="form-label-core !text-[10px]">Document Description</label>
+                            <input type="text" class="form-input-core" id="txtDocDesc" placeholder="e.g. Environmental clearance & survey sanction" />
+                        </div>
+                        <div>
+                            <div class="upload-dropzone" id="dropZoneDoc" onclick="document.getElementById('fileDoc').click()">
+                                <i class="fas fa-cloud-upload-alt text-2xl text-emerald-500 block mb-1"></i>
+                                <p class="text-xs font-semibold text-[var(--text)]">
+                                    <span class="text-emerald-500 font-bold">Choose Document File</span> or drag here
+                                </p>
+                                <small class="text-[10px] text-[var(--text-muted)] block mt-0.5">Supports any format (PDF, DOC, DOCX, XLS, XLSX, ZIP, etc.)</small>
+                            </div>
+                            <input type="file" id="fileDoc" style="display:none;" />
+                            <div id="docFileChip"></div>
+                            <div id="existingDocLink" class="mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CARD 4 — WBS ── -->
+    <div class="sec-card" id="c4">
+        <div class="sec-hdr" data-card="c4">
+            <div class="flex items-center gap-3">
+                <div class="w-7 h-7 bg-white/15 border border-white/20 rounded-lg flex items-center justify-center text-white text-xs">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <span class="text-xs font-bold tracking-wide">4. WBS Required for the Following</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="bg-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-full" id="wbsPill">0 selected</span>
+                <i class="fas fa-chevron-down text-white/80 text-xs sec-chev transition-transform duration-200"></i>
+            </div>
+        </div>
+        <div class="sec-body p-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3" id="wbsGrid"></div>
+        </div>
+    </div>
+
+    <!-- ── CARD 5 — MATERIAL CONSUMPTION ── -->
+    <div class="sec-card" id="c5">
+        <div class="sec-hdr" data-card="c5">
+            <div class="flex items-center gap-3">
+                <div class="w-7 h-7 bg-white/15 border border-white/20 rounded-lg flex items-center justify-center text-white text-xs">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <span class="text-xs font-bold tracking-wide">5. Material Consumption Settings</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <i class="fas fa-chevron-down text-white/80 text-xs sec-chev transition-transform duration-200"></i>
+            </div>
+        </div>
+        <div class="sec-body p-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div>
+                    <label class="form-label-core">Material Consumption Based On</label>
+                    <select class="form-select-core" id="ddlMatConsumption">
+                        <option value="Purchase">Purchase</option>
+                        <option value="Issue">Issue</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label-core">Issue Rate Based On</label>
+                    <select class="form-select-core" id="ddlIssueRate">
+                        <option value="FIFO">FIFO</option>
+                        <option value="LIFO">LIFO</option>
+                        <option value="Weighted Average">Weighted Average</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label-core">Issue Based On</label>
+                    <select class="form-select-core" id="ddlIssueBased">
+                        <option value="None">None</option>
+                        <option value="Request">Request</option>
+                        <option value="Min / Bill">Min / Bill</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label-core">Cost Control Based On</label>
+                    <select class="form-select-core" id="ddlCostControl">
+                        <option value="BOQ - Budget">BOQ - Budget</option>
+                        <option value="BOQ - Plan">BOQ - Plan</option>
+                        <option value="WBS - Budget">WBS - Budget</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Toggles List -->
+            <div class="space-y-2 pt-2 border-t border-[var(--border)]">
+                <div class="flex items-center justify-between p-2.5 bg-[var(--bg)] border border-[var(--border)] rounded-lg">
+                    <span class="text-xs font-semibold text-[var(--text)]">Item Wise Issue Require</span>
+                    <label class="core-toggle">
+                        <input type="checkbox" class="trackable" checked id="chkItemWiseIssue" />
+                        <span class="core-toggle-slider"><span class="t-on">Yes</span><span class="t-off">No</span></span>
+                    </label>
+                </div>
+                <div class="flex items-center justify-between p-2.5 bg-[var(--bg)] border border-[var(--border)] rounded-lg">
+                    <span class="text-xs font-semibold text-[var(--text)]">CC Wise Asset Require in Issue</span>
+                    <label class="core-toggle">
+                        <input type="checkbox" class="trackable" checked id="chkCCWiseAsset" />
+                        <span class="core-toggle-slider"><span class="t-on">Yes</span><span class="t-off">No</span></span>
+                    </label>
+                </div>
+                <div class="flex items-center justify-between p-2.5 bg-[var(--bg)] border border-[var(--border)] rounded-lg">
+                    <span class="text-xs font-semibold text-[var(--text)]">Vehicle Details Mandatory in Production Dispatch / Receipt</span>
+                    <label class="core-toggle">
+                        <input type="checkbox" class="trackable" checked id="chkVehicleDetails" />
+                        <span class="core-toggle-slider"><span class="t-on">Yes</span><span class="t-off">No</span></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CARD 6 — USER ALLOCATION ── -->
+    <div class="sec-card" id="c6">
+        <div class="sec-hdr" data-card="c6">
+            <div class="flex items-center gap-3">
+                <div class="w-7 h-7 bg-white/15 border border-white/20 rounded-lg flex items-center justify-center text-white text-xs">
+                    <i class="fas fa-users"></i>
+                </div>
+                <span class="text-xs font-bold tracking-wide">6. User Allocation</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="sec-err-badge hidden" id="secErr6"><i class="fas fa-exclamation-circle"></i> Required</span>
+                <i class="fas fa-chevron-down text-white/80 text-xs sec-chev transition-transform duration-200"></i>
+            </div>
+        </div>
+        <div class="sec-body p-5">
+            <div>
+                <label class="form-label-core">
+                    Allocate Users <span class="req">*</span>
+                </label>
+                <select id="ddlUsers" multiple style="width:100%;"></select>
+                <small class="text-[11px] text-[var(--text-muted)] block mt-2">
+                    <i class="fas fa-info-circle text-primary mr-1"></i> Type to search &amp; select multiple users allocated to this project
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── PRIMARY BOTTOM ACTION CARD (THE ONLY SAVE & CLEAR BUTTONS) ── -->
+    <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-lg p-5 flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+        <div class="text-xs text-[var(--text-muted)] flex items-center gap-2">
+            <i class="fas fa-info-circle text-primary text-sm"></i>
+            <span><span class="text-red-500 font-bold">*</span> Fields marked with asterisk are mandatory before saving.</span>
+        </div>
+        <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <a href="/FRG_Project_Creation/ProjectView" class="btn-cancel !py-2 !px-4 no-underline !inline-flex !items-center !gap-1.5" title="Return to Projects List">
+                <i class="fas fa-arrow-left"></i> Projects List
+            </a>
+            <button type="button" class="btn-clear !py-2 !px-4" id="btnReset">
+                <i class="fas fa-eraser" id="btnResetIcon"></i> <span id="btnResetText">Clear</span>
+            </button>
+            <button type="button" class="btn-save !py-2 !px-6" id="btnSave">
+                <i class="fas fa-save" id="btnSaveIcon"></i> <span id="btnSaveText">Save Project</span>
+            </button>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script src="~/js/ApplicationJs/FRG_Project_Creation.js"></script>
+}
