@@ -15,7 +15,7 @@
 <!DOCTYPE html>
 @* <html lang="en" data-theme="light" data-primary="#a82024" data-sidebar="full" data-contrast="default" data-sidebar-view="tiles"> *@
 
-<html lang="en" data-theme="light" data-primary="#a82024" data-sidebar="full" data-contrast="high" data-sidebar-view="tiles">
+<html lang="en" data-theme="light" data-primary="#a82024" data-sidebar="hidden" data-contrast="high" data-sidebar-view="tiles">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -23,14 +23,21 @@
     <script>
         (function() {
             try {
+                var html = document.documentElement;
+                html.dataset.sidebar = 'hidden';
+
                 var raw = localStorage.getItem('vgn_prefs');
                 if (raw) {
                     var p = JSON.parse(raw);
-                    var html = document.documentElement;
                     if (p.ThemeMode) html.dataset.theme = p.ThemeMode === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : p.ThemeMode;
                     if (p.Contrast) html.dataset.contrast = p.Contrast;
                     if (p.MenuView) html.dataset.sidebarView = p.MenuView;
-                    if (p.SidebarType) html.dataset.sidebar = p.SidebarType === 'mini' ? 'full' : p.SidebarType;
+                    // Keep sidebar closed on first time load unless explicitly toggled in session
+                    if (sessionStorage.getItem('vgn_sidebar_toggled') && p.SidebarType) {
+                        html.dataset.sidebar = p.SidebarType === 'mini' ? 'full' : p.SidebarType;
+                    } else {
+                        html.dataset.sidebar = 'hidden';
+                    }
                     if (p.FontSize || p.fontSize) {
                         var sz = p.FontSize || p.fontSize;
                         html.style.setProperty('--font-size-base', sz);
@@ -6026,6 +6033,7 @@
         }
 
         document.getElementById('sidebarToggle').addEventListener('click', function () {
+            sessionStorage.setItem('vgn_sidebar_toggled', 'true');
             var cur = html.dataset.sidebar;
             var isMobile = window.innerWidth < 769;
             if (isMobile) {
@@ -6163,9 +6171,14 @@
             if (p.menuView || p.MenuView) setMenuView(p.menuView || p.MenuView, document.querySelector('[data-mview="' + (p.menuView || p.MenuView) + '"]') || document.querySelector('[data-mview]'));
             if (p.themeColor || p.ThemeColor) setPrimary(p.themeColor || p.ThemeColor, document.querySelector('[data-color="' + (p.themeColor || p.ThemeColor) + '"]') || document.querySelector('.swatch'));
             var st = p.sidebarType || p.SidebarType;
+            if (!sessionStorage.getItem('vgn_sidebar_toggled')) {
+                st = 'hidden';
+            }
             if (st) {
                 if (st === 'mini') st = 'full';
                 setSidebar(st, document.querySelector('[data-sb="' + st + '"]') || document.querySelector('.sidebar-type-btn'));
+            } else {
+                setSidebar('hidden', document.querySelector('[data-sb="hidden"]'));
             }
             if (p.fontSize || p.FontSize) setFontSize(p.fontSize || p.FontSize, document.querySelector('[data-fsize="' + (p.fontSize || p.FontSize) + '"]') || document.querySelector('.font-size-btn'));
             if (p.fontFamily || p.FontFamily) setFontFamily(p.fontFamily || p.FontFamily, document.querySelector('[data-ffamily="' + (p.fontFamily || p.FontFamily) + '"]') || document.querySelector('.font-family-btn'));
