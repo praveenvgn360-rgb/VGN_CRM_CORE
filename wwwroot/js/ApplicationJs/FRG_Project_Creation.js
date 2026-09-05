@@ -117,10 +117,14 @@ function initWBSGrid() {
    ============================================================ */
 var selectedDrawingFile = null;
 var selectedDocFile = null;
+var existingDrawingFilePath = null;
+var existingDocFilePath = null;
 
 function initSeparateFileUploads() {
     selectedDrawingFile = null;
     selectedDocFile = null;
+    existingDrawingFilePath = null;
+    existingDocFilePath = null;
 
     // ── 1. Drawing File Upload ──
     $('#fileDrawing').on('change', function () {
@@ -225,18 +229,22 @@ function initSeparateFileUploads() {
     $(document).on('click', '#btnRemoveDrawing', function (e) {
         e.stopPropagation();
         selectedDrawingFile = null;
+        existingDrawingFilePath = null;
         $('#fileDrawing').val('');
         $('#txtDrawingName').val('');
         $('#txtDrawingDesc').val('');
+        $('#existingDrawingLink').empty();
         renderDrawingChip();
     });
 
     $(document).on('click', '#btnRemoveDoc', function (e) {
         e.stopPropagation();
         selectedDocFile = null;
+        existingDocFilePath = null;
         $('#fileDoc').val('');
         $('#txtDocName').val('');
         $('#txtDocDesc').val('');
+        $('#existingDocLink').empty();
         renderDocChip();
     });
 }
@@ -387,10 +395,12 @@ function initActionButtons() {
 
         formData.append('CompanyId', $('#ddlCompany').val());
         formData.append('BusinessTypeId', $('#ddlBizType').val());
+        formData.append('CostCentreId', $('#ddlBizType').val() || '');
         formData.append('PropertyType', $('#ddlPropType').val());
         formData.append('ProjectTypeId', $('#ddlProjType').val());
 
         formData.append('SoilTypeId', $('#ddlSoilType').val() || '');
+        formData.append('SoilType', $('#ddlSoilType').val() || '');
         formData.append('GroundWater', $('#ddlGroundWater').val() || '');
         formData.append('GovtWaterSupply', $('#chkGovtWater').is(':checked') ? 'Yes' : 'No');
         formData.append('Electricity', $('#chkElectricity').is(':checked') ? 'Yes' : 'No');
@@ -418,6 +428,8 @@ function initActionButtons() {
         formData.append('DrawingDescription', $('#txtDrawingDesc').val().trim());
         if (selectedDrawingFile) {
             formData.append('DrawingFile', selectedDrawingFile);
+        } else if (existingDrawingFilePath) {
+            formData.append('DrawingFilePath', existingDrawingFilePath);
         }
 
         // Attach Document Details
@@ -425,12 +437,16 @@ function initActionButtons() {
         formData.append('DocDescription', $('#txtDocDesc').val().trim());
         if (selectedDocFile) {
             formData.append('DocFile', selectedDocFile);
+        } else if (existingDocFilePath) {
+            formData.append('DocFilePath', existingDocFilePath);
         }
 
         formData.append('WBSRequirement', selectedWbs);
 
         formData.append('MaterialConsumption', $('#ddlMatConsumption').val() || 'Purchase');
         formData.append('IssueRateBasedOn', $('#ddlIssueRate').val() || 'FIFO');
+        formData.append('IssueBasedOn', $('#ddlIssueBased').val() || 'None');
+        formData.append('CostControlBasedOn', $('#ddlCostControl').val() || 'BOQ - Budget');
         formData.append('ItemwiseIssueRequire', $('#chkItemWiseIssue').is(':checked') ? 'Yes' : 'No');
         formData.append('CCwiseAssetIssue', $('#chkCCWiseAsset').is(':checked') ? 'Yes' : 'No');
         formData.append('VehicleProduction', $('#chkVehicleDetails').is(':checked') ? 'Yes' : 'No');
@@ -548,9 +564,22 @@ function initActionButtons() {
         $('#txtDrawingDesc').val('');
         $('#txtDocName').val('');
         $('#txtDocDesc').val('');
+        selectedDrawingFile = null;
+        selectedDocFile = null;
+        existingDrawingFilePath = null;
+        existingDocFilePath = null;
         $('#drawingFileChip').empty();
         $('#docFileChip').empty();
+        $('#existingDrawingLink').empty();
+        $('#existingDocLink').empty();
         $('#filePill').text('0 attached');
+
+        // Reset Material Consumption settings
+        $('#ddlMatConsumption').val('Purchase');
+        $('#ddlIssueRate').val('FIFO');
+        $('#ddlIssueBased').val('None');
+        $('#ddlCostControl').val('BOQ - Budget');
+        $('#chkItemWiseIssue, #chkCCWiseAsset, #chkVehicleDetails').prop('checked', true);
 
         // Reset WBS checkboxes
         $('#wbsGrid input[type="checkbox"]').prop('checked', false);
@@ -709,6 +738,8 @@ function bindProjectData(data) {
     // ── Card 3: Specification & Files ──
     $('#txtProjectSpecification').val(data.ProjectSpecification || '');
     $('#txtDrawingName').val(data.DrawingName || '');
+    $('#txtDrawingDesc').val(data.DrawingDescription || '');
+    existingDrawingFilePath = data.DrawingFilePath || null;
 
     if (data.DrawingFilePath) {
         var drawUrl = '/FRG_Project_Creation/DownloadFile?filePath=' + encodeURIComponent(data.DrawingFilePath) + '&fileName=' + encodeURIComponent(data.DrawingName || 'Drawing');
@@ -729,6 +760,8 @@ function bindProjectData(data) {
     }
 
     $('#txtDocName').val(data.DocName || '');
+    $('#txtDocDesc').val(data.DocDescription || '');
+    existingDocFilePath = data.DocFilePath || null;
 
     if (data.DocFilePath) {
         var docUrl = '/FRG_Project_Creation/DownloadFile?filePath=' + encodeURIComponent(data.DocFilePath) + '&fileName=' + encodeURIComponent(data.DocName || 'Document');
@@ -777,6 +810,12 @@ function bindProjectData(data) {
     }
     if (data.IssueRateBasedOn) {
         $('#ddlIssueRate').val(data.IssueRateBasedOn).trigger('change');
+    }
+    if (data.IssueBasedOn) {
+        $('#ddlIssueBased').val(data.IssueBasedOn).trigger('change');
+    }
+    if (data.CostControlBasedOn) {
+        $('#ddlCostControl').val(data.CostControlBasedOn).trigger('change');
     }
     setToggle('#chkItemWiseIssue', data.ItemwiseIssueRequire === 'Yes');
     setToggle('#chkCCWiseAsset', data.CCwiseAssetIssue === 'Yes');

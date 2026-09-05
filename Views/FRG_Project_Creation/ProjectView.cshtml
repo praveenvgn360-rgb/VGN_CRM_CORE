@@ -180,34 +180,34 @@
                 <span class="text-xl font-black text-[var(--text)] mt-0.5 block" id="statTotal">0</span>
             </div>
             <div class="w-9 h-9 rounded-lg bg-[rgba(var(--primary-rgb),0.1)] text-primary flex items-center justify-center text-sm">
-                <i class="fas fa-folder"></i>
+                <i class="fas fa-city"></i>
             </div>
         </div>
         <div class="grid-stat-card">
             <div>
-                <span class="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Sale Type</span>
-                <span class="text-xl font-black text-blue-600 dark:text-blue-400 mt-0.5 block" id="statSale">0</span>
+                <span class="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Active Projects</span>
+                <span class="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5 block" id="statActive">0</span>
             </div>
-            <div class="w-9 h-9 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center text-sm">
-                <i class="fas fa-hand-holding-usd"></i>
-            </div>
-        </div>
-        <div class="grid-stat-card">
-            <div>
-                <span class="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Lease Type</span>
-                <span class="text-xl font-black text-purple-600 dark:text-purple-400 mt-0.5 block" id="statLease">0</span>
-            </div>
-            <div class="w-9 h-9 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center text-sm">
-                <i class="fas fa-file-signature"></i>
+            <div class="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-sm">
+                <i class="fas fa-check-circle"></i>
             </div>
         </div>
         <div class="grid-stat-card">
             <div>
                 <span class="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Total Builtup (Sq.ft)</span>
-                <span class="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5 block" id="statBuiltup">0</span>
+                <span class="text-xl font-black text-blue-600 dark:text-blue-400 mt-0.5 block" id="statBuiltup">0</span>
             </div>
-            <div class="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-sm">
+            <div class="w-9 h-9 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center text-sm">
                 <i class="fas fa-building"></i>
+            </div>
+        </div>
+        <div class="grid-stat-card">
+            <div>
+                <span class="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Total Saleable (Sq.ft)</span>
+                <span class="text-xl font-black text-purple-600 dark:text-purple-400 mt-0.5 block" id="statSaleable">0</span>
+            </div>
+            <div class="w-9 h-9 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center text-sm">
+                <i class="fas fa-ruler-combined"></i>
             </div>
         </div>
     </div>
@@ -616,23 +616,29 @@
                             var r = options.data || {};
                             var drawingPath = r.DrawingFilePath || r.drawingFilePath;
                             var drawingName = r.DrawingName || r.drawingName || 'Project_Drawing';
+                            var drawingDesc = r.DrawingDescription || r.drawingDescription || '';
                             var docPath = r.DocFilePath || r.docFilePath;
                             var docName = r.DocName || r.docName || 'Project_Document';
+                            var docDesc = r.DocDescription || r.docDescription || '';
 
                             var $wrap = $('<div class="flex items-center justify-center gap-1.5 text-xs">');
 
                             if (drawingPath) {
                                 var drawUrl = '/FRG_Project_Creation/DownloadFile?filePath=' + encodeURIComponent(drawingPath) + '&fileName=' + encodeURIComponent(drawingName);
-                                var $btnDraw = $('<a target="_blank" class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-500/20 inline-flex items-center gap-1 text-[11px] font-bold no-underline transition-colors" title="Download Drawing: ' + drawingName + '">')
+                                var drawTitle = 'Download Drawing: ' + drawingName + (drawingDesc ? ' (' + drawingDesc + ')' : '');
+                                var $btnDraw = $('<a target="_blank" class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-500/20 inline-flex items-center gap-1 text-[11px] font-bold no-underline transition-colors">')
                                     .attr('href', drawUrl)
+                                    .attr('title', drawTitle)
                                     .html('<i class="fas fa-drafting-compass"></i> Plan');
                                 $wrap.append($btnDraw);
                             }
 
                             if (docPath) {
                                 var docUrl = '/FRG_Project_Creation/DownloadFile?filePath=' + encodeURIComponent(docPath) + '&fileName=' + encodeURIComponent(docName);
-                                var $btnDoc = $('<a target="_blank" class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 hover:bg-emerald-600 hover:text-white border border-emerald-500/20 inline-flex items-center gap-1 text-[11px] font-bold no-underline transition-colors" title="Download Document: ' + docName + '">')
+                                var docTitle = 'Download Document: ' + docName + (docDesc ? ' (' + docDesc + ')' : '');
+                                var $btnDoc = $('<a target="_blank" class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 hover:bg-emerald-600 hover:text-white border border-emerald-500/20 inline-flex items-center gap-1 text-[11px] font-bold no-underline transition-colors">')
                                     .attr('href', docUrl)
+                                    .attr('title', docTitle)
                                     .html('<i class="fas fa-file-contract"></i> Doc');
                                 $wrap.append($btnDoc);
                             }
@@ -645,22 +651,57 @@
                         }
                     },
                     {
-                        dataField: 'CreatedDate',
-                        caption: 'CREATED DATE',
-                        dataType: 'date',
-                        format: 'dd/MM/yyyy',
-                        width: 135,
-                        cssClass: 'cell-align-center',
+                        caption: 'CREATED BY & ON',
+                        width: 180,
+                        cssClass: 'cell-align-left',
                         calculateCellValue: function (r) {
-                            var raw = r.CreatedDate || r.createdDate;
-                            if (!raw) return null;
-                            if (raw instanceof Date) return raw;
-                            var dt = new Date(raw);
-                            return isNaN(dt.getTime()) ? null : dt;
+                            var creator = r.CreatedByName || r.createdByName || r.CreatedBy || r.createdBy || '—';
+                            var dt = formatDateTime(r.CreatedDate || r.createdDate);
+                            return creator !== '—' && dt !== '—' ? (creator + ' (' + dt + ')') : (creator !== '—' ? creator : dt);
                         },
-                        headerFilter: {
-                            allowSearch: true,
-                            groupInterval: null
+                        cellTemplate: function (container, options) {
+                            var r = options.data || {};
+                            var creator = r.CreatedByName || r.createdByName || r.CreatedBy || r.createdBy || '—';
+                            var dt = formatDateTime(r.CreatedDate || r.createdDate);
+
+                            var $box = $('<div class="flex flex-col py-0.5 leading-tight">');
+                            var $user = $('<div class="font-bold text-[var(--text)] text-xs flex items-center gap-1.5 truncate">')
+                                .html('<i class="fas fa-user-circle text-primary text-[11px]"></i> ' + $('<div>').text(creator).html());
+                            var $time = $('<div class="text-[10px] text-[var(--text-muted)] flex items-center gap-1 mt-0.5">')
+                                .html('<i class="far fa-clock text-[9px]"></i> ' + dt);
+
+                            $box.append($user).append($time);
+                            container.append($box);
+                        }
+                    },
+                    {
+                        caption: 'LAST UPDATED BY & ON',
+                        width: 180,
+                        cssClass: 'cell-align-left',
+                        calculateCellValue: function (r) {
+                            var updater = r.UpdatedByName || r.updatedByName || r.UpdatedBy || r.updatedBy;
+                            var dt = formatDateTime(r.UpdatedDate || r.updatedDate);
+                            if (!updater && dt === '—') return '—';
+                            return (updater || '—') + (dt !== '—' ? ' (' + dt + ')' : '');
+                        },
+                        cellTemplate: function (container, options) {
+                            var r = options.data || {};
+                            var updater = r.UpdatedByName || r.updatedByName || r.UpdatedBy || r.updatedBy;
+                            var dt = formatDateTime(r.UpdatedDate || r.updatedDate);
+
+                            if (!updater && dt === '—') {
+                                container.append($('<span class="text-xs text-[var(--text-muted)]">—</span>'));
+                                return;
+                            }
+
+                            var $box = $('<div class="flex flex-col py-0.5 leading-tight">');
+                            var $user = $('<div class="font-bold text-[var(--text)] text-xs flex items-center gap-1.5 truncate">')
+                                .html('<i class="fas fa-user-edit text-amber-500 text-[11px]"></i> ' + $('<div>').text(updater || 'System').html());
+                            var $time = $('<div class="text-[10px] text-[var(--text-muted)] flex items-center gap-1 mt-0.5">')
+                                .html('<i class="far fa-clock text-[9px]"></i> ' + dt);
+
+                            $box.append($user).append($time);
+                            container.append($box);
                         }
                     },
                     {
@@ -683,26 +724,46 @@
             }).dxDataGrid('instance');
         }
 
+        function formatDateTime(val) {
+            if (!val) return '—';
+            var d = new Date(val);
+            if (isNaN(d.getTime())) return String(val);
+            var day = ('0' + d.getDate()).slice(-2);
+            var month = ('0' + (d.getMonth() + 1)).slice(-2);
+            var year = d.getFullYear();
+            var hours = d.getHours();
+            var minutes = ('0' + d.getMinutes()).slice(-2);
+            var ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            var strHours = ('0' + hours).slice(-2);
+            return day + '/' + month + '/' + year + ' ' + strHours + ':' + minutes + ' ' + ampm;
+        }
+
         function updateGridStats(data) {
             var total = data.length;
-            var sale = 0;
-            var lease = 0;
+            var active = 0;
             var totalBuiltup = 0;
+            var totalSaleable = 0;
 
             $.each(data, function (i, item) {
-                var pType = (item.ProjectLevelType || item.projectLevelType || '').toLowerCase();
-                if (pType.indexOf('sale') !== -1) sale++;
-                if (pType.indexOf('lease') !== -1) lease++;
+                var st = item.Status !== undefined ? item.Status : item.status;
+                if (st === '1' || st === 1 || String(st).toLowerCase() === 'active') {
+                    active++;
+                }
 
                 var bArea = parseFloat(item.BuiltupArea || item.builtupArea) || 0;
                 totalBuiltup += bArea;
+
+                var sArea = parseFloat(item.SaleableArea || item.saleableArea) || 0;
+                totalSaleable += sArea;
             });
 
             $('#totalRecordsBadge').text(total + ' Projects');
             $('#statTotal').text(total);
-            $('#statSale').text(sale);
-            $('#statLease').text(lease);
+            $('#statActive').text(active);
             $('#statBuiltup').text(Math.round(totalBuiltup).toLocaleString());
+            $('#statSaleable').text(Math.round(totalSaleable).toLocaleString());
         }
     </script>
 }

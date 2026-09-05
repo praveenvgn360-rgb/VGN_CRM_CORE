@@ -337,9 +337,10 @@ namespace VGN_CRM_CORE.Controllers
                     return Content(JsonConvert.SerializeObject(new { success = false, message = "Project not found." }), "application/json");
                 }
 
-                // Return full list for dxDataGrid with enriched Company and Project Type names
+                // Return full list for dxDataGrid with enriched Company, Project Type, and User names
                 var companyDict = new Dictionary<string, string>();
                 var projectTypeDict = new Dictionary<string, string>();
+                var userDict = new Dictionary<string, string>();
 
                 try
                 {
@@ -388,6 +389,27 @@ namespace VGN_CRM_CORE.Controllers
                                 }
                             }
                         }
+
+                        using (var cmdUsr = new SqlCommand("Web_LoadProjectKickoff", conLookup))
+                        {
+                            cmdUsr.CommandType = CommandType.StoredProcedure;
+                            cmdUsr.Parameters.AddWithValue("@CompanyId", "0");
+                            cmdUsr.Parameters.AddWithValue("@Flag", "User");
+                            using (var daUsr = new SqlDataAdapter(cmdUsr))
+                            {
+                                var dtUsr = new DataTable();
+                                daUsr.Fill(dtUsr);
+                                foreach (DataRow r in dtUsr.Rows)
+                                {
+                                    var uId = r["UserId"].ToString().Trim();
+                                    var uName = r["UserName"].ToString().Trim();
+                                    if (uId != "0" && !userDict.ContainsKey(uId))
+                                    {
+                                        userDict[uId] = uName;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 catch (Exception)
@@ -409,6 +431,12 @@ namespace VGN_CRM_CORE.Controllers
 
                     var ptId = row["ProjectType"] != DBNull.Value ? row["ProjectType"].ToString().Trim() : "";
                     dict["ProjectTypeName"] = projectTypeDict.ContainsKey(ptId) ? projectTypeDict[ptId] : (string.IsNullOrWhiteSpace(ptId) ? "—" : ptId);
+
+                    var crBy = dict.ContainsKey("CreatedBy") && dict["CreatedBy"] != null ? dict["CreatedBy"].ToString().Trim() : "";
+                    dict["CreatedByName"] = userDict.ContainsKey(crBy) ? userDict[crBy] : (string.IsNullOrWhiteSpace(crBy) ? "—" : crBy);
+
+                    var upBy = dict.ContainsKey("UpdatedBy") && dict["UpdatedBy"] != null ? dict["UpdatedBy"].ToString().Trim() : "";
+                    dict["UpdatedByName"] = userDict.ContainsKey(upBy) ? userDict[upBy] : (string.IsNullOrWhiteSpace(upBy) ? null : upBy);
 
                     list.Add(dict);
                 }
@@ -440,7 +468,7 @@ namespace VGN_CRM_CORE.Controllers
                     : Environment.MachineName;
 
                 // 1. Upload Drawing File if attached
-                string drawingFilePath = null;
+                string drawingFilePath = !string.IsNullOrWhiteSpace(model.DrawingFilePath) ? model.DrawingFilePath.Trim() : null;
                 string finalDrawingName = model.DrawingName;
                 if (model.DrawingFile != null && model.DrawingFile.Length > 0)
                 {
@@ -451,15 +479,8 @@ namespace VGN_CRM_CORE.Controllers
                     }
                 }
 
-                if (!string.IsNullOrWhiteSpace(model.DrawingDescription))
-                {
-                    finalDrawingName = string.IsNullOrWhiteSpace(finalDrawingName)
-                        ? model.DrawingDescription
-                        : $"{finalDrawingName} - {model.DrawingDescription}";
-                }
-
                 // 2. Upload Document File if attached
-                string docFilePath = null;
+                string docFilePath = !string.IsNullOrWhiteSpace(model.DocFilePath) ? model.DocFilePath.Trim() : null;
                 string finalDocName = model.DocName;
                 if (model.DocFile != null && model.DocFile.Length > 0)
                 {
@@ -468,13 +489,6 @@ namespace VGN_CRM_CORE.Controllers
                     {
                         finalDocName = Path.GetFileName(model.DocFile.FileName);
                     }
-                }
-
-                if (!string.IsNullOrWhiteSpace(model.DocDescription))
-                {
-                    finalDocName = string.IsNullOrWhiteSpace(finalDocName)
-                        ? model.DocDescription
-                        : $"{finalDocName} - {model.DocDescription}";
                 }
 
                 // 3. Save to Database via Web_SaveProjectKickOffMas
@@ -502,6 +516,7 @@ namespace VGN_CRM_CORE.Controllers
                     cmd.Parameters.AddWithValue("@State", (object)stateToSave ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@Pincode", (object)pincodeToSave ?? DBNull.Value);
 
+                    cmd.Parameters.AddWithValue("@SoilType", (object)(model.SoilType ?? model.SoilTypeId) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@AvaGroundWaterLeavel", (object)model.GroundWater ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@AvaGroundWaterSupply", (object)model.GovtWaterSupply ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@AvaElectricity", (object)model.Electricity ?? DBNull.Value);
@@ -525,9 +540,11 @@ namespace VGN_CRM_CORE.Controllers
                     cmd.Parameters.AddWithValue("@ProjectSpecification", (object)model.ProjectSpecification ?? DBNull.Value);
 
                     cmd.Parameters.AddWithValue("@DrawingName", (object)finalDrawingName ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@DrawingDescription", (object)model.DrawingDescription ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@DrawingFilePath", (object)drawingFilePath ?? DBNull.Value);
 
                     cmd.Parameters.AddWithValue("@DocName", (object)finalDocName ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@DocDescription", (object)model.DocDescription ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@DocFilePath", (object)docFilePath ?? DBNull.Value);
 
                     cmd.Parameters.AddWithValue("@ConsultName", DBNull.Value);
@@ -546,16 +563,23 @@ namespace VGN_CRM_CORE.Controllers
                     cmd.Parameters.AddWithValue("@WBSRequirement", (object)model.WBSRequirement ?? DBNull.Value);
 
                     cmd.Parameters.AddWithValue("@MaterialConsumption", (object)model.MaterialConsumption ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@IssueRateBasedOn", (object)model.IssueRateBasedOn ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@IssueBasedOn", (object)model.IssueBasedOn ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CostControlBasedOn", (object)model.CostControlBasedOn ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CostCentreId", (object)(model.BusinessTypeId ?? model.CostCentreId) ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@ItemwiseIssueRequire", (object)model.ItemwiseIssueRequire ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@CCwiseAssetIssue", (object)model.CCwiseAssetIssue ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@VehicleProduction", (object)model.VehicleProduction ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@IssueRateBasedOn", (object)model.IssueRateBasedOn ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@IssueRateDate", DBNull.Value);
-
-                    cmd.Parameters.AddWithValue("@CostCentreId", (object)model.BusinessTypeId ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@ProjectId", DBNull.Value);
+                    bool isInsert = string.Equals(model.Action, "INSERT", StringComparison.OrdinalIgnoreCase)
+                                 || string.IsNullOrWhiteSpace(model.Action)
+                                 || !model.ProjectKickoffId.HasValue
+                                 || model.ProjectKickoffId.Value <= 0;
 
-                    cmd.Parameters.AddWithValue("@CreatedDate", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@CreatedBy", isInsert ? (object)logUserId : DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CreatedDate", isInsert ? (object)DateTime.Now : DBNull.Value);
+                    cmd.Parameters.AddWithValue("@UpdatedBy", !isInsert ? (object)logUserId : DBNull.Value);
+                    cmd.Parameters.AddWithValue("@UpdatedDate", !isInsert ? (object)DateTime.Now : DBNull.Value);
 
                     string userIdsToSave = (model.Users != null && model.Users.Count > 0)
                         ? string.Join(",", model.Users)
@@ -796,10 +820,12 @@ namespace VGN_CRM_CORE.Controllers
 
         public string CompanyId { get; set; }
         public string BusinessTypeId { get; set; }
+        public string CostCentreId { get; set; }
         public string PropertyType { get; set; }
         public string ProjectTypeId { get; set; }
 
         public string SoilTypeId { get; set; }
+        public string SoilType { get; set; }
         public string GroundWater { get; set; }
         public string GovtWaterSupply { get; set; }
         public string Electricity { get; set; }
@@ -824,10 +850,12 @@ namespace VGN_CRM_CORE.Controllers
 
         public string DrawingName { get; set; }
         public string DrawingDescription { get; set; }
+        public string DrawingFilePath { get; set; }
         public IFormFile DrawingFile { get; set; }
 
         public string DocName { get; set; }
         public string DocDescription { get; set; }
+        public string DocFilePath { get; set; }
         public IFormFile DocFile { get; set; }
 
         public string WBSRequirement { get; set; }
@@ -837,6 +865,8 @@ namespace VGN_CRM_CORE.Controllers
         public string CCwiseAssetIssue { get; set; }
         public string VehicleProduction { get; set; }
         public string IssueRateBasedOn { get; set; }
+        public string IssueBasedOn { get; set; }
+        public string CostControlBasedOn { get; set; }
 
         public List<string> Users { get; set; }
     }
