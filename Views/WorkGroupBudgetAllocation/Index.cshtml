@@ -1,0 +1,516 @@
+@{
+    ViewBag.Title = "Work Group Budget Allocation — VGN ERP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="p-4 sm:p-6 space-y-6">
+    <!-- ── HEADER BAR ── -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[var(--surface)] p-5 rounded-2xl shadow-sm border border-[var(--border)]">
+        <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-[rgba(var(--primary-rgb),0.12)] border border-[rgba(var(--primary-rgb),0.25)] flex items-center justify-center text-primary text-xl">
+                <i class="fas fa-file-invoice-dollar"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-xl font-bold text-[var(--text)] tracking-tight">Work Group Budget Allocation</h1>
+                    <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" id="badgeTotalRecords">
+                        0 Records
+                    </span>
+                </div>
+                <p class="text-xs text-[var(--text-muted)] mt-0.5">Allocate project budget amounts to specific work groups and work types</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2.5 w-full md:w-auto justify-end">
+            <button type="button" onclick="loadGridData()" class="btn-clear !text-xs !py-2 !px-3.5" title="Refresh Grid">
+                <i class="fas fa-sync-alt mr-1"></i> Refresh
+            </button>
+            <button type="button" onclick="openCreateModal()" class="btn-save !text-xs !py-2 !px-4 text-white flex items-center gap-2 shadow-md">
+                <i class="fas fa-plus"></i>
+                <span>Add Work Group Budget</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ── SUMMARY STATS STRIP ── -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Total Allocations</span>
+                <span class="text-2xl font-black text-[var(--text)] mt-1 block" id="statTotalCount">0</span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-[rgba(var(--primary-rgb),0.1)] text-primary flex items-center justify-center text-lg">
+                <i class="fas fa-layer-group"></i>
+            </div>
+        </div>
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Total Work Group Budget</span>
+                <span class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block" id="statTotalBudget">₹ 0</span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-lg">
+                <i class="fas fa-money-check-alt"></i>
+            </div>
+        </div>
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Active Records</span>
+                <span class="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1 block" id="statActiveCount">0</span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center text-lg">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── DATA GRID CARD ── -->
+    <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-md p-4 sm:p-5">
+        <div id="dxGridWorkGroupBudget"></div>
+    </div>
+</div>
+
+<style>
+    .swal2-container {
+        z-index: 1000000 !important;
+    }
+</style>
+
+<!-- ── MODAL DIALOG (CREATE / EDIT) ── -->
+<div id="wgBudgetModalOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[1050] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto" style="display: none;">
+    <!-- Modal Card (Guaranteed Centered, Never Cut Off) -->
+    <div id="wgBudgetModal" class="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh] my-auto overflow-hidden z-[1055]">
+        <!-- Modal Header (Fixed at top) -->
+        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800 flex-shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-[rgba(var(--primary-rgb),0.12)] text-primary flex items-center justify-center text-sm font-bold">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <h3 class="text-base sm:text-lg font-bold text-slate-800 dark:text-white" id="modalTitle">Add Work Group Budget Allocation</h3>
+            </div>
+            <button onclick="closeWgBudgetModal()" type="button" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-white transition-colors cursor-pointer">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body (Scrollable) -->
+        <form id="frmWgBudget" onsubmit="saveWgBudget(event)" class="p-6 space-y-4 overflow-y-auto flex-1">
+            <input type="hidden" id="txtWorkGroupBudgetId" value="0" />
+            <input type="hidden" id="txtCostCentreId" value="0" />
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Project Kickoff -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Project
+                    </label>
+                    <select id="ddlProject" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white">
+                        <option value="0">-- Select Project (Optional) --</option>
+                    </select>
+                </div>
+
+                <!-- Main Project Budget Allocation -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Project Budget Allocation
+                    </label>
+                    <select id="ddlBudgetAllocation" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white">
+                        <option value="0">-- Select Budget Allocation (Optional) --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Work Group -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Work Group
+                    </label>
+                    <select id="ddlWorkGroup" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white">
+                        <option value="0">-- Select Work Group (Optional) --</option>
+                    </select>
+                </div>
+
+                <!-- Work Type -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Work Type
+                    </label>
+                    <select id="ddlWorkType" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white">
+                        <option value="0">-- Select Work Type (Optional) --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Work Group Budget Amount -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Budget Amount (₹) <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-semibold text-xs">₹</span>
+                    <input type="number" step="0.01" min="0" id="txtWorkGroupBudgetAmount" required placeholder="0.00" class="w-full pl-8 pr-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white font-medium" />
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Budget Description
+                </label>
+                <textarea id="txtWorkGroupBudgetDescription" rows="3" placeholder="Notes or remarks regarding this work group budget allocation..." class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white resize-none"></textarea>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-2.5">
+                <button type="button" onclick="closeWgBudgetModal()" class="btn-clear !text-xs !py-2 !px-4">Cancel</button>
+                <button type="submit" id="btnSaveWgBudget" class="btn-save !text-xs !py-2 !px-5 text-white flex items-center gap-1.5 shadow-md">
+                    <i class="fas fa-save"></i>
+                    <span id="btnSaveText">Save Allocation</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var gridInstance = null;
+        var lookups = {
+            projects: [],
+            workGroups: [],
+            workTypes: [],
+            budgetAllocations: []
+        };
+
+        $(document).ready(function () {
+            loadLookups();
+            initGrid();
+            loadGridData();
+        });
+
+        // ── Load All Dropdown Lookups ──
+        function loadLookups() {
+            $.ajax({
+                url: '/WorkGroupBudgetAllocation/GetLookups',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (res && res.success) {
+                        lookups.projects = res.projects || [];
+                        lookups.workGroups = res.workGroups || [];
+                        lookups.workTypes = res.workTypes || [];
+                        lookups.budgetAllocations = res.budgetAllocations || [];
+
+                        // Populate Projects
+                        var $p = $('#ddlProject').empty().append('<option value="">-- Select Project --</option>');
+                        lookups.projects.forEach(function (x) {
+                            $p.append($('<option></option>').attr('value', x.id).text(x.name));
+                        });
+
+                        // Populate Work Groups
+                        var $wg = $('#ddlWorkGroup').empty().append('<option value="">-- Select Work Group --</option>');
+                        lookups.workGroups.forEach(function (x) {
+                            $wg.append($('<option></option>').attr('value', x.id).text(x.name));
+                        });
+
+                        // Populate Work Types
+                        var $wt = $('#ddlWorkType').empty().append('<option value="">-- Select Work Type --</option>');
+                        lookups.workTypes.forEach(function (x) {
+                            $wt.append($('<option></option>').attr('value', x.id).text(x.name));
+                        });
+
+                        // Populate Budget Allocations
+                        var $ba = $('#ddlBudgetAllocation').empty().append('<option value="">-- Select Budget Allocation --</option>');
+                        lookups.budgetAllocations.forEach(function (x) {
+                            $ba.append($('<option></option>').attr('value', x.id).text(x.name));
+                        });
+
+                        if (gridInstance) gridInstance.repaint();
+                    }
+                }
+            });
+        }
+
+        // ── Initialize DevExtreme DataGrid ──
+        function initGrid() {
+            $("#dxGridWorkGroupBudget").dxDataGrid({
+                dataSource: [],
+                keyExpr: "workGroupBudgetId",
+                showBorders: true,
+                showRowLines: true,
+                rowAlternationEnabled: true,
+                hoverStateEnabled: true,
+                columnAutoWidth: true,
+                wordWrapEnabled: false,
+                allowColumnResizing: true,
+                columnResizingMode: "widget",
+                allowColumnReordering: true,
+                searchPanel: {
+                    visible: true,
+                    width: 260,
+                    placeholder: "Search WG budgets..."
+                },
+                headerFilter: { visible: true },
+                export: { enabled: true, fileName: "WorkGroupBudgetAllocations" },
+                paging: { pageSize: 15 },
+                pager: {
+                    showPageSizeSelector: true,
+                    allowedPageSizes: [10, 15, 25, 50],
+                    showInfo: true
+                },
+                columns: [
+                    {
+                        dataField: "workGroupBudgetId",
+                        caption: "Alloc ID",
+                        width: 120,
+                        alignment: "center",
+                        sortOrder: "desc"
+                    },
+                    {
+                        dataField: "projectKickoffId",
+                        caption: "Project",
+                        width: 220,
+                        calculateDisplayValue: function (row) {
+                            if (!row.projectKickoffId) return "—";
+                            var p = lookups.projects.find(function (x) { return x.id === row.projectKickoffId; });
+                            return p ? p.name : ("Project #" + row.projectKickoffId);
+                        }
+                    },
+                    {
+                        dataField: "workGroupId",
+                        caption: "Work Group",
+                        width: 200,
+                        calculateDisplayValue: function (row) {
+                            if (!row.workGroupId) return "—";
+                            var g = lookups.workGroups.find(function (x) { return x.id === row.workGroupId; });
+                            return g ? g.name : ("Group #" + row.workGroupId);
+                        }
+                    },
+                    {
+                        dataField: "workTypeId",
+                        caption: "Work Type",
+                        width: 160,
+                        calculateDisplayValue: function (row) {
+                            if (!row.workTypeId) return "—";
+                            var t = lookups.workTypes.find(function (x) { return x.id === row.workTypeId; });
+                            return t ? t.name : ("Type #" + row.workTypeId);
+                        }
+                    },
+                    {
+                        dataField: "workGroupBudgetAmount",
+                        caption: "Budget Amount",
+                        width: 180,
+                        alignment: "right",
+                        cellTemplate: function (container, options) {
+                            var amt = Number(options.value || 0);
+                            $('<span class="font-bold text-emerald-600 dark:text-emerald-400"></span>')
+                                .text('₹ ' + amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
+                                .appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "workGroupBudgetDescription",
+                        caption: "Description",
+                        minWidth: 240,
+                        cellTemplate: function (container, options) {
+                            container.text(options.value || "—");
+                        }
+                    },
+                    {
+                        dataField: "createdDate",
+                        caption: "Created Date",
+                        width: 140,
+                        dataType: "date",
+                        format: "dd MMM yyyy",
+                        alignment: "center"
+                    },
+                    {
+                        caption: "Action",
+                        alignment: "center",
+                        width: 110,
+                        allowFiltering: false,
+                        allowSorting: false,
+                        cellTemplate: function (container, options) {
+                            var data = options.data;
+                            var $wrapper = $('<div class="flex items-center justify-center gap-1.5"></div>');
+
+                            var $btnEdit = $('<button class="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-slate-700 dark:text-blue-400 transition-colors" title="Edit WG Budget"><i class="fas fa-edit text-xs"></i></button>');
+                            $btnEdit.on('click', function () { openEditModal(data); });
+
+                            var $btnDel = $('<button class="w-7 h-7 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-600 dark:bg-slate-700 dark:text-red-400 transition-colors" title="Delete WG Budget"><i class="fas fa-trash-alt text-xs"></i></button>');
+                            $btnDel.on('click', function () { deleteWgBudget(data.workGroupBudgetId); });
+
+                            $wrapper.append($btnEdit).append($btnDel);
+                            container.append($wrapper);
+                        }
+                    }
+                ]
+            });
+
+            gridInstance = $("#dxGridWorkGroupBudget").dxDataGrid("instance");
+        }
+
+        // ── Load Grid Data ──
+        function loadGridData() {
+            if (gridInstance) gridInstance.beginCustomLoading("Loading work group budgets...");
+
+            $.ajax({
+                url: '/WorkGroupBudgetAllocation/GetAll',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (gridInstance) gridInstance.endCustomLoading();
+
+                    if (res && res.success) {
+                        var list = res.data || [];
+                        gridInstance.option("dataSource", list);
+
+                        // Update stats
+                        $('#statTotalCount').text(list.length);
+                        $('#statActiveCount').text(list.length);
+                        $('#badgeTotalRecords').text(list.length + " Records");
+
+                        var totalAmt = list.reduce(function (acc, x) { return acc + (Number(x.workGroupBudgetAmount) || 0); }, 0);
+                        $('#statTotalBudget').text('₹ ' + totalAmt.toLocaleString('en-IN', { maximumFractionDigits: 0 }));
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Error', text: res ? res.message : 'Failed to load records' });
+                    }
+                },
+                error: function (xhr, status, err) {
+                    if (gridInstance) gridInstance.endCustomLoading();
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Server error: ' + err });
+                }
+            });
+        }
+
+        // ── Modal Handlers ──
+        function openCreateModal() {
+            $('#txtWorkGroupBudgetId').val(0);
+            $('#ddlProject').val('0');
+            $('#txtCostCentreId').val('0');
+            $('#ddlBudgetAllocation').val('0');
+            $('#ddlWorkGroup').val('0');
+            $('#ddlWorkType').val('0');
+            $('#txtWorkGroupBudgetAmount').val('');
+            $('#txtWorkGroupBudgetDescription').val('');
+
+            $('#modalTitle').text('Add Work Group Budget Allocation');
+            $('#btnSaveText').text('Save Allocation');
+
+            showModal();
+        }
+
+        function openEditModal(item) {
+            $('#txtWorkGroupBudgetId').val(item.workGroupBudgetId);
+            $('#ddlProject').val(item.projectKickoffId || '0');
+            $('#txtCostCentreId').val('0');
+            $('#ddlBudgetAllocation').val(item.budgetAllocationId || '0');
+            $('#ddlWorkGroup').val(item.workGroupId || '0');
+            $('#ddlWorkType').val(item.workTypeId || '0');
+            $('#txtWorkGroupBudgetAmount').val(item.workGroupBudgetAmount || '');
+            $('#txtWorkGroupBudgetDescription').val(item.workGroupBudgetDescription || '');
+
+            $('#modalTitle').text('Edit Work Group Budget #' + item.workGroupBudgetId);
+            $('#btnSaveText').text('Update Allocation');
+
+            showModal();
+        }
+
+        function showModal() {
+            $('#wgBudgetModalOverlay').css('display', 'flex').hide().fadeIn(150);
+        }
+
+        function closeWgBudgetModal() {
+            $('#wgBudgetModalOverlay').fadeOut(150);
+        }
+
+        $(document).on('click', '#wgBudgetModalOverlay', function (e) {
+            if (e.target === this) {
+                closeWgBudgetModal();
+            }
+        });
+
+        // ── Save / Update ──
+        function saveWgBudget(e) {
+            e.preventDefault();
+
+            var budgetId = parseInt($('#txtWorkGroupBudgetId').val()) || 0;
+            var payload = {
+                WorkGroupBudgetId: budgetId,
+                ProjectKickoffId: parseInt($('#ddlProject').val()) || 0,
+                CostCentreId: parseInt($('#txtCostCentreId').val()) || 0,
+                BudgetAllocationId: parseInt($('#ddlBudgetAllocation').val()) || 0,
+                WorkGroupId: parseInt($('#ddlWorkGroup').val()) || 0,
+                WorkTypeId: parseInt($('#ddlWorkType').val()) || 0,
+                WorkGroupBudgetAmount: parseFloat($('#txtWorkGroupBudgetAmount').val()) || 0,
+                WorkGroupBudgetDescription: $('#txtWorkGroupBudgetDescription').val().trim()
+            };
+
+            $('#btnSaveWgBudget').prop('disabled', true).addClass('opacity-60');
+
+            $.ajax({
+                url: '/WorkGroupBudgetAllocation/Save',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function (res) {
+                    $('#btnSaveWgBudget').prop('disabled', false).removeClass('opacity-60');
+
+                    if (res && res.success) {
+                        closeWgBudgetModal();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: res.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        loadGridData();
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Save Failed', text: res ? res.message : 'Unknown error' });
+                    }
+                },
+                error: function (xhr, status, err) {
+                    $('#btnSaveWgBudget').prop('disabled', false).removeClass('opacity-60');
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Error saving: ' + err });
+                }
+            });
+        }
+
+        // ── Delete Work Group Budget ──
+        function deleteWgBudget(id) {
+            Swal.fire({
+                title: 'Delete WG Budget?',
+                text: 'Are you sure you want to delete Work Group Budget #' + id + '?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary)',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, Delete'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/WorkGroupBudgetAllocation/Delete',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ WorkGroupBudgetId: id }),
+                        success: function (res) {
+                            if (res && res.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted',
+                                    text: res.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                                loadGridData();
+                            } else {
+                                Swal.fire({ icon: 'error', title: 'Delete Failed', text: res ? res.message : 'Error' });
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

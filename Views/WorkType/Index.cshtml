@@ -1,0 +1,366 @@
+@{
+    ViewBag.Title = "Work Type Master — VGN ERP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="p-4 sm:p-6 space-y-6">
+    <!-- ── HEADER BAR ── -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[var(--surface)] p-5 rounded-2xl shadow-sm border border-[var(--border)]">
+        <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-[rgba(var(--primary-rgb),0.12)] border border-[rgba(var(--primary-rgb),0.25)] flex items-center justify-center text-primary text-xl">
+                <i class="fas fa-hammer"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-xl font-bold text-[var(--text)] tracking-tight">Work Type Master</h1>
+                    <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 border border-blue-500/20" id="badgeTotalRecords">
+                        0 Types
+                    </span>
+                </div>
+                <p class="text-xs text-[var(--text-muted)] mt-0.5">Manage work classifications, civil engineering categories, and work type definitions</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2.5 w-full md:w-auto justify-end">
+            <button type="button" onclick="loadGridData()" class="btn-clear !text-xs !py-2 !px-3.5" title="Refresh Grid">
+                <i class="fas fa-sync-alt mr-1"></i> Refresh
+            </button>
+            <button type="button" onclick="openCreateModal()" class="btn-save !text-xs !py-2 !px-4 text-white flex items-center gap-2 shadow-md">
+                <i class="fas fa-plus"></i>
+                <span>Add Work Type</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ── SUMMARY STATS STRIP ── -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Total Work Types</span>
+                <span class="text-2xl font-black text-[var(--text)] mt-1 block" id="statTotalCount">0</span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-[rgba(var(--primary-rgb),0.1)] text-primary flex items-center justify-center text-lg">
+                <i class="fas fa-list-check"></i>
+            </div>
+        </div>
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Active Work Types</span>
+                <span class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block" id="statActiveCount">0</span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-lg">
+                <i class="fas fa-check-double"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── DATA GRID CARD ── -->
+    <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-md p-4 sm:p-5">
+        <div id="dxGridWorkType"></div>
+    </div>
+</div>
+
+<style>
+    .swal2-container {
+        z-index: 1000000 !important;
+    }
+</style>
+
+<!-- ── MODAL DIALOG (CREATE / EDIT) ── -->
+<div id="workTypeModalOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[1050] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto" style="display: none;">
+    <!-- Modal Card (Guaranteed Centered, Never Cut Off) -->
+    <div id="workTypeModal" class="relative w-full max-w-lg bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh] my-auto overflow-hidden z-[1055]">
+        <!-- Modal Header (Fixed at top) -->
+        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800 flex-shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-[rgba(var(--primary-rgb),0.12)] text-primary flex items-center justify-center text-sm font-bold">
+                    <i class="fas fa-hammer"></i>
+                </div>
+                <h3 class="text-base sm:text-lg font-bold text-slate-800 dark:text-white" id="modalTitle">Add Work Type</h3>
+            </div>
+            <button onclick="closeWorkTypeModal()" type="button" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-white transition-colors cursor-pointer">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body (Scrollable) -->
+        <form id="frmWorkType" onsubmit="saveWorkType(event)" class="p-6 space-y-4 overflow-y-auto flex-1">
+            <input type="hidden" id="txtWorkTypeId" value="0" />
+
+            <!-- Work Type Name -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Work Type Name <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="txtWorkTypeName" required placeholder="e.g. Civil Works, Electrical, Plumbing, Painting" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white" />
+            </div>
+
+            <!-- Work Type Description -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Description
+                </label>
+                <textarea id="txtWorkTypeDescription" rows="4" placeholder="Brief description of this work category..." class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white resize-none"></textarea>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-2.5">
+                <button type="button" onclick="closeWorkTypeModal()" class="btn-clear !text-xs !py-2 !px-4">Cancel</button>
+                <button type="submit" id="btnSaveWorkType" class="btn-save !text-xs !py-2 !px-5 text-white flex items-center gap-1.5 shadow-md">
+                    <i class="fas fa-save"></i>
+                    <span id="btnSaveText">Save Work Type</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var gridInstance = null;
+
+        $(document).ready(function () {
+            initGrid();
+            loadGridData();
+        });
+
+        // ── Initialize DevExtreme DataGrid ──
+        function initGrid() {
+            $("#dxGridWorkType").dxDataGrid({
+                dataSource: [],
+                keyExpr: "workTypeId",
+                showBorders: true,
+                showRowLines: true,
+                rowAlternationEnabled: true,
+                hoverStateEnabled: true,
+                columnAutoWidth: true,
+                wordWrapEnabled: false,
+                allowColumnResizing: true,
+                columnResizingMode: "widget",
+                allowColumnReordering: true,
+                searchPanel: {
+                    visible: true,
+                    width: 260,
+                    placeholder: "Search work types..."
+                },
+                headerFilter: { visible: true },
+                export: { enabled: true, fileName: "WorkTypes" },
+                paging: { pageSize: 15 },
+                pager: {
+                    showPageSizeSelector: true,
+                    allowedPageSizes: [10, 15, 25, 50],
+                    showInfo: true
+                },
+                columns: [
+                    {
+                        dataField: "workTypeId",
+                        caption: "Type ID",
+                        width: 120,
+                        alignment: "center",
+                        sortOrder: "asc"
+                    },
+                    {
+                        dataField: "workTypeName",
+                        caption: "Work Type Name",
+                        width: 260,
+                        cellTemplate: function (container, options) {
+                            $('<span class="font-bold text-[var(--text)]"></span>')
+                                .text(options.value || "")
+                                .appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "workTypeDescription",
+                        caption: "Description",
+                        minWidth: 260,
+                        cellTemplate: function (container, options) {
+                            container.text(options.value || "—");
+                        }
+                    },
+                    {
+                        dataField: "createdBy",
+                        caption: "Created By",
+                        width: 140,
+                        alignment: "center"
+                    },
+                    {
+                        dataField: "createdDate",
+                        caption: "Created Date",
+                        width: 140,
+                        dataType: "date",
+                        format: "dd MMM yyyy",
+                        alignment: "center"
+                    },
+                    {
+                        caption: "Action",
+                        alignment: "center",
+                        width: 110,
+                        allowFiltering: false,
+                        allowSorting: false,
+                        cellTemplate: function (container, options) {
+                            var data = options.data;
+                            var $wrapper = $('<div class="flex items-center justify-center gap-1.5"></div>');
+
+                            var $btnEdit = $('<button class="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-slate-700 dark:text-blue-400 transition-colors" title="Edit Work Type"><i class="fas fa-edit text-xs"></i></button>');
+                            $btnEdit.on('click', function () { openEditModal(data); });
+
+                            var $btnDel = $('<button class="w-7 h-7 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-600 dark:bg-slate-700 dark:text-red-400 transition-colors" title="Delete Work Type"><i class="fas fa-trash-alt text-xs"></i></button>');
+                            $btnDel.on('click', function () { deleteWorkType(data.workTypeId, data.workTypeName); });
+
+                            $wrapper.append($btnEdit).append($btnDel);
+                            container.append($wrapper);
+                        }
+                    }
+                ]
+            });
+
+            gridInstance = $("#dxGridWorkType").dxDataGrid("instance");
+        }
+
+        // ── Load Grid Data ──
+        function loadGridData() {
+            if (gridInstance) gridInstance.beginCustomLoading("Loading work types...");
+
+            $.ajax({
+                url: '/WorkType/GetAll',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (gridInstance) gridInstance.endCustomLoading();
+
+                    if (res && res.success) {
+                        var list = res.data || [];
+                        gridInstance.option("dataSource", list);
+
+                        // Update stats
+                        $('#statTotalCount').text(list.length);
+                        $('#statActiveCount').text(list.length);
+                        $('#badgeTotalRecords').text(list.length + " Types");
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Error', text: res ? res.message : 'Failed to load records' });
+                    }
+                },
+                error: function (xhr, status, err) {
+                    if (gridInstance) gridInstance.endCustomLoading();
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Server error: ' + err });
+                }
+            });
+        }
+
+        // ── Modal Handlers ──
+        function openCreateModal() {
+            $('#txtWorkTypeId').val(0);
+            $('#txtWorkTypeName').val('');
+            $('#txtWorkTypeDescription').val('');
+
+            $('#modalTitle').text('Add Work Type');
+            $('#btnSaveText').text('Save Work Type');
+
+            showModal();
+        }
+
+        function openEditModal(item) {
+            $('#txtWorkTypeId').val(item.workTypeId);
+            $('#txtWorkTypeName').val(item.workTypeName || '');
+            $('#txtWorkTypeDescription').val(item.workTypeDescription || '');
+
+            $('#modalTitle').text('Edit Work Type #' + item.workTypeId);
+            $('#btnSaveText').text('Update Work Type');
+
+            showModal();
+        }
+
+        function showModal() {
+            $('#workTypeModalOverlay').css('display', 'flex').hide().fadeIn(150);
+        }
+
+        function closeWorkTypeModal() {
+            $('#workTypeModalOverlay').fadeOut(150);
+        }
+
+        // Close on clicking outside modal card
+        $(document).on('click', '#workTypeModalOverlay', function (e) {
+            if (e.target === this) {
+                closeWorkTypeModal();
+            }
+        });
+
+        // ── Save / Update ──
+        function saveWorkType(e) {
+            e.preventDefault();
+
+            var typeId = parseInt($('#txtWorkTypeId').val()) || 0;
+            var payload = {
+                WorkTypeId: typeId,
+                WorkTypeName: $('#txtWorkTypeName').val().trim(),
+                WorkTypeDescription: $('#txtWorkTypeDescription').val().trim()
+            };
+
+            $('#btnSaveWorkType').prop('disabled', true).addClass('opacity-60');
+
+            $.ajax({
+                url: '/WorkType/Save',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function (res) {
+                    $('#btnSaveWorkType').prop('disabled', false).removeClass('opacity-60');
+
+                    if (res && res.success) {
+                        closeWorkTypeModal();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: res.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        loadGridData();
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Save Failed', text: res ? res.message : 'Unknown error' });
+                    }
+                },
+                error: function (xhr, status, err) {
+                    $('#btnSaveWorkType').prop('disabled', false).removeClass('opacity-60');
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Error saving: ' + err });
+                }
+            });
+        }
+
+        // ── Delete Work Type ──
+        function deleteWorkType(id, name) {
+            Swal.fire({
+                title: 'Delete Work Type?',
+                text: 'Are you sure you want to delete "' + name + '"?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary)',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, Delete'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/WorkType/Delete',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ WorkTypeId: id }),
+                        success: function (res) {
+                            if (res && res.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted',
+                                    text: res.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                                loadGridData();
+                            } else {
+                                Swal.fire({ icon: 'error', title: 'Delete Failed', text: res ? res.message : 'Error' });
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

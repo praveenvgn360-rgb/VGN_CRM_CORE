@@ -1,0 +1,545 @@
+@{
+    ViewBag.Title = "Work Group Master — VGN ERP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="p-4 sm:p-6 space-y-6">
+    <!-- ── HEADER BAR ── -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[var(--surface)] p-5 rounded-2xl shadow-sm border border-[var(--border)]">
+        <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-[rgba(var(--primary-rgb),0.12)] border border-[rgba(var(--primary-rgb),0.25)] flex items-center justify-center text-primary text-xl">
+                <i class="fas fa-sitemap"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-xl font-bold text-[var(--text)] tracking-tight">Work Group Master</h1>
+                    <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-600 border border-purple-500/20" id="badgeTotalRecords">
+                        0 Groups
+                    </span>
+                </div>
+                <p class="text-xs text-[var(--text-muted)] mt-0.5">Manage work group hierarchies, serial sequencing, and associated work types</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2.5 w-full md:w-auto justify-end">
+            <button type="button" onclick="loadGridData()" class="btn-clear !text-xs !py-2 !px-3.5" title="Refresh Grid">
+                <i class="fas fa-sync-alt mr-1"></i> Refresh
+            </button>
+            <button type="button" onclick="openCreateModal()" class="btn-save !text-xs !py-2 !px-4 text-white flex items-center gap-2 shadow-md">
+                <i class="fas fa-plus"></i>
+                <span>Add Work Group</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ── SUMMARY STATS STRIP ── -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Total Work Groups</span>
+                <span class="text-2xl font-black text-[var(--text)] mt-1 block" id="statTotalCount">0</span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-[rgba(var(--primary-rgb),0.1)] text-primary flex items-center justify-center text-lg">
+                <i class="fas fa-layer-group"></i>
+            </div>
+        </div>
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Active Status</span>
+                <span class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block" id="statActiveCount">0</span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-lg">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── DATA GRID CARD ── -->
+    <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-md p-4 sm:p-5">
+        <div id="dxGridWorkGroup"></div>
+    </div>
+</div>
+
+<style>
+    .swal2-container {
+        z-index: 1000000 !important;
+    }
+</style>
+
+<!-- ── MODAL DIALOG (CREATE / EDIT) ── -->
+<div id="workGroupModalOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[1050] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto" style="display: none;">
+    <!-- Modal Card (Guaranteed Centered, Never Cut Off) -->
+    <div id="workGroupModal" class="relative w-full max-w-xl bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh] my-auto overflow-hidden z-[1055]">
+        <!-- Modal Header (Fixed at top) -->
+        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800 flex-shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-[rgba(var(--primary-rgb),0.12)] text-primary flex items-center justify-center text-sm font-bold">
+                    <i class="fas fa-sitemap"></i>
+                </div>
+                <h3 class="text-base sm:text-lg font-bold text-slate-800 dark:text-white" id="modalTitle">Add Work Group</h3>
+            </div>
+            <button onclick="closeWorkGroupModal()" type="button" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-white transition-colors cursor-pointer">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body (Scrollable) -->
+        <form id="frmWorkGroup" onsubmit="saveWorkGroup(event)" class="p-6 space-y-4 overflow-y-auto flex-1">
+            <input type="hidden" id="txtWorkGroupId" value="0" />
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Serial No -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Serial No / Code
+                    </label>
+                    <input type="text" id="txtSerialNo" placeholder="e.g. 1.0, WG-01" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white" />
+                </div>
+
+                <!-- Work Group Name -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Work Group Name <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="txtWorkGroupName" required placeholder="e.g. Foundation, Substructure" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white font-medium" />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Work Type Dropdown -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Work Type
+                    </label>
+                    <select id="ddlWorkType" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white">
+                        <option value="">-- Select Work Type --</option>
+                    </select>
+                </div>
+
+                <!-- Parent Group Dropdown / Input -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Parent Group
+                    </label>
+                    <select id="ddlParentGroup" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white">
+                        <option value="0">-- Top Level (No Parent) --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Work Group Description -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Description
+                </label>
+                <textarea id="txtWorkGroupDescription" rows="3" placeholder="Additional details or scope of this work group..." class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white resize-none"></textarea>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-2.5">
+                <button type="button" onclick="closeWorkGroupModal()" class="btn-clear !text-xs !py-2 !px-4">Cancel</button>
+                <button type="submit" id="btnSaveWorkGroup" class="btn-save !text-xs !py-2 !px-5 text-white flex items-center gap-1.5 shadow-md">
+                    <i class="fas fa-save"></i>
+                    <span id="btnSaveText">Save Work Group</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var gridInstance = null;
+        var workTypesLookup = [];
+        var allGroupsList = [];
+
+        $(document).ready(function () {
+            loadWorkTypesLookup();
+            initGrid();
+            loadGridData();
+        });
+
+        // ── Load Work Types for Dropdown ──
+        function loadWorkTypesLookup() {
+            $.ajax({
+                url: '/WorkGroupMaster/GetWorkTypeLookups',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (res && res.data) {
+                        workTypesLookup = res.data;
+                        var $ddl = $('#ddlWorkType');
+                        $ddl.empty().append('<option value="">-- Select Work Type --</option>');
+                        workTypesLookup.forEach(function (t) {
+                            $ddl.append($('<option></option>').attr('value', t.workTypeId).text(t.workTypeName));
+                        });
+                    }
+                }
+            });
+        }
+
+        // ── Refresh Parent Groups Dropdown (Indented Hierarchy) ──
+        function refreshParentDropdown(excludeId) {
+            var $ddl = $('#ddlParentGroup');
+            $ddl.empty().append('<option value="0">-- Top Level (Root / No Parent) --</option>');
+
+            var visited = {};
+            function appendChildren(parentId, level) {
+                var prefix = "";
+                for (var i = 0; i < level; i++) {
+                    prefix += (i === level - 1) ? "    └─ " : "        ";
+                }
+
+                allGroupsList.forEach(function (g) {
+                    var gParent = (!g.parentId || g.parentId === "0" || g.parentId === 0) ? 0 : Number(g.parentId);
+                    var gId = Number(g.workGroupId);
+                    if (gParent === parentId && !visited[gId]) {
+                        visited[gId] = true;
+                        if (!excludeId || gId !== Number(excludeId)) {
+                            var label = prefix + g.workGroupName + (g.serialNo ? ' [' + g.serialNo + ']' : '');
+                            $ddl.append($('<option></option>').attr('value', g.workGroupId).text(label));
+                            appendChildren(gId, level + 1);
+                        }
+                    }
+                });
+            }
+
+            appendChildren(0, 0);
+
+            // Any remaining unlinked items
+            allGroupsList.forEach(function (g) {
+                var gId = Number(g.workGroupId);
+                if (!visited[gId] && (!excludeId || gId !== Number(excludeId))) {
+                    $ddl.append($('<option></option>').attr('value', g.workGroupId).text(g.workGroupName + (g.serialNo ? ' [' + g.serialNo + ']' : '')));
+                }
+            });
+        }
+
+        // ── Initialize DevExtreme DataGrid ──
+        function initGrid() {
+            $("#dxGridWorkGroup").dxDataGrid({
+                dataSource: [],
+                keyExpr: "workGroupId",
+                showBorders: true,
+                showRowLines: true,
+                rowAlternationEnabled: true,
+                hoverStateEnabled: true,
+                columnAutoWidth: true,
+                wordWrapEnabled: false,
+                allowColumnResizing: true,
+                columnResizingMode: "widget",
+                allowColumnReordering: true,
+                searchPanel: {
+                    visible: true,
+                    width: 260,
+                    placeholder: "Search work groups..."
+                },
+                headerFilter: { visible: true },
+                export: { enabled: true, fileName: "WorkGroupMaster" },
+                paging: { pageSize: 15 },
+                pager: {
+                    showPageSizeSelector: true,
+                    allowedPageSizes: [10, 15, 25, 50],
+                    showInfo: true
+                },
+                columns: [
+                    {
+                        dataField: "workGroupId",
+                        caption: "Group ID",
+                        width: 120,
+                        alignment: "center",
+                        sortOrder: "asc"
+                    },
+                    {
+                        dataField: "serialNo",
+                        caption: "Serial / Code",
+                        width: 130,
+                        alignment: "center",
+                        cellTemplate: function (container, options) {
+                            var val = options.value;
+                            if (val) {
+                                $('<span class="inline-block px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600"></span>')
+                                    .text(val)
+                                    .appendTo(container);
+                            } else {
+                                container.text("—");
+                            }
+                        }
+                    },
+                    {
+                        dataField: "workGroupName",
+                        caption: "Work Group Name",
+                        width: 240,
+                        cellTemplate: function (container, options) {
+                            var data = options.data;
+                            var isRoot = !data.parentId || data.parentId === 0 || data.parentId === "0";
+                            var iconClass = isRoot ? "fas fa-folder text-amber-500" : "fas fa-layer-group text-blue-500";
+                            var $el = $('<div class="inline-flex items-center gap-2"></div>');
+                            $el.append($('<i class="' + iconClass + ' text-xs"></i>'));
+                            $el.append($('<span class="font-semibold text-[var(--text)]"></span>').text(options.value || ""));
+                            container.append($el);
+                        }
+                    },
+                    {
+                        dataField: "parentId",
+                        caption: "Parent Group",
+                        width: 200,
+                        calculateDisplayValue: function (row) {
+                            var pId = (!row.parentId || row.parentId === 0 || row.parentId === "0") ? 0 : Number(row.parentId);
+                            if (pId === 0) return "— (Root Group)";
+                            var parent = allGroupsList.find(function (x) { return Number(x.workGroupId) === pId; });
+                            return parent ? parent.workGroupName : ("Group #" + pId);
+                        }
+                    },
+                    {
+                        dataField: "workTypeId",
+                        caption: "Work Type",
+                        width: 170,
+                        calculateDisplayValue: function (row) {
+                            if (!row.workTypeId) return "—";
+                            var t = workTypesLookup.find(function (x) { return String(x.workTypeId) === String(row.workTypeId); });
+                            return t ? t.workTypeName : ("Type #" + row.workTypeId);
+                        }
+                    },
+                    {
+                        dataField: "workGroupDescription",
+                        caption: "Description",
+                        minWidth: 240,
+                        cellTemplate: function (container, options) {
+                            container.text(options.value || "—");
+                        }
+                    },
+                    {
+                        dataField: "createdDate",
+                        caption: "Created Date",
+                        width: 140,
+                        dataType: "date",
+                        format: "dd MMM yyyy",
+                        alignment: "center"
+                    },
+                    {
+                        caption: "Action",
+                        alignment: "center",
+                        width: 130,
+                        allowFiltering: false,
+                        allowSorting: false,
+                        cellTemplate: function (container, options) {
+                            var data = options.data;
+                            var $wrapper = $('<div class="flex items-center justify-center gap-1.5"></div>');
+
+                            // Add Sub-Group button
+                            var $btnAddSub = $('<button class="w-7 h-7 flex items-center justify-center rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-slate-700 dark:text-emerald-400 transition-colors" title="Add Sub-Group under this"><i class="fas fa-plus text-xs"></i></button>');
+                            $btnAddSub.on('click', function () { openAddSubModal(data.workGroupId, data.workGroupName); });
+
+                            // Edit button
+                            var $btnEdit = $('<button class="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-slate-700 dark:text-blue-400 transition-colors" title="Edit Work Group"><i class="fas fa-edit text-xs"></i></button>');
+                            $btnEdit.on('click', function () { openEditModal(data); });
+
+                            // Delete button
+                            var $btnDel = $('<button class="w-7 h-7 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-600 dark:bg-slate-700 dark:text-red-400 transition-colors" title="Delete Work Group"><i class="fas fa-trash-alt text-xs"></i></button>');
+                            $btnDel.on('click', function () { deleteWorkGroup(data.workGroupId, data.workGroupName); });
+
+                            $wrapper.append($btnAddSub).append($btnEdit).append($btnDel);
+                            container.append($wrapper);
+                        }
+                    }
+                ]
+            });
+
+            gridInstance = $("#dxGridWorkGroup").dxDataGrid("instance");
+        }
+
+        // ── Load Grid Data ──
+        function loadGridData() {
+            if (gridInstance) gridInstance.beginCustomLoading("Loading work groups...");
+
+            $.ajax({
+                url: '/WorkGroupMaster/GetAll',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (gridInstance) gridInstance.endCustomLoading();
+
+                    if (res && res.success) {
+                        var list = res.data || [];
+                        list.forEach(function (x) {
+                            x.workGroupId = Number(x.workGroupId);
+                            x.parentId = (!x.parentId || x.parentId === "0" || x.parentId === 0) ? 0 : Number(x.parentId);
+                        });
+
+                        allGroupsList = list;
+                        gridInstance.option("dataSource", list);
+
+                        // Update stats
+                        $('#statTotalCount').text(list.length);
+                        $('#statActiveCount').text(list.length);
+                        $('#badgeTotalRecords').text(list.length + " Groups");
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Error', text: res ? res.message : 'Failed to load records' });
+                    }
+                },
+                error: function (xhr, status, err) {
+                    if (gridInstance) gridInstance.endCustomLoading();
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Server error: ' + err });
+                }
+            });
+        }
+
+        // ── Tree Expand / Collapse ──
+        function expandAll() {
+            if (gridInstance && gridInstance.expandAll) {
+                gridInstance.expandAll();
+            }
+        }
+
+        function collapseAll() {
+            if (gridInstance && gridInstance.collapseAll) {
+                gridInstance.collapseAll();
+            }
+        }
+
+        // ── Modal Handlers ──
+        function openCreateModal() {
+            refreshParentDropdown(null);
+
+            $('#txtWorkGroupId').val(0);
+            $('#txtSerialNo').val('');
+            $('#txtWorkGroupName').val('');
+            $('#ddlWorkType').val('');
+            $('#ddlParentGroup').val('0');
+            $('#txtWorkGroupDescription').val('');
+
+            $('#modalTitle').text('Add Work Group');
+            $('#btnSaveText').text('Save Work Group');
+
+            showModal();
+        }
+
+        function openAddSubModal(parentId, parentName) {
+            refreshParentDropdown(null);
+
+            $('#txtWorkGroupId').val(0);
+            $('#txtSerialNo').val('');
+            $('#txtWorkGroupName').val('');
+            $('#ddlWorkType').val('');
+            $('#ddlParentGroup').val(String(parentId));
+            $('#txtWorkGroupDescription').val('');
+
+            $('#modalTitle').html('Add Sub-Group under <span class="text-primary font-bold">"' + parentName + '"</span>');
+            $('#btnSaveText').text('Save Sub-Group');
+
+            showModal();
+        }
+
+        function openEditModal(item) {
+            refreshParentDropdown(item.workGroupId);
+
+            $('#txtWorkGroupId').val(item.workGroupId);
+            $('#txtSerialNo').val(item.serialNo || '');
+            $('#txtWorkGroupName').val(item.workGroupName || '');
+            $('#ddlWorkType').val(item.workTypeId || '');
+            $('#ddlParentGroup').val(String(item.parentId || '0'));
+            $('#txtWorkGroupDescription').val(item.workGroupDescription || '');
+
+            $('#modalTitle').text('Edit Work Group #' + item.workGroupId);
+            $('#btnSaveText').text('Update Work Group');
+
+            showModal();
+        }
+
+        function showModal() {
+            $('#workGroupModalOverlay').css('display', 'flex').hide().fadeIn(150);
+        }
+
+        function closeWorkGroupModal() {
+            $('#workGroupModalOverlay').fadeOut(150);
+        }
+
+        $(document).on('click', '#workGroupModalOverlay', function (e) {
+            if (e.target === this) {
+                closeWorkGroupModal();
+            }
+        });
+
+        // ── Save / Update ──
+        function saveWorkGroup(e) {
+            e.preventDefault();
+
+            var groupId = parseInt($('#txtWorkGroupId').val()) || 0;
+            var payload = {
+                WorkGroupId: groupId,
+                SerialNo: $('#txtSerialNo').val().trim(),
+                WorkGroupName: $('#txtWorkGroupName').val().trim(),
+                WorkTypeId: $('#ddlWorkType').val() || '0',
+                ParentId: $('#ddlParentGroup').val() || '0',
+                WorkGroupDescription: $('#txtWorkGroupDescription').val().trim()
+            };
+
+            $('#btnSaveWorkGroup').prop('disabled', true).addClass('opacity-60');
+
+            $.ajax({
+                url: '/WorkGroupMaster/Save',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function (res) {
+                    $('#btnSaveWorkGroup').prop('disabled', false).removeClass('opacity-60');
+
+                    if (res && res.success) {
+                        closeWorkGroupModal();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: res.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        loadGridData();
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Save Failed', text: res ? res.message : 'Unknown error' });
+                    }
+                },
+                error: function (xhr, status, err) {
+                    $('#btnSaveWorkGroup').prop('disabled', false).removeClass('opacity-60');
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Error saving: ' + err });
+                }
+            });
+        }
+
+        // ── Delete Work Group ──
+        function deleteWorkGroup(id, name) {
+            Swal.fire({
+                title: 'Delete Work Group?',
+                text: 'Are you sure you want to delete "' + name + '"?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary)',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, Delete'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/WorkGroupMaster/Delete',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ WorkGroupId: id }),
+                        success: function (res) {
+                            if (res && res.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted',
+                                    text: res.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                                loadGridData();
+                            } else {
+                                Swal.fire({ icon: 'error', title: 'Delete Failed', text: res ? res.message : 'Error' });
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

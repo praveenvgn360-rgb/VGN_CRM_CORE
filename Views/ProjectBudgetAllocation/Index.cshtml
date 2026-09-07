@@ -1,0 +1,429 @@
+@{
+    ViewBag.Title = "Project Budget Allocation — VGN ERP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="p-4 sm:p-6 space-y-6">
+    <!-- ── HEADER BAR ── -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[var(--surface)] p-5 rounded-2xl shadow-sm border border-[var(--border)]">
+        <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-[rgba(var(--primary-rgb),0.12)] border border-[rgba(var(--primary-rgb),0.25)] flex items-center justify-center text-primary text-xl">
+                <i class="fas fa-calculator"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-xl font-bold text-[var(--text)] tracking-tight">Project Budget Allocation</h1>
+                    <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" id="badgeTotalRecords">
+                        0 Records
+                    </span>
+                </div>
+                <p class="text-xs text-[var(--text-muted)] mt-0.5">Manage and allocate construction & project budgets per kickoff and cost centre</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2.5 w-full md:w-auto justify-end">
+            <button type="button" onclick="loadGridData()" class="btn-clear !text-xs !py-2 !px-3.5" title="Refresh Grid">
+                <i class="fas fa-sync-alt mr-1"></i> Refresh
+            </button>
+            <button type="button" onclick="openCreateModal()" class="btn-save !text-xs !py-2 !px-4 text-white flex items-center gap-2 shadow-md">
+                <i class="fas fa-plus"></i>
+                <span>Add Budget Allocation</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ── SUMMARY STATS STRIP ── -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Total Allocations</span>
+                <span class="text-2xl font-black text-[var(--text)] mt-1 block" id="statTotalCount">0</span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-[rgba(var(--primary-rgb),0.1)] text-primary flex items-center justify-center text-lg">
+                <i class="fas fa-coins"></i>
+            </div>
+        </div>
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Total Budget Allocated</span>
+                <span class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block" id="statTotalBudget">₹ 0</span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-lg">
+                <i class="fas fa-wallet"></i>
+            </div>
+        </div>
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Active Status</span>
+                <span class="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1 block" id="statActiveCount">0</span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center text-lg">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── DATA GRID CARD ── -->
+    <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-md p-4 sm:p-5">
+        <div id="dxGridBudgetAllocation"></div>
+    </div>
+</div>
+
+<style>
+    .swal2-container {
+        z-index: 1000000 !important;
+    }
+</style>
+
+<!-- ── MODAL DIALOG (CREATE / EDIT) ── -->
+<div id="budgetModalOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[1050] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto" style="display: none;">
+    <!-- Modal Card (Guaranteed Centered, Never Cut Off) -->
+    <div id="budgetModal" class="relative w-full max-w-xl bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh] my-auto overflow-hidden z-[1055]">
+        <!-- Modal Header (Fixed at top) -->
+        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800 flex-shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-[rgba(var(--primary-rgb),0.12)] text-primary flex items-center justify-center text-sm font-bold">
+                    <i class="fas fa-calculator"></i>
+                </div>
+                <h3 class="text-base sm:text-lg font-bold text-slate-800 dark:text-white" id="modalTitle">Add Budget Allocation</h3>
+            </div>
+            <button onclick="closeBudgetModal()" type="button" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-white transition-colors cursor-pointer">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body (Scrollable) -->
+        <form id="frmBudgetAllocation" onsubmit="saveBudgetAllocation(event)" class="p-6 space-y-4 overflow-y-auto flex-1">
+            <input type="hidden" id="txtBudgetAllocationId" value="0" />
+            <input type="hidden" id="txtCostCentreId" value="0" />
+
+            <!-- Project Kickoff Dropdown -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Project
+                </label>
+                <select id="ddlProjectKickoff" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white">
+                    <option value="0">-- Select Project (Optional) --</option>
+                </select>
+            </div>
+
+            <!-- Budget Amount -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Budget Amount (₹) <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-semibold text-xs">₹</span>
+                    <input type="number" step="0.01" min="0" id="txtBudgetAmount" required placeholder="0.00" class="w-full pl-8 pr-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white font-medium" />
+                </div>
+            </div>
+
+            <!-- Budget Description -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Budget Description <span class="text-red-500">*</span>
+                </label>
+                <textarea id="txtBudgetDescription" rows="3" required placeholder="Provide details regarding this project budget allocation..." class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white resize-none"></textarea>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-2.5">
+                <button type="button" onclick="closeBudgetModal()" class="btn-clear !text-xs !py-2 !px-4">Cancel</button>
+                <button type="submit" id="btnSaveBudget" class="btn-save !text-xs !py-2 !px-5 text-white flex items-center gap-1.5 shadow-md">
+                    <i class="fas fa-save"></i>
+                    <span id="btnSaveText">Save Allocation</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var gridInstance = null;
+        var projectsLookup = [];
+
+        $(document).ready(function () {
+            loadProjectsLookup();
+            initGrid();
+            loadGridData();
+        });
+
+        // ── Load Projects for Dropdown ──
+        function loadProjectsLookup() {
+            $.ajax({
+                url: '/ProjectBudgetAllocation/GetProjectLookups',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (res && res.data) {
+                        projectsLookup = res.data;
+                        var $ddl = $('#ddlProjectKickoff');
+                        $ddl.empty().append('<option value="">-- Select Project --</option>');
+                        projectsLookup.forEach(function (p) {
+                            $ddl.append($('<option></option>').attr('value', p.projectKickoffId).text(p.projectName || ('Project #' + p.projectKickoffId)));
+                        });
+                    }
+                }
+            });
+        }
+
+        // ── Initialize DevExtreme DataGrid ──
+        function initGrid() {
+            $("#dxGridBudgetAllocation").dxDataGrid({
+                dataSource: [],
+                keyExpr: "budgetAllocationId",
+                showBorders: true,
+                showRowLines: true,
+                rowAlternationEnabled: true,
+                hoverStateEnabled: true,
+                columnAutoWidth: true,
+                wordWrapEnabled: false,
+                allowColumnResizing: true,
+                columnResizingMode: "widget",
+                allowColumnReordering: true,
+                searchPanel: {
+                    visible: true,
+                    width: 260,
+                    placeholder: "Search allocations..."
+                },
+                headerFilter: { visible: true },
+                export: { enabled: true, fileName: "ProjectBudgetAllocations" },
+                paging: { pageSize: 15 },
+                pager: {
+                    showPageSizeSelector: true,
+                    allowedPageSizes: [10, 15, 25, 50],
+                    showInfo: true
+                },
+                columns: [
+                    {
+                        dataField: "budgetAllocationId",
+                        caption: "Alloc ID",
+                        width: 120,
+                        alignment: "center",
+                        sortOrder: "desc"
+                    },
+                    {
+                        dataField: "projectKickoffId",
+                        caption: "Project",
+                        width: 250,
+                        calculateDisplayValue: function (row) {
+                            if (!row.projectKickoffId) return "—";
+                            var p = projectsLookup.find(function(x) { return x.projectKickoffId === row.projectKickoffId; });
+                            return p ? p.projectName : ("Project #" + row.projectKickoffId);
+                        }
+                    },
+                    {
+                        dataField: "budgetAmount",
+                        caption: "Budget Amount",
+                        width: 180,
+                        alignment: "right",
+                        format: { type: "currency", precision: 2, currency: "INR" },
+                        cellTemplate: function (container, options) {
+                            var amt = Number(options.value || 0);
+                            $('<span class="font-bold text-emerald-600 dark:text-emerald-400"></span>')
+                                .text('₹ ' + amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
+                                .appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "budgetDescription",
+                        caption: "Description",
+                        minWidth: 250
+                    },
+                    {
+                        dataField: "createdBy",
+                        caption: "Created By",
+                        width: 140,
+                        alignment: "center"
+                    },
+                    {
+                        dataField: "createdDate",
+                        caption: "Created Date",
+                        width: 140,
+                        dataType: "date",
+                        format: "dd MMM yyyy",
+                        alignment: "center"
+                    },
+                    {
+                        caption: "Action",
+                        alignment: "center",
+                        width: 110,
+                        allowFiltering: false,
+                        allowSorting: false,
+                        cellTemplate: function (container, options) {
+                            var data = options.data;
+                            var $wrapper = $('<div class="flex items-center justify-center gap-1.5"></div>');
+
+                            var $btnEdit = $('<button class="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-slate-700 dark:text-blue-400 transition-colors" title="Edit Allocation"><i class="fas fa-edit text-xs"></i></button>');
+                            $btnEdit.on('click', function () { openEditModal(data); });
+
+                            var $btnDel = $('<button class="w-7 h-7 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-600 dark:bg-slate-700 dark:text-red-400 transition-colors" title="Delete Allocation"><i class="fas fa-trash-alt text-xs"></i></button>');
+                            $btnDel.on('click', function () { deleteAllocation(data.budgetAllocationId); });
+
+                            $wrapper.append($btnEdit).append($btnDel);
+                            container.append($wrapper);
+                        }
+                    }
+                ]
+            });
+
+            gridInstance = $("#dxGridBudgetAllocation").dxDataGrid("instance");
+        }
+
+        // ── Load Grid Data ──
+        function loadGridData() {
+            if (gridInstance) gridInstance.beginCustomLoading("Loading budget allocations...");
+
+            $.ajax({
+                url: '/ProjectBudgetAllocation/GetAll',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (gridInstance) gridInstance.endCustomLoading();
+
+                    if (res && res.success) {
+                        var list = res.data || [];
+                        gridInstance.option("dataSource", list);
+
+                        // Update Stats
+                        $('#statTotalCount').text(list.length);
+                        $('#statActiveCount').text(list.length);
+                        $('#badgeTotalRecords').text(list.length + " Records");
+
+                        var totalAmt = list.reduce(function (acc, x) { return acc + (Number(x.budgetAmount) || 0); }, 0);
+                        $('#statTotalBudget').text('₹ ' + totalAmt.toLocaleString('en-IN', { maximumFractionDigits: 0 }));
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Error', text: res ? res.message : 'Failed to load records' });
+                    }
+                },
+                error: function (xhr, status, err) {
+                    if (gridInstance) gridInstance.endCustomLoading();
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Server communication error: ' + err });
+                }
+            });
+        }
+
+        // ── Modal Handlers ──
+        function openCreateModal() {
+            $('#txtBudgetAllocationId').val(0);
+            $('#ddlProjectKickoff').val('0');
+            $('#txtCostCentreId').val('0');
+            $('#txtBudgetAmount').val('');
+            $('#txtBudgetDescription').val('');
+
+            $('#modalTitle').text('Add Budget Allocation');
+            $('#btnSaveText').text('Save Allocation');
+
+            showModal();
+        }
+
+        function openEditModal(item) {
+            $('#txtBudgetAllocationId').val(item.budgetAllocationId);
+            $('#ddlProjectKickoff').val(item.projectKickoffId || '0');
+            $('#txtCostCentreId').val('0');
+            $('#txtBudgetAmount').val(item.budgetAmount || '');
+            $('#txtBudgetDescription').val(item.budgetDescription || '');
+
+            $('#modalTitle').text('Edit Budget Allocation #' + item.budgetAllocationId);
+            $('#btnSaveText').text('Update Allocation');
+
+            showModal();
+        }
+
+        function showModal() {
+            $('#budgetModalOverlay').css('display', 'flex').hide().fadeIn(150);
+        }
+
+        function closeBudgetModal() {
+            $('#budgetModalOverlay').fadeOut(150);
+        }
+
+        // Close on clicking outside modal card
+        $(document).on('click', '#budgetModalOverlay', function (e) {
+            if (e.target === this) {
+                closeBudgetModal();
+            }
+        });
+
+        // ── Save / Update ──
+        function saveBudgetAllocation(e) {
+            e.preventDefault();
+
+            var allocId = parseInt($('#txtBudgetAllocationId').val()) || 0;
+            var payload = {
+                BudgetAllocationId: allocId,
+                ProjectKickoffId: parseInt($('#ddlProjectKickoff').val()) || 0,
+                CostCentreId: parseInt($('#txtCostCentreId').val()) || 0,
+                BudgetAmount: parseFloat($('#txtBudgetAmount').val()) || 0,
+                BudgetDescription: $('#txtBudgetDescription').val().trim()
+            };
+
+            $('#btnSaveBudget').prop('disabled', true).addClass('opacity-60');
+
+            $.ajax({
+                url: '/ProjectBudgetAllocation/Save',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function (res) {
+                    $('#btnSaveBudget').prop('disabled', false).removeClass('opacity-60');
+
+                    if (res && res.success) {
+                        closeBudgetModal();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: res.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        loadGridData();
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Save Failed', text: res ? res.message : 'Unknown error' });
+                    }
+                },
+                error: function (xhr, status, err) {
+                    $('#btnSaveBudget').prop('disabled', false).removeClass('opacity-60');
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Error saving: ' + err });
+                }
+            });
+        }
+
+        // ── Delete Allocation ──
+        function deleteAllocation(id) {
+            Swal.fire({
+                title: 'Delete Budget Allocation?',
+                text: 'Are you sure you want to delete allocation #' + id + '?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary)',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, Delete'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/ProjectBudgetAllocation/Delete',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ BudgetAllocationId: id }),
+                        success: function (res) {
+                            if (res && res.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted',
+                                    text: res.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                                loadGridData();
+                            } else {
+                                Swal.fire({ icon: 'error', title: 'Delete Failed', text: res ? res.message : 'Error' });
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}
