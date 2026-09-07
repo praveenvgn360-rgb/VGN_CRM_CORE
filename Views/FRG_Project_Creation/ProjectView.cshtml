@@ -450,6 +450,14 @@
                         }
                     },
                     {
+                        dataField: 'BusinessTypeName',
+                        caption: 'BUSINESS TYPE',
+                        width: 160,
+                        calculateCellValue: function (r) {
+                            return r.BusinessTypeName || r.businessTypeName || r.BusinessTypeId || r.businessTypeId || '—';
+                        }
+                    },
+                    {
                         dataField: 'ProjectTypeName',
                         caption: 'PROJECT TYPE',
                         width: 140,

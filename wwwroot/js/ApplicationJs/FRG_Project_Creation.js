@@ -394,8 +394,10 @@ function initActionButtons() {
         formData.append('Pincode', pincodeVal);
 
         formData.append('CompanyId', $('#ddlCompany').val());
-        formData.append('BusinessTypeId', $('#ddlBizType').val());
-        formData.append('CostCentreId', $('#ddlBizType').val() || '');
+        formData.append('BusinessTypeId', $('#ddlBizType').val() || '');
+        formData.append('BusinessType', $('#ddlBizType').val() || '');
+        formData.append('CostCentreId', '');
+        formData.append('ProjectId', '');
         formData.append('PropertyType', $('#ddlPropType').val());
         formData.append('ProjectTypeId', $('#ddlProjType').val());
 
@@ -701,7 +703,7 @@ function bindProjectData(data) {
     $('#txtProjPincode').val(data.Pincode || data.ProjectPincode || '');
 
     setSelectOrSelect2('#ddlCompany', data.CompId);
-    setSelectOrSelect2('#ddlBizType', data.CostCentreId || data.BusinessTypeId);
+    setSelectOrSelect2('#ddlBizType', data.BusinessTypeId || data.BusinessType || data.CostCentreId);
     setSelectOrSelect2('#ddlProjType', data.ProjectType);
 
     if (data.ProjectLevelType) {
@@ -822,7 +824,7 @@ function bindProjectData(data) {
     setToggle('#chkVehicleDetails', data.VehicleProduction === 'Yes');
 
     // ── Card 6: User Allocation ──
-    setMultipleSelect2('#ddlUsers', data.Users || data.LogUserId);
+    setMultipleSelect2('#ddlUsers', data.Users || data.AllocateUsers || data.LogUserId);
 
     // Clear validation states on bound data
     setTimeout(function () {

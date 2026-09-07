@@ -319,10 +319,19 @@ namespace VGN_CRM_CORE.Controllers
                             dict[col.ColumnName] = row[col] == DBNull.Value ? null : row[col];
                         }
 
-                        // Parse allocated Users array from LogUserId
-                        if (dict.ContainsKey("LogUserId") && dict["LogUserId"] != null)
+                        // Parse allocated Users array from AllocateUsers (or fallback LogUserId)
+                        var rawUsers = "";
+                        if (dict.ContainsKey("AllocateUsers") && dict["AllocateUsers"] != null)
                         {
-                            var rawUsers = dict["LogUserId"].ToString();
+                            rawUsers = dict["AllocateUsers"].ToString();
+                        }
+                        else if (dict.ContainsKey("LogUserId") && dict["LogUserId"] != null)
+                        {
+                            rawUsers = dict["LogUserId"].ToString();
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(rawUsers))
+                        {
                             dict["Users"] = rawUsers.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                                                     .Select(u => u.Trim())
                                                     .ToList();
@@ -332,14 +341,20 @@ namespace VGN_CRM_CORE.Controllers
                             dict["Users"] = new List<string>();
                         }
 
+                        if ((!dict.ContainsKey("BusinessTypeId") || dict["BusinessTypeId"] == null) && dict.ContainsKey("BusinessType") && dict["BusinessType"] != null)
+                        {
+                            dict["BusinessTypeId"] = dict["BusinessType"];
+                        }
+
                         return Content(JsonConvert.SerializeObject(new { success = true, data = dict }), "application/json");
                     }
                     return Content(JsonConvert.SerializeObject(new { success = false, message = "Project not found." }), "application/json");
                 }
 
-                // Return full list for dxDataGrid with enriched Company, Project Type, and User names
+                // Return full list for dxDataGrid with enriched Company, Project Type, Business Type, and User names
                 var companyDict = new Dictionary<string, string>();
                 var projectTypeDict = new Dictionary<string, string>();
+                var businessTypeDict = new Dictionary<string, string>();
                 var userDict = new Dictionary<string, string>();
 
                 try
@@ -364,6 +379,27 @@ namespace VGN_CRM_CORE.Controllers
                                     if (cId != "0" && !companyDict.ContainsKey(cId))
                                     {
                                         companyDict[cId] = cName;
+                                    }
+                                }
+                            }
+                        }
+
+                        using (var cmdBt = new SqlCommand("Web_LoadProjectKickoff", conLookup))
+                        {
+                            cmdBt.CommandType = CommandType.StoredProcedure;
+                            cmdBt.Parameters.AddWithValue("@CompanyId", "0");
+                            cmdBt.Parameters.AddWithValue("@Flag", "Business_Type");
+                            using (var daBt = new SqlDataAdapter(cmdBt))
+                            {
+                                var dtBt = new DataTable();
+                                daBt.Fill(dtBt);
+                                foreach (DataRow r in dtBt.Rows)
+                                {
+                                    var btId = r["BusinessTypeId"].ToString().Trim();
+                                    var btName = r["BusinessTypeName"].ToString().Trim();
+                                    if (btId != "0" && !businessTypeDict.ContainsKey(btId))
+                                    {
+                                        businessTypeDict[btId] = btName;
                                     }
                                 }
                             }
@@ -431,6 +467,11 @@ namespace VGN_CRM_CORE.Controllers
 
                     var ptId = row["ProjectType"] != DBNull.Value ? row["ProjectType"].ToString().Trim() : "";
                     dict["ProjectTypeName"] = projectTypeDict.ContainsKey(ptId) ? projectTypeDict[ptId] : (string.IsNullOrWhiteSpace(ptId) ? "—" : ptId);
+
+                    var btId = (dict.ContainsKey("BusinessTypeId") && dict["BusinessTypeId"] != null)
+                        ? dict["BusinessTypeId"].ToString().Trim()
+                        : ((dict.ContainsKey("BusinessType") && dict["BusinessType"] != null) ? dict["BusinessType"].ToString().Trim() : "");
+                    dict["BusinessTypeName"] = businessTypeDict.ContainsKey(btId) ? businessTypeDict[btId] : (string.IsNullOrWhiteSpace(btId) ? "—" : btId);
 
                     var crBy = dict.ContainsKey("CreatedBy") && dict["CreatedBy"] != null ? dict["CreatedBy"].ToString().Trim() : "";
                     dict["CreatedByName"] = userDict.ContainsKey(crBy) ? userDict[crBy] : (string.IsNullOrWhiteSpace(crBy) ? "—" : crBy);
@@ -566,11 +607,13 @@ namespace VGN_CRM_CORE.Controllers
                     cmd.Parameters.AddWithValue("@IssueRateBasedOn", (object)model.IssueRateBasedOn ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@IssueBasedOn", (object)model.IssueBasedOn ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@CostControlBasedOn", (object)model.CostControlBasedOn ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CostCentreId", (object)(model.BusinessTypeId ?? model.CostCentreId) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@BusinessTypeId", (object)(model.BusinessTypeId ?? model.BusinessType) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@BusinessType", (object)(model.BusinessTypeId ?? model.BusinessType) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@CostCentreId", DBNull.Value); // Saved empty as requested (for later use)
                     cmd.Parameters.AddWithValue("@ItemwiseIssueRequire", (object)model.ItemwiseIssueRequire ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@CCwiseAssetIssue", (object)model.CCwiseAssetIssue ?? DBNull.Value);
                     cmd.Parameters.AddWithValue("@VehicleProduction", (object)model.VehicleProduction ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@ProjectId", DBNull.Value);
+                    cmd.Parameters.AddWithValue("@ProjectId", DBNull.Value); // Saved empty as requested (for later use)
                     bool isInsert = string.Equals(model.Action, "INSERT", StringComparison.OrdinalIgnoreCase)
                                  || string.IsNullOrWhiteSpace(model.Action)
                                  || !model.ProjectKickoffId.HasValue
@@ -583,8 +626,9 @@ namespace VGN_CRM_CORE.Controllers
 
                     string userIdsToSave = (model.Users != null && model.Users.Count > 0)
                         ? string.Join(",", model.Users)
-                        : logUserId;
-                    cmd.Parameters.AddWithValue("@LogUserId", userIdsToSave);
+                        : (!string.IsNullOrWhiteSpace(model.AllocateUsers) ? model.AllocateUsers : logUserId);
+                    cmd.Parameters.AddWithValue("@AllocateUsers", (object)userIdsToSave ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@LogUserId", (object)userIdsToSave ?? DBNull.Value);
 
                     cmd.Parameters.AddWithValue("@IPAddress", ipAddress);
                     cmd.Parameters.AddWithValue("@HostName", hostName);
@@ -820,6 +864,7 @@ namespace VGN_CRM_CORE.Controllers
 
         public string CompanyId { get; set; }
         public string BusinessTypeId { get; set; }
+        public string BusinessType { get; set; }
         public string CostCentreId { get; set; }
         public string PropertyType { get; set; }
         public string ProjectTypeId { get; set; }
@@ -869,6 +914,8 @@ namespace VGN_CRM_CORE.Controllers
         public string CostControlBasedOn { get; set; }
 
         public List<string> Users { get; set; }
+        public string AllocateUsers { get; set; }
+        public string LogUserId { get; set; }
     }
 
     #endregion
