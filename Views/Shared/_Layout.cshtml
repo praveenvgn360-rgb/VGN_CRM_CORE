@@ -3711,7 +3711,12 @@
             border-bottom: 1px solid var(--border) !important;
         }
 
-        .dx-datagrid-headers .dx-datagrid-table .dx-row > td {
+        .dx-datagrid-headers .dx-datagrid-table .dx-row > td,
+        .dx-treelist-headers .dx-treelist-table .dx-row > td,
+        .dx-datagrid-headers .dx-row:hover > td,
+        .dx-treelist-headers .dx-row:hover > td,
+        .dx-datagrid-headers .dx-row.dx-state-hover > td,
+        .dx-treelist-headers .dx-row.dx-state-hover > td {
             background-color: var(--primary) !important;
             color: #ffffff !important;
             border-bottom: 1px solid var(--border) !important;
@@ -3726,7 +3731,8 @@
         }
 
         /* FIX #6: Header cell inner layout — keep text and icons vertically centered */
-        .dx-datagrid .dx-header-row > td .dx-datagrid-text-content {
+        .dx-datagrid .dx-header-row > td .dx-datagrid-text-content,
+        .dx-treelist .dx-header-row > td .dx-treelist-text-content {
             vertical-align: middle !important;
             white-space: nowrap !important;
             word-break: keep-all !important;
@@ -3735,7 +3741,8 @@
         }
 
         /* FIX #6: Sort and filter icons pinned to middle, never float to top/bottom */
-        .dx-datagrid .dx-header-row > td .dx-column-indicators {
+        .dx-datagrid .dx-header-row > td .dx-column-indicators,
+        .dx-treelist .dx-header-row > td .dx-column-indicators {
             display: inline-flex !important;
             align-items: center !important;
             vertical-align: middle !important;
@@ -3744,14 +3751,20 @@
         .dx-datagrid-headers .dx-header-filter,
         .dx-datagrid-headers .dx-sort,
         .dx-datagrid-headers .dx-sort-up,
-        .dx-datagrid-headers .dx-sort-down {
+        .dx-datagrid-headers .dx-sort-down,
+        .dx-treelist-headers .dx-header-filter,
+        .dx-treelist-headers .dx-sort,
+        .dx-treelist-headers .dx-sort-up,
+        .dx-treelist-headers .dx-sort-down {
             vertical-align: middle !important;
             line-height: 1 !important;
         }
 
         /* Header text content span — also gets grid-header size explicitly */
         .dx-datagrid-headers .dx-header-row > td .dx-datagrid-text-content,
-        .dx-datagrid .dx-header-row > td .dx-datagrid-text-content {
+        .dx-datagrid .dx-header-row > td .dx-datagrid-text-content,
+        .dx-treelist-headers .dx-header-row > td .dx-treelist-text-content,
+        .dx-treelist .dx-header-row > td .dx-treelist-text-content {
             font-size: var(--font-size-grid-header) !important;
             font-family: var(--font-family) !important;
             white-space: nowrap !important;
@@ -3761,7 +3774,8 @@
         }
 
         /* Data rows: explicit rule that tracks --font-size-grid */
-        .dx-datagrid .dx-data-row > td {
+        .dx-datagrid .dx-data-row > td,
+        .dx-treelist .dx-data-row > td {
             font-size: var(--font-size-grid) !important;
             font-family: var(--font-family) !important;
         }
@@ -3773,32 +3787,52 @@
         .dx-datagrid-headers .dx-sort-down,
         .dx-datagrid-headers .dx-column-indicators .dx-sort-indicator,
         .dx-datagrid-headers .dx-column-indicators .dx-header-filter,
-        .dx-datagrid-headers .dx-datagrid-text-content {
+        .dx-datagrid-headers .dx-datagrid-text-content,
+        .dx-treelist-headers .dx-header-filter,
+        .dx-treelist-headers .dx-sort,
+        .dx-treelist-headers .dx-sort-up,
+        .dx-treelist-headers .dx-sort-down,
+        .dx-treelist-headers .dx-column-indicators .dx-sort-indicator,
+        .dx-treelist-headers .dx-column-indicators .dx-header-filter,
+        .dx-treelist-headers .dx-treelist-text-content {
             color: rgba(255,255,255,0.9) !important;
         }
 
             .dx-datagrid-headers .dx-header-filter::before,
-            .dx-datagrid-headers .dx-sort::before {
+            .dx-datagrid-headers .dx-sort::before,
+            .dx-treelist-headers .dx-header-filter::before,
+            .dx-treelist-headers .dx-sort::before {
                 color: rgba(255,255,255,0.9) !important;
             }
 
         /* Header filter active state */
-        .dx-datagrid-headers .dx-header-filter-empty {
+        .dx-datagrid-headers .dx-header-filter-empty,
+        .dx-treelist-headers .dx-header-filter-empty {
             color: rgba(255,255,255,0.55) !important;
         }
 
-        .dx-datagrid-rowsview .dx-row > td {
+        .dx-datagrid-rowsview .dx-row > td,
+        .dx-treelist-rowsview .dx-row > td {
             border-bottom: 1px solid var(--border) !important;
             border-right: 1px solid var(--border) !important;
             border-left: 1px solid var(--border) !important;
         }
 
-        .dx-datagrid-borders > .dx-datagrid-headers, .dx-datagrid-borders > .dx-datagrid-filter-panel {
+        .dx-datagrid-borders > .dx-datagrid-headers, .dx-datagrid-borders > .dx-datagrid-filter-panel,
+        .dx-treelist-borders > .dx-treelist-headers {
             border-color: var(--border) !important;
         }
 
-        .dx-datagrid-borders > .dx-datagrid-rowsview, .dx-datagrid-borders > .dx-datagrid-total-footer {
+        .dx-datagrid-borders > .dx-datagrid-rowsview, .dx-datagrid-borders > .dx-datagrid-total-footer,
+        .dx-treelist-borders > .dx-treelist-rowsview {
             border-color: var(--border) !important;
+        }
+
+        /* TreeList Expand / Collapse chevron styling matching theme */
+        .dx-treelist-icon-container {
+            font-size: 11px !important;
+            color: var(--primary) !important;
+            vertical-align: middle !important;
         }
 
         .dx-texteditor-input {
@@ -3828,22 +3862,65 @@
             background-color: var(--primary) !important;
         }
 
-        .dx-datagrid-rowsview .dx-row.dx-row-alt > td {
-            background-color: rgba(var(--primary-rgb), 0.05) !important;
+        .dx-datagrid-rowsview .dx-row.dx-row-alt > td,
+        .dx-treelist-rowsview .dx-row.dx-row-alt > td {
+            background-color: rgba(var(--primary-rgb), 0.035) !important;
         }
 
-        .dx-row.dx-state-hover > td,
-        .dx-row.dx-selection > td {
-            background-color: var(--primary) !important;
-            color: #ffffff !important;
+        /* ── DX DataGrid & TreeList Hover Effect: Strictly scoped to data rows (never headers), with increased visible theme darkness ── */
+        .dx-datagrid-rowsview .dx-data-row.dx-state-hover:not(.dx-selection) > td,
+        .dx-treelist-rowsview .dx-data-row.dx-state-hover:not(.dx-selection) > td,
+        .dx-datagrid-rowsview .dx-data-row:hover:not(.dx-selection) > td,
+        .dx-treelist-rowsview .dx-data-row:hover:not(.dx-selection) > td {
+            background-color: rgba(var(--primary-rgb), 0.16) !important;
+            color: var(--text) !important;
+            transition: background-color 0.12s ease-in-out;
         }
 
-        /* Ensure icons and indicators inside selected/hovered rows also turn white */
-        .dx-row.dx-state-hover .dx-icon,
-        .dx-row.dx-selection .dx-icon,
-        .dx-row.dx-state-hover .dx-datagrid-text-content,
-        .dx-row.dx-selection .dx-datagrid-text-content {
-            color: #ffffff !important;
+        /* Hover on alternating data row */
+        .dx-datagrid-rowsview .dx-data-row.dx-row-alt.dx-state-hover:not(.dx-selection) > td,
+        .dx-treelist-rowsview .dx-data-row.dx-row-alt.dx-state-hover:not(.dx-selection) > td,
+        .dx-datagrid-rowsview .dx-data-row.dx-row-alt:hover:not(.dx-selection) > td,
+        .dx-treelist-rowsview .dx-data-row.dx-row-alt:hover:not(.dx-selection) > td {
+            background-color: rgba(var(--primary-rgb), 0.20) !important;
+            color: var(--text) !important;
+        }
+
+        /* Dark mode hover support */
+        .dark .dx-datagrid-rowsview .dx-data-row.dx-state-hover:not(.dx-selection) > td,
+        .dark .dx-treelist-rowsview .dx-data-row.dx-state-hover:not(.dx-selection) > td,
+        .dark .dx-datagrid-rowsview .dx-data-row:hover:not(.dx-selection) > td,
+        .dark .dx-treelist-rowsview .dx-data-row:hover:not(.dx-selection) > td {
+            background-color: rgba(var(--primary-rgb), 0.30) !important;
+            color: #f8fafc !important;
+        }
+
+        .dark .dx-datagrid-rowsview .dx-data-row.dx-row-alt.dx-state-hover:not(.dx-selection) > td,
+        .dark .dx-treelist-rowsview .dx-data-row.dx-row-alt.dx-state-hover:not(.dx-selection) > td {
+            background-color: rgba(var(--primary-rgb), 0.36) !important;
+            color: #f8fafc !important;
+        }
+
+        /* Selected row styling */
+        .dx-datagrid-rowsview .dx-data-row.dx-selection > td,
+        .dx-treelist-rowsview .dx-data-row.dx-selection > td {
+            background-color: rgba(var(--primary-rgb), 0.22) !important;
+            color: var(--text) !important;
+            font-weight: 600;
+        }
+
+        .dark .dx-datagrid-rowsview .dx-data-row.dx-selection > td,
+        .dark .dx-treelist-rowsview .dx-data-row.dx-selection > td {
+            background-color: rgba(var(--primary-rgb), 0.40) !important;
+            color: #f8fafc !important;
+            font-weight: 600;
+        }
+
+        .dx-datagrid-rowsview .dx-data-row.dx-state-hover:not(.dx-selection) .dx-icon,
+        .dx-treelist-rowsview .dx-data-row.dx-state-hover:not(.dx-selection) .dx-icon,
+        .dx-datagrid-rowsview .dx-data-row.dx-state-hover:not(.dx-selection) .dx-datagrid-text-content,
+        .dx-treelist-rowsview .dx-data-row.dx-state-hover:not(.dx-selection) .dx-treelist-text-content {
+            color: inherit !important;
         }
 
         .dx-popup-content, .dx-popup-title, .dx-popup-bottom {
@@ -5071,8 +5148,9 @@
                             @foreach (var item in modGroup.OrderBy(m => m.ModuleCaptionName))
                             {
                                 string url = "/" + item.ControllerName + "/" + item.ActionName;
+                                string caption = item.ControllerName == "ProjectIOW" ? "Bill of quantity" : item.ModuleCaptionName;
                                 <a class="nav-link list-only-item" href="@url" style="padding: 0.4rem 1rem 0.4rem 2rem">
-                                    <span>@item.ModuleCaptionName</span>
+                                    <span>@caption</span>
                                 </a>
                             }
                         }
@@ -5131,9 +5209,10 @@
                                 @foreach (var item in modGroup.OrderBy(m => m.ModuleCaptionName))
                                 {
                                     string url = "/" + item.ControllerName + "/" + item.ActionName;
+                                    string caption = item.ControllerName == "ProjectIOW" ? "Bill of quantity" : item.ModuleCaptionName;
                                     <a class="nav-link" href="@url">
                                         <i class="fas fa-circle" style="font-size:0.4rem;opacity:0.5"></i>
-                                        <span>@item.ModuleCaptionName</span>
+                                        <span>@caption</span>
                                         <i class="fas fa-chevron-right ml-auto text-sm opacity-30"></i>
                                     </a>
                                 }

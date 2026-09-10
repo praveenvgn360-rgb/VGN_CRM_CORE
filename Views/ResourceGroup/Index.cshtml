@@ -1,0 +1,510 @@
+@{
+    ViewBag.Title = "Resource Group Master — VGN ERP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="p-4 sm:p-6 space-y-6">
+    <!-- ── HEADER BAR ── -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[var(--surface)] p-5 rounded-2xl shadow-sm border border-[var(--border)]">
+        <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-[rgba(var(--primary-rgb),0.12)] border border-[rgba(var(--primary-rgb),0.25)] flex items-center justify-center text-primary text-xl shadow-sm">
+                <i class="fas fa-boxes-stacked"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2.5">
+                    <h1 class="text-xl font-bold text-[var(--text)] tracking-tight">Resource Group Master</h1>
+                    <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 border border-blue-500/20" id="badgeTotalRecords">
+                        0 Groups
+                    </span>
+                </div>
+                <p class="text-xs text-[var(--text-muted)] mt-0.5">Manage resource groups, multi-level parent categories, and group types (Activity, Labour, Material, Asset)</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2.5 w-full md:w-auto justify-end">
+            <button type="button" onclick="loadGridData()" class="btn-clear !text-xs !py-2 !px-3.5" title="Refresh Grid">
+                <i class="fas fa-sync-alt mr-1.5 text-slate-500"></i> Refresh
+            </button>
+            <button type="button" onclick="openCreateModal()" class="btn-save !text-xs !py-2 !px-4 text-white flex items-center gap-2 shadow-md">
+                <i class="fas fa-plus"></i>
+                <span>Add Resource Group</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ── SUMMARY STATS STRIP ── -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Total Groups</span>
+                <span class="text-2xl font-black text-[var(--text)] mt-1 block" id="statTotalCount">0</span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-[rgba(var(--primary-rgb),0.1)] text-primary flex items-center justify-center text-lg">
+                <i class="fas fa-layer-group"></i>
+            </div>
+        </div>
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Root / Sub-Groups</span>
+                <div class="text-xl font-black text-[var(--text)] mt-1 flex items-center gap-1.5">
+                    <span id="statRootCount" class="text-blue-600 dark:text-blue-400">0</span>
+                    <span class="text-xs font-medium text-[var(--text-muted)]">Root /</span>
+                    <span id="statSubCount" class="text-purple-600 dark:text-purple-400">0</span>
+                    <span class="text-xs font-medium text-[var(--text-muted)]">Sub</span>
+                </div>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center text-lg">
+                <i class="fas fa-sitemap"></i>
+            </div>
+        </div>
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Active Status</span>
+                <span class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block" id="statActiveCount">0</span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-lg">
+                <i class="fas fa-check-double"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── DATA GRID CARD ── -->
+    <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-md p-4 sm:p-5">
+        <div id="dxGridResourceGroup"></div>
+    </div>
+</div>
+
+<style>
+    .swal2-container {
+        z-index: 1000000 !important;
+    }
+</style>
+
+<!-- ── MODAL DIALOG (CREATE / EDIT) ── -->
+<div id="resourceGroupModalOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[1050] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto" style="display: none;">
+    <div id="resourceGroupModal" class="relative w-full max-w-lg bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh] my-auto overflow-hidden z-[1055]">
+        <!-- Modal Header -->
+        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800 flex-shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-[rgba(var(--primary-rgb),0.12)] text-primary flex items-center justify-center text-sm font-bold">
+                    <i class="fas fa-boxes-stacked"></i>
+                </div>
+                <h3 class="text-base sm:text-lg font-bold text-slate-800 dark:text-white" id="modalTitle">Add Resource Group</h3>
+            </div>
+            <button onclick="closeResourceGroupModal()" type="button" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-white transition-colors cursor-pointer">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <form id="frmResourceGroup" onsubmit="saveResourceGroup(event)" class="p-6 space-y-4 overflow-y-auto flex-1">
+            <input type="hidden" id="txtResourceGroupId" value="0" />
+
+            <!-- Resource Code (Auto-generated or custom) -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Resource Code <span class="text-[11px] font-normal text-slate-400 dark:text-slate-500">(Auto-generated if left blank)</span>
+                </label>
+                <input type="text" id="txtResourceCode" placeholder="e.g. RG0001 (Optional)" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white" />
+            </div>
+
+            <!-- Resource Group Name -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Resource Group Name <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="txtResourceGroupName" required placeholder="e.g. Civil Concrete, Electrical Works, Site Labour" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white" />
+            </div>
+
+            <!-- Group Type (Hardcoded: Activity, Labour, Material, Asset) -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Group Type <span class="text-red-500">*</span>
+                </label>
+                <select id="ddlGroupType" required class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white">
+                    <option value="">-- Select Group Type --</option>
+                    <option value="Activity">Activity</option>
+                    <option value="Labour">Labour</option>
+                    <option value="Material">Material</option>
+                    <option value="Asset">Asset</option>
+                </select>
+            </div>
+
+            <!-- Parent Group Dropdown (Loaded dynamically from existing resource groups) -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Parent Group <span class="text-[11px] font-normal text-slate-400 dark:text-slate-500">(Optional for hierarchical grouping)</span>
+                </label>
+                <select id="ddlParentGroup" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white">
+                    <option value="0">-- Top Level (Root / No Parent) --</option>
+                </select>
+            </div>
+
+            <!-- Remarks -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Remarks / Description
+                </label>
+                <textarea id="txtRemarks" rows="2" placeholder="Optional notes or classification details..." class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white resize-none"></textarea>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-end gap-2.5">
+                <button type="button" onclick="closeResourceGroupModal()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-colors">
+                    Cancel
+                </button>
+                <button type="submit" id="btnSaveResourceGroup" class="btn-save !text-xs !py-2 !px-4 text-white flex items-center gap-1.5 shadow-md">
+                    <i class="fas fa-check"></i>
+                    <span id="btnSaveText">Save Group</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var gridInstance = null;
+        var parentGroupsList = [];
+
+        $(document).ready(function () {
+            initGrid();
+            loadParentLookups();
+            loadGridData();
+        });
+
+        // ── Initialize DevExtreme DataGrid ──
+        function initGrid() {
+            $("#dxGridResourceGroup").dxDataGrid({
+                dataSource: [],
+                keyExpr: "resourceGroupId",
+                showBorders: true,
+                showRowLines: true,
+                rowAlternationEnabled: true,
+                hoverStateEnabled: true,
+                columnAutoWidth: true,
+                wordWrapEnabled: false,
+                allowColumnResizing: true,
+                columnResizingMode: "widget",
+                allowColumnReordering: true,
+                searchPanel: {
+                    visible: true,
+                    width: 260,
+                    placeholder: "Search resource groups..."
+                },
+                headerFilter: { visible: true },
+                export: {
+                    enabled: true,
+                    fileName: "Resource_Groups_" + new Date().toISOString().slice(0, 10)
+                },
+                paging: { pageSize: 15 },
+                pager: {
+                    showPageSizeSelector: true,
+                    allowedPageSizes: [10, 15, 25, 50],
+                    showInfo: true
+                },
+                columns: [
+                    {
+                        dataField: "resourceGroupId",
+                        caption: "ID",
+                        width: 100,
+                        alignment: "center",
+                        sortOrder: "asc"
+                    },
+                    {
+                        dataField: "resourceCode",
+                        caption: "Code",
+                        width: 130,
+                        alignment: "center",
+                        cellTemplate: function (container, options) {
+                            $('<span class="font-mono text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"></span>')
+                                .text(options.value || "—")
+                                .appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "resourceGroupName",
+                        caption: "Resource Group Name",
+                        width: 260,
+                        cellTemplate: function (container, options) {
+                            $('<span class="font-bold text-[var(--text)]"></span>')
+                                .text(options.value || "")
+                                .appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "typeId",
+                        caption: "Group Type",
+                        width: 150,
+                        alignment: "center",
+                        cellTemplate: function (container, options) {
+                            var val = options.value || "";
+                            var badgeClass = "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-300";
+
+                            if (val.toLowerCase() === "activity") {
+                                badgeClass = "bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border-sky-300 dark:border-sky-800";
+                            } else if (val.toLowerCase() === "labour") {
+                                badgeClass = "bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border-amber-300 dark:border-amber-800";
+                            } else if (val.toLowerCase() === "material") {
+                                badgeClass = "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800";
+                            } else if (val.toLowerCase() === "asset") {
+                                badgeClass = "bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border-purple-300 dark:border-purple-800";
+                            }
+
+                            $('<span class="text-xs font-semibold px-2.5 py-0.5 rounded-full border"></span>')
+                                .addClass(badgeClass)
+                                .text(val || "—")
+                                .appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "parentGroupName",
+                        caption: "Parent Group",
+                        width: 220,
+                        cellTemplate: function (container, options) {
+                            var val = options.value || "Top Level (Root)";
+                            var isRoot = (val === "Top Level (Root)" || options.data.parentId === "0");
+                            if (isRoot) {
+                                $('<span class="text-xs font-medium text-slate-400 dark:text-slate-500 italic">Top Level (Root)</span>').appendTo(container);
+                            } else {
+                                $('<span class="text-xs font-semibold text-purple-600 dark:text-purple-400 flex items-center gap-1.5"><i class="fas fa-level-up-alt fa-rotate-90 text-[10px]"></i> ' + val + '</span>').appendTo(container);
+                            }
+                        }
+                    },
+                    {
+                        dataField: "remarks",
+                        caption: "Remarks",
+                        minWidth: 200,
+                        cellTemplate: function (container, options) {
+                            container.text(options.value || "—");
+                        }
+                    },
+                    {
+                        dataField: "createdBy",
+                        caption: "Created By",
+                        width: 140,
+                        alignment: "center"
+                    },
+                    {
+                        dataField: "createdDate",
+                        caption: "Created Date",
+                        width: 140,
+                        dataType: "date",
+                        format: "dd MMM yyyy",
+                        alignment: "center"
+                    },
+                    {
+                        caption: "Action",
+                        alignment: "center",
+                        width: 110,
+                        allowFiltering: false,
+                        allowSorting: false,
+                        cellTemplate: function (container, options) {
+                            var data = options.data;
+                            var $wrapper = $('<div class="flex items-center justify-center gap-1.5"></div>');
+
+                            var $btnEdit = $('<button class="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-slate-700 dark:text-blue-400 transition-colors" title="Edit Resource Group"><i class="fas fa-edit text-xs"></i></button>');
+                            $btnEdit.on('click', function () { openEditModal(data); });
+
+                            var $btnDel = $('<button class="w-7 h-7 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-600 dark:bg-slate-700 dark:text-red-400 transition-colors" title="Delete Resource Group"><i class="fas fa-trash-alt text-xs"></i></button>');
+                            $btnDel.on('click', function () { deleteResourceGroup(data.resourceGroupId, data.resourceGroupName); });
+
+                            $wrapper.append($btnEdit).append($btnDel);
+                            container.append($wrapper);
+                        }
+                    }
+                ]
+            });
+
+            gridInstance = $("#dxGridResourceGroup").dxDataGrid("instance");
+        }
+
+        // ── Load Parent Lookups ──
+        function loadParentLookups(selectedParentId, excludeGroupId) {
+            $.ajax({
+                url: '/ResourceGroup/GetParentLookups',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (res && res.success) {
+                        parentGroupsList = res.data || [];
+                        var $ddl = $('#ddlParentGroup');
+                        $ddl.empty();
+                        $ddl.append('<option value="0">-- Top Level (Root / No Parent) --</option>');
+
+                        parentGroupsList.forEach(function (g) {
+                            if (excludeGroupId && g.resourceGroupId == excludeGroupId) {
+                                return; // Prevent self-parenting
+                            }
+                            $ddl.append($('<option></option>').val(g.resourceGroupId).text(g.resourceGroupName));
+                        });
+
+                        if (selectedParentId !== undefined && selectedParentId !== null) {
+                            $ddl.val(selectedParentId.toString());
+                        }
+                    }
+                }
+            });
+        }
+
+        // ── Load Grid Data ──
+        function loadGridData() {
+            if (gridInstance) gridInstance.beginCustomLoading("Loading resource groups...");
+
+            $.ajax({
+                url: '/ResourceGroup/GetAll',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (gridInstance) gridInstance.endCustomLoading();
+
+                    if (res && res.success) {
+                        var list = res.data || [];
+                        gridInstance.option("dataSource", list);
+
+                        var rootCount = list.filter(function (x) { return !x.parentId || x.parentId === "0"; }).length;
+                        var subCount = list.length - rootCount;
+
+                        $('#statTotalCount').text(list.length);
+                        $('#statRootCount').text(rootCount);
+                        $('#statSubCount').text(subCount);
+                        $('#statActiveCount').text(list.length);
+                        $('#badgeTotalRecords').text(list.length + " Groups");
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Error', text: res ? res.message : 'Failed to load records' });
+                    }
+                },
+                error: function (xhr, status, err) {
+                    if (gridInstance) gridInstance.endCustomLoading();
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Server error: ' + err });
+                }
+            });
+        }
+
+        // ── Modal Handlers ──
+        function openCreateModal() {
+            $('#txtResourceGroupId').val(0);
+            $('#txtResourceCode').val('');
+            $('#txtResourceGroupName').val('');
+            $('#ddlGroupType').val('');
+            $('#txtRemarks').val('');
+
+            loadParentLookups(0, null);
+
+            $('#modalTitle').text('Add Resource Group');
+            $('#btnSaveText').text('Save Group');
+
+            showModal();
+        }
+
+        function openEditModal(item) {
+            $('#txtResourceGroupId').val(item.resourceGroupId);
+            $('#txtResourceCode').val(item.resourceCode || '');
+            $('#txtResourceGroupName').val(item.resourceGroupName || '');
+            $('#ddlGroupType').val(item.typeId || '');
+            $('#txtRemarks').val(item.remarks || '');
+
+            loadParentLookups(item.parentId || 0, item.resourceGroupId);
+
+            $('#modalTitle').text('Edit Resource Group #' + item.resourceGroupId);
+            $('#btnSaveText').text('Update Group');
+
+            showModal();
+        }
+
+        function showModal() {
+            $('#resourceGroupModalOverlay').css('display', 'flex').hide().fadeIn(150);
+        }
+
+        function closeResourceGroupModal() {
+            $('#resourceGroupModalOverlay').fadeOut(150);
+        }
+
+        $(document).on('click', '#resourceGroupModalOverlay', function (e) {
+            if (e.target === this) {
+                closeResourceGroupModal();
+            }
+        });
+
+        // ── Save Resource Group ──
+        function saveResourceGroup(e) {
+            e.preventDefault();
+
+            var groupId = parseInt($('#txtResourceGroupId').val()) || 0;
+            var payload = {
+                ResourceGroupId: groupId,
+                ResourceCode: $('#txtResourceCode').val().trim(),
+                ResourceGroupName: $('#txtResourceGroupName').val().trim(),
+                TypeId: $('#ddlGroupType').val(),
+                ParentId: $('#ddlParentGroup').val() || "0",
+                Remarks: $('#txtRemarks').val().trim()
+            };
+
+            $('#btnSaveResourceGroup').prop('disabled', true).addClass('opacity-60');
+
+            $.ajax({
+                url: '/ResourceGroup/Save',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function (res) {
+                    $('#btnSaveResourceGroup').prop('disabled', false).removeClass('opacity-60');
+
+                    if (res && res.success) {
+                        closeResourceGroupModal();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: res.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        loadGridData();
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Save Failed', text: res ? res.message : 'Unknown error' });
+                    }
+                },
+                error: function (xhr, status, err) {
+                    $('#btnSaveResourceGroup').prop('disabled', false).removeClass('opacity-60');
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Error saving: ' + err });
+                }
+            });
+        }
+
+        // ── Delete Resource Group ──
+        function deleteResourceGroup(id, name) {
+            Swal.fire({
+                title: 'Delete Resource Group?',
+                text: 'Are you sure you want to delete "' + name + '"?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary)',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, Delete'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/ResourceGroup/Delete',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ ResourceGroupId: id }),
+                        success: function (res) {
+                            if (res && res.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted',
+                                    text: res.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                                loadGridData();
+                            } else {
+                                Swal.fire({ icon: 'error', title: 'Delete Failed', text: res ? res.message : 'Error' });
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

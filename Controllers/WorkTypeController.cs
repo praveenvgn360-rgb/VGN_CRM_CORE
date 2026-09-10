@@ -15,6 +15,7 @@ namespace VGN_CRM_CORE.Controllers
     public class WorkTypeController : Controller
     {
         private readonly string _connPROJ;
+        private const string SP_NAME = "Web_SaveWorkType";
 
         public WorkTypeController(IConfiguration configuration)
         {
@@ -45,7 +46,7 @@ namespace VGN_CRM_CORE.Controllers
             try
             {
                 using (var con = new SqlConnection(_connPROJ))
-                using (var cmd = new SqlCommand("Web_SaveWorkType", con))
+                using (var cmd = new SqlCommand(SP_NAME, con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@Flag", "FetchByAll");
@@ -92,7 +93,7 @@ namespace VGN_CRM_CORE.Controllers
             try
             {
                 using (var con = new SqlConnection(_connPROJ))
-                using (var cmd = new SqlCommand("Web_SaveWorkType", con))
+                using (var cmd = new SqlCommand(SP_NAME, con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@Flag", "FetchById");
@@ -155,7 +156,7 @@ namespace VGN_CRM_CORE.Controllers
                 string flag = isInsert ? "Insert" : "Update";
 
                 using (var con = new SqlConnection(_connPROJ))
-                using (var cmd = new SqlCommand("Web_SaveWorkType", con))
+                using (var cmd = new SqlCommand(SP_NAME, con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@Flag", flag);
@@ -220,31 +221,32 @@ namespace VGN_CRM_CORE.Controllers
                     return Json(new { success = false, message = "Invalid Work Type ID." });
 
                 using (var con = new SqlConnection(_connPROJ))
+                using (var cmd = new SqlCommand(SP_NAME, con))
                 {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Flag", "DELETE");
+                    cmd.Parameters.AddWithValue("@WorkTypeId", req.WorkTypeId.Value);
+                    cmd.Parameters.AddWithValue("@UpdatedBy", user.UserId ?? "User");
+                    cmd.Parameters.AddWithValue("@UpdatedDate", DateTime.Now);
+
                     await con.OpenAsync();
 
-                    // Update Status in WorkType table or WorkTypeMas table
-                    int rows = 0;
-                    try
+                    using (var dr = await cmd.ExecuteReaderAsync())
                     {
-                        using (var cmd = new SqlCommand("UPDATE dbo.WorkType SET Status = 0, UpdatedBy = @UpdatedBy, UpdatedDate = GETDATE() WHERE WorkTypeId = @Id", con))
+                        if (await dr.ReadAsync())
                         {
-                            cmd.Parameters.AddWithValue("@Id", req.WorkTypeId.Value);
-                            cmd.Parameters.AddWithValue("@UpdatedBy", user.UserId ?? "User");
-                            rows = await cmd.ExecuteNonQueryAsync();
-                        }
-                    }
-                    catch
-                    {
-                        using (var cmd2 = new SqlCommand("UPDATE dbo.WorkTypeMas SET Status = 0, UpdatedBy = @UpdatedBy, UpdatedDate = GETDATE() WHERE WorkTypeId = @Id", con))
-                        {
-                            cmd2.Parameters.AddWithValue("@Id", req.WorkTypeId.Value);
-                            cmd2.Parameters.AddWithValue("@UpdatedBy", user.UserId ?? "User");
-                            rows = await cmd2.ExecuteNonQueryAsync();
+                            string result = dr["Result"] != DBNull.Value ? dr["Result"].ToString() : "";
+                            bool isDeleted = result.Equals("DELETED", StringComparison.OrdinalIgnoreCase);
+
+                            return Json(new
+                            {
+                                success = isDeleted,
+                                message = isDeleted ? "Work type deleted successfully." : result
+                            });
                         }
                     }
 
-                    return Json(new { success = rows > 0, message = rows > 0 ? "Work type deleted successfully." : "Record not found." });
+                    return Json(new { success = true, message = "Work type deleted successfully." });
                 }
             }
             catch (Exception ex)
