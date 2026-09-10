@@ -15,6 +15,7 @@ namespace VGN_CRM_CORE.Controllers
     public class WorkGroupBudgetAllocationController : Controller
     {
         private readonly string _connPROJ;
+        private const string SP_NAME = "Web_SaveWorkGroupBudgetAllocation";
 
         public WorkGroupBudgetAllocationController(IConfiguration configuration)
         {
@@ -45,7 +46,7 @@ namespace VGN_CRM_CORE.Controllers
             try
             {
                 using (var con = new SqlConnection(_connPROJ))
-                using (var cmd = new SqlCommand("Web_SaveWorkGroupBudgetAllocation", con))
+                using (var cmd = new SqlCommand(SP_NAME, con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@Flag", "FETCHALL");
@@ -95,7 +96,7 @@ namespace VGN_CRM_CORE.Controllers
             try
             {
                 using (var con = new SqlConnection(_connPROJ))
-                using (var cmd = new SqlCommand("Web_SaveWorkGroupBudgetAllocation", con))
+                using (var cmd = new SqlCommand(SP_NAME, con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@Flag", "FETCHBYID");
@@ -161,7 +162,7 @@ namespace VGN_CRM_CORE.Controllers
                 string flag = isInsert ? "INSERT" : "UPDATE";
 
                 using (var con = new SqlConnection(_connPROJ))
-                using (var cmd = new SqlCommand("Web_SaveWorkGroupBudgetAllocation", con))
+                using (var cmd = new SqlCommand(SP_NAME, con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@Flag", flag);
@@ -230,15 +231,32 @@ namespace VGN_CRM_CORE.Controllers
                     return Json(new { success = false, message = "Invalid Work Group Budget ID." });
 
                 using (var con = new SqlConnection(_connPROJ))
-                using (var cmd = new SqlCommand("UPDATE dbo.WorkGroupBudgetAllocation SET Status = '0', UpdatedBy = @UpdatedBy, UpdatedDate = GETDATE() WHERE WorkGroupBudgetId = @Id", con))
+                using (var cmd = new SqlCommand(SP_NAME, con))
                 {
-                    cmd.Parameters.AddWithValue("@Id", req.WorkGroupBudgetId.Value);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Flag", "DELETE");
+                    cmd.Parameters.AddWithValue("@WorkGroupBudgetId", req.WorkGroupBudgetId.Value);
                     cmd.Parameters.AddWithValue("@UpdatedBy", user.UserId ?? "User");
 
                     await con.OpenAsync();
-                    int rows = await cmd.ExecuteNonQueryAsync();
 
-                    return Json(new { success = rows > 0, message = rows > 0 ? "Work group budget allocation deleted successfully." : "Record not found." });
+                    using (var dr = await cmd.ExecuteReaderAsync())
+                    {
+                        if (await dr.ReadAsync())
+                        {
+                            string action = dr["Action"] != DBNull.Value ? dr["Action"].ToString() : "";
+                            string message = dr.FieldCount > 2 && dr["Message"] != DBNull.Value ? dr["Message"].ToString() : "";
+                            bool isDeleted = action.Equals("DELETE", StringComparison.OrdinalIgnoreCase);
+
+                            return Json(new
+                            {
+                                success = isDeleted,
+                                message = !string.IsNullOrEmpty(message) ? message : (isDeleted ? "Work group budget allocation deleted successfully." : action)
+                            });
+                        }
+                    }
+
+                    return Json(new { success = true, message = "Work group budget allocation deleted successfully." });
                 }
             }
             catch (Exception ex)
@@ -259,104 +277,71 @@ namespace VGN_CRM_CORE.Controllers
             try
             {
                 using (var con = new SqlConnection(_connPROJ))
+                using (var cmd = new SqlCommand(SP_NAME, con))
                 {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Flag", "LOOKUPS");
+                    cmd.Parameters.AddWithValue("@WorkGroupBudgetId", DBNull.Value);
+
                     await con.OpenAsync();
 
-                    // Projects
-                    try
+                    using (var da = new SqlDataAdapter(cmd))
                     {
-                        using (var cmd = new SqlCommand("Web_SaveProjectKickOffMas", con))
+                        var ds = new DataSet();
+                        da.Fill(ds);
+
+                        // Table 0: Projects
+                        if (ds.Tables.Count > 0)
                         {
-                            cmd.CommandType = CommandType.StoredProcedure;
-                            cmd.Parameters.AddWithValue("@Action", "FETCH");
-                            cmd.Parameters.AddWithValue("@ProjectKickoffId", DBNull.Value);
-                            using (var da = new SqlDataAdapter(cmd))
+                            foreach (DataRow row in ds.Tables[0].Rows)
                             {
-                                var dt = new DataTable();
-                                da.Fill(dt);
-                                foreach (DataRow row in dt.Rows)
+                                projects.Add(new
                                 {
-                                    projects.Add(new
-                                    {
-                                        Id = row["ProjectKickoffId"] != DBNull.Value ? Convert.ToInt32(row["ProjectKickoffId"]) : 0,
-                                        Name = row["ProjectName"] != DBNull.Value ? row["ProjectName"].ToString() : ""
-                                    });
-                                }
+                                    Id = row["Id"] != DBNull.Value ? Convert.ToInt32(row["Id"]) : 0,
+                                    Name = row["Name"] != DBNull.Value ? row["Name"].ToString() : ""
+                                });
                             }
                         }
-                    }
-                    catch { }
 
-                    // Work Groups
-                    try
-                    {
-                        using (var cmd = new SqlCommand("Web_SaveWorkGroupMas", con))
+                        // Table 1: Work Groups
+                        if (ds.Tables.Count > 1)
                         {
-                            cmd.CommandType = CommandType.StoredProcedure;
-                            cmd.Parameters.AddWithValue("@Flag", "FetchbyAll");
-                            cmd.Parameters.AddWithValue("@WorkGroupId", DBNull.Value);
-                            using (var da = new SqlDataAdapter(cmd))
+                            foreach (DataRow row in ds.Tables[1].Rows)
                             {
-                                var dt = new DataTable();
-                                da.Fill(dt);
-                                foreach (DataRow row in dt.Rows)
+                                workGroups.Add(new
                                 {
-                                    workGroups.Add(new
-                                    {
-                                        Id = row["WorkGroupId"] != DBNull.Value ? Convert.ToInt32(row["WorkGroupId"]) : 0,
-                                        Name = row["WorkGroupName"] != DBNull.Value ? row["WorkGroupName"].ToString() : ""
-                                    });
-                                }
+                                    Id = row["Id"] != DBNull.Value ? Convert.ToInt32(row["Id"]) : 0,
+                                    Name = row["Name"] != DBNull.Value ? row["Name"].ToString() : ""
+                                });
                             }
                         }
-                    }
-                    catch { }
 
-                    // Work Types
-                    try
-                    {
-                        using (var cmd = new SqlCommand("Web_SaveWorkType", con))
+                        // Table 2: Work Types
+                        if (ds.Tables.Count > 2)
                         {
-                            cmd.CommandType = CommandType.StoredProcedure;
-                            cmd.Parameters.AddWithValue("@Flag", "FetchByAll");
-                            cmd.Parameters.AddWithValue("@WorkTypeId", DBNull.Value);
-                            using (var da = new SqlDataAdapter(cmd))
+                            foreach (DataRow row in ds.Tables[2].Rows)
                             {
-                                var dt = new DataTable();
-                                da.Fill(dt);
-                                foreach (DataRow row in dt.Rows)
+                                workTypes.Add(new
                                 {
-                                    workTypes.Add(new
-                                    {
-                                        Id = row["WorkTypeId"] != DBNull.Value ? Convert.ToInt32(row["WorkTypeId"]) : 0,
-                                        Name = row["WorkTypeName"] != DBNull.Value ? row["WorkTypeName"].ToString() : ""
-                                    });
-                                }
+                                    Id = row["Id"] != DBNull.Value ? Convert.ToInt32(row["Id"]) : 0,
+                                    Name = row["Name"] != DBNull.Value ? row["Name"].ToString() : ""
+                                });
                             }
                         }
-                    }
-                    catch { }
 
-                    // Budget Allocations
-                    try
-                    {
-                        using (var cmd = new SqlCommand("SELECT BudgetAllocationId, BudgetDescription, BudgetAmount FROM dbo.ProjectBudgetAllocation WHERE Status = 1", con))
-                        using (var da = new SqlDataAdapter(cmd))
+                        // Table 3: Budget Allocations
+                        if (ds.Tables.Count > 3)
                         {
-                            var dt = new DataTable();
-                            da.Fill(dt);
-                            foreach (DataRow row in dt.Rows)
+                            foreach (DataRow row in ds.Tables[3].Rows)
                             {
                                 budgetAllocations.Add(new
                                 {
-                                    Id = row["BudgetAllocationId"] != DBNull.Value ? Convert.ToInt32(row["BudgetAllocationId"]) : 0,
-                                    Name = (row["BudgetDescription"] != DBNull.Value ? row["BudgetDescription"].ToString() : "") +
-                                           (row["BudgetAmount"] != DBNull.Value ? $" (₹ {Convert.ToDouble(row["BudgetAmount"]):N0})" : "")
+                                    Id = row["Id"] != DBNull.Value ? Convert.ToInt32(row["Id"]) : 0,
+                                    Name = row["Name"] != DBNull.Value ? row["Name"].ToString() : ""
                                 });
                             }
                         }
                     }
-                    catch { }
                 }
 
                 return Json(new

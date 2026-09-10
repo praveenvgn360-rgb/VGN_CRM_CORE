@@ -58,7 +58,7 @@ namespace VGN_CRM_CORE.Controllers
                 System.Diagnostics.Debug.WriteLine($"[GeneralDashboard] Menu load error: {ex.Message}");
             }
 
-            return View();
+            return View("~/Views/GeneralDashboard/Index.cshtml");
         }
 
         /// <summary>

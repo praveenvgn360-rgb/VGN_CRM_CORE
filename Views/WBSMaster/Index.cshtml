@@ -1,0 +1,625 @@
+@{
+    ViewBag.Title = "WBS (Work Break Structure) Master — VGN ERP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="p-4 sm:p-6 space-y-5">
+    <!-- ── HEADER BAR ── -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[var(--surface)] p-5 rounded-2xl shadow-sm border border-[var(--border)]">
+        <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-[rgba(var(--primary-rgb),0.12)] border border-[rgba(var(--primary-rgb),0.25)] flex items-center justify-center text-primary text-xl shadow-sm">
+                <i class="fas fa-network-wired"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2.5">
+                    <h1 class="text-xl font-bold text-[var(--text)] tracking-tight">WBS (Work Break Structure) Master</h1>
+                    <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 border border-blue-500/20" id="badgeTotalRecords">
+                        0 Items
+                    </span>
+                </div>
+                <p class="text-xs text-[var(--text-muted)] mt-0.5">Manage hierarchical project work breakdown structures, multi-level deliverables, and task trees</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 w-full md:w-auto justify-end flex-wrap">
+            <button type="button" onclick="expandAll()" class="btn-clear !text-xs !py-2 !px-3.5" title="Expand All Sub-WBS">
+                <i class="fas fa-expand-alt mr-1.5 text-slate-500"></i> Expand All
+            </button>
+            <button type="button" onclick="collapseAll()" class="btn-clear !text-xs !py-2 !px-3.5" title="Collapse All Sub-WBS">
+                <i class="fas fa-compress-alt mr-1.5 text-slate-500"></i> Collapse All
+            </button>
+            <button type="button" onclick="loadGridData()" class="btn-clear !text-xs !py-2 !px-3.5" title="Refresh Grid">
+                <i class="fas fa-sync-alt mr-1.5 text-slate-500"></i> Refresh
+            </button>
+            <button type="button" onclick="openCreateModal()" class="btn-save !text-xs !py-2 !px-4 text-white flex items-center gap-2 shadow-md">
+                <i class="fas fa-plus"></i>
+                <span>Add WBS</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ── SUMMARY STATS STRIP ── -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Total WBS Items</span>
+                <span class="text-2xl font-black text-[var(--text)] mt-1 block" id="statTotalCount">0</span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-[rgba(var(--primary-rgb),0.1)] text-primary flex items-center justify-center text-lg">
+                <i class="fas fa-sitemap"></i>
+            </div>
+        </div>
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Root Items / Sub-WBS</span>
+                <div class="text-xl font-black text-[var(--text)] mt-1 flex items-center gap-1.5">
+                    <span id="statRootCount" class="text-blue-600 dark:text-blue-400">0</span>
+                    <span class="text-xs font-medium text-[var(--text-muted)]">Root /</span>
+                    <span id="statSubCount" class="text-purple-600 dark:text-purple-400">0</span>
+                    <span class="text-xs font-medium text-[var(--text-muted)]">Sub</span>
+                </div>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center text-lg">
+                <i class="fas fa-code-branch"></i>
+            </div>
+        </div>
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Active Status</span>
+                <span class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block" id="statActiveCount">0</span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-lg">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── DATA GRID CARD (HIERARCHICAL TREE LIST) ── -->
+    <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-md p-4 sm:p-5 relative">
+        <div id="dxGridWBS"></div>
+
+        <!-- Floating Add Root Action -->
+        <div class="mt-4 pt-3 border-t border-[var(--border)] flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="openCreateModal()" class="w-9 h-9 rounded-full bg-sky-500 hover:bg-sky-600 text-white flex items-center justify-center shadow-md transition-all transform hover:scale-110 cursor-pointer" title="Add New Root WBS">
+                    <i class="fas fa-plus text-sm"></i>
+                </button>
+                <span class="text-xs text-[var(--text-muted)] font-medium">Click <strong class="text-sky-600 dark:text-sky-400">(+)</strong> to add top-level root WBS</span>
+            </div>
+            <div class="text-xs text-[var(--text-muted)] font-medium flex items-center gap-2">
+                <span>Click <span class="text-sky-600 font-bold bg-sky-50 dark:bg-slate-700 px-1.5 py-0.5 rounded border border-sky-200 dark:border-slate-600"><i class="fas fa-plus text-[10px]"></i></span> on any row to add sub-WBS under it</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .swal2-container {
+        z-index: 1000000 !important;
+    }
+    .btn-tree-add-sub {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        background: #0ea5e9;
+        color: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 2px rgba(14, 165, 233, 0.3);
+        border: none;
+        cursor: pointer;
+    }
+    .btn-tree-add-sub:hover {
+        background: #0284c7;
+        transform: scale(1.08);
+    }
+    .btn-tree-edit {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        background: #f1f5f9;
+        color: #475569;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+    }
+    .dark .btn-tree-edit {
+        background: #334155;
+        color: #cbd5e1;
+    }
+    .btn-tree-edit:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+    }
+    .btn-tree-del {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        background: #fef2f2;
+        color: #ef4444;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+    }
+    .dark .btn-tree-del {
+        background: #450a0a;
+        color: #f87171;
+    }
+    .btn-tree-del:hover {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+</style>
+
+<!-- ── MODAL DIALOG (ADD / EDIT WBS) ── -->
+<div id="wbsModalOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[1050] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto" style="display: none;">
+    <div id="wbsModal" class="relative w-full max-w-lg bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh] my-auto overflow-hidden z-[1055]">
+        <!-- Modal Header -->
+        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800 flex-shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-[rgba(var(--primary-rgb),0.12)] text-primary flex items-center justify-center text-sm font-bold">
+                    <i class="fas fa-network-wired"></i>
+                </div>
+                <h3 class="text-base sm:text-lg font-bold text-slate-800 dark:text-white" id="modalTitle">Add New WBS</h3>
+            </div>
+            <button onclick="closeWbsModal()" type="button" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-white transition-colors cursor-pointer">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <form id="frmWBS" onsubmit="saveWBS(event)" class="p-6 space-y-4 overflow-y-auto flex-1">
+            <input type="hidden" id="txtWBSId" value="0" />
+            <input type="hidden" id="txtParentId" value="0" />
+
+            <!-- Parent WBS Display (Locked for hierarchy preservation) -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
+                    <span>Parent WBS</span>
+                    <span class="text-[10px] text-slate-400 font-normal inline-flex items-center gap-1">
+                        <i class="fas fa-lock text-[9px]"></i> Non-editable
+                    </span>
+                </label>
+                <div class="relative">
+                    <input type="text" id="txtParentDisplay" readonly disabled class="w-full pl-8 pr-3 py-2 text-xs bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 font-medium cursor-not-allowed select-none" />
+                    <i class="fas fa-sitemap absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1" id="lblParentHelper">Root level WBS (no parent).</p>
+            </div>
+
+            <!-- WBS Name -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    WBS Name <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="txtWBSName" required placeholder="e.g. Substructure, Earthwork, RCC Footings, Plinth Beam" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white font-medium" />
+                <p class="text-[11px] text-slate-400 mt-0.5">Enter concise deliverable or work package name</p>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-2.5">
+                <button type="button" onclick="closeWbsModal()" class="px-5 py-2 text-xs font-semibold rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer">Cancel</button>
+                <button type="submit" id="btnSaveWBS" class="px-6 py-2 text-xs font-semibold rounded-lg bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-md transition-colors cursor-pointer flex items-center gap-1.5">
+                    <i class="fas fa-check"></i>
+                    <span id="btnSaveText">Create</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var gridInstance = null;
+        var allWBSList = [];
+
+        $(document).ready(function () {
+            initGrid();
+            loadGridData();
+        });
+
+        // ── Initialize DevExtreme TreeList ──
+        function initGrid() {
+            $("#dxGridWBS").dxTreeList({
+                dataSource: [],
+                keyExpr: "wbsId",
+                parentIdExpr: "parentId",
+                rootValue: 0,
+                showBorders: true,
+                showRowLines: true,
+                rowAlternationEnabled: true,
+                hoverStateEnabled: true,
+                columnAutoWidth: true,
+                wordWrapEnabled: false,
+                allowColumnResizing: true,
+                columnResizingMode: "widget",
+                autoExpandAll: false,
+                searchPanel: {
+                    visible: true,
+                    width: 260,
+                    placeholder: "Search WBS name, ID..."
+                },
+                headerFilter: { visible: true },
+                paging: { pageSize: 15 },
+                pager: {
+                    showPageSizeSelector: true,
+                    allowedPageSizes: [10, 15, 25, 50, 100],
+                    showInfo: true,
+                    showNavigationButtons: true
+                },
+                toolbar: {
+                    items: [
+                        {
+                            location: "before",
+                            template: function () {
+                                return $('<div class="sa-count-badge"><i class="fas fa-network-wired mr-1"></i> <span class="grid-row-count-val" id="treeBadgeCount">0</span> WBS Items</div>');
+                            }
+                        },
+                        {
+                            location: "after",
+                            widget: "dxButton",
+                            options: {
+                                icon: "exportxlsx",
+                                hint: "Export to Excel",
+                                onClick: function () { exportTreeToExcel(); }
+                            }
+                        },
+                        {
+                            location: "after",
+                            widget: "dxButton",
+                            options: {
+                                icon: "expand",
+                                hint: "Expand All Sub-WBS",
+                                onClick: function () { expandAll(); }
+                            }
+                        },
+                        {
+                            location: "after",
+                            widget: "dxButton",
+                            options: {
+                                icon: "collapse",
+                                hint: "Collapse All Sub-WBS",
+                                onClick: function () { collapseAll(); }
+                            }
+                        },
+                        "searchPanel"
+                    ]
+                },
+                columns: [
+                    {
+                        dataField: "wbsId",
+                        caption: "WBS ID",
+                        width: 110,
+                        alignment: "center",
+                        cellTemplate: function (container, options) {
+                            var idVal = options.value || "";
+                            $('<span class="font-bold text-[var(--text)] font-mono text-xs px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600"></span>')
+                                .text("#" + idVal)
+                                .appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "wbsName",
+                        caption: "WBS Deliverable / Structure Name",
+                        minWidth: 340,
+                        cellTemplate: function (container, options) {
+                            var data = options.data;
+                            var isNodeWithChildren = options.node && options.node.children && options.node.children.length > 0;
+                            var isRoot = !data.parentId || data.parentId === 0 || data.parentId === "0";
+                            var iconClass = isNodeWithChildren 
+                                ? "fas fa-folder-open text-amber-500" 
+                                : (isRoot ? "fas fa-layer-group text-primary" : "fas fa-level-down-alt text-blue-500 rotate-180");
+
+                            var $wrapper = $('<div class="inline-flex items-center gap-2"></div>');
+                            $wrapper.append($('<i class="' + iconClass + ' text-xs"></i>'));
+                            $wrapper.append($('<span class="font-bold text-[var(--text)]"></span>').text(data.wbsName || ""));
+                            container.append($wrapper);
+                        }
+                    },
+                    {
+                        dataField: "parentName",
+                        caption: "Parent WBS",
+                        width: 220,
+                        cellTemplate: function (container, options) {
+                            var val = options.value || "Root / Top Level";
+                            var isRoot = val === "Root / Top Level";
+                            var cls = isRoot ? "text-slate-400 italic" : "text-sky-600 dark:text-sky-400 font-medium";
+                            $('<span class="' + cls + ' text-xs"></span>').text(val).appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "createdBy",
+                        caption: "Created By",
+                        width: 130,
+                        alignment: "center"
+                    },
+                    {
+                        dataField: "createdDate",
+                        caption: "Created Date",
+                        width: 130,
+                        dataType: "date",
+                        format: "dd MMM yyyy",
+                        alignment: "center"
+                    },
+                    {
+                        caption: "Action",
+                        alignment: "center",
+                        width: 130,
+                        allowFiltering: false,
+                        allowSorting: false,
+                        cellTemplate: function (container, options) {
+                            var data = options.data;
+                            var $wrapper = $('<div class="flex items-center justify-center gap-1.5"></div>');
+
+                            // Blue "+" button to add a Sub-WBS under this node
+                            var $btnAddSub = $('<button type="button" class="btn-tree-add-sub" title="Add Sub-WBS under this"><i class="fas fa-plus text-xs"></i></button>');
+                            $btnAddSub.on('click', function () {
+                                openAddSubModal(data.wbsId, data.wbsName);
+                            });
+
+                            // Edit button
+                            var $btnEdit = $('<button type="button" class="btn-tree-edit" title="Edit WBS"><i class="fas fa-edit text-xs"></i></button>');
+                            $btnEdit.on('click', function () { openEditModal(data); });
+
+                            // Delete button
+                            var $btnDel = $('<button type="button" class="btn-tree-del" title="Delete WBS"><i class="fas fa-trash-alt text-xs"></i></button>');
+                            $btnDel.on('click', function () { deleteWBS(data.wbsId, data.wbsName); });
+
+                            $wrapper.append($btnAddSub).append($btnEdit).append($btnDel);
+                            container.append($wrapper);
+                        }
+                    }
+                ]
+            });
+
+            gridInstance = $("#dxGridWBS").dxTreeList("instance");
+        }
+
+        // ── Load Grid Data ──
+        function loadGridData(expandParentId) {
+            if (gridInstance) gridInstance.beginCustomLoading("Loading WBS master records...");
+
+            $.ajax({
+                url: '/WBSMaster/GetAll',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (gridInstance) gridInstance.endCustomLoading();
+
+                    if (res && res.success) {
+                        var list = res.data || [];
+                        list.forEach(function (x) {
+                            x.wbsId = Number(x.wbsId);
+                            x.parentId = (!x.parentId || x.parentId === "0" || x.parentId === 0) ? 0 : Number(x.parentId);
+                        });
+
+                        allWBSList = list;
+                        gridInstance.option("dataSource", list);
+
+                        // Update summary counters
+                        var rootCount = list.filter(function (x) { return x.parentId === 0; }).length;
+                        var subCount = list.length - rootCount;
+
+                        $('#statTotalCount').text(list.length);
+                        $('#statRootCount').text(rootCount);
+                        $('#statSubCount').text(subCount);
+                        $('#statActiveCount').text(list.length);
+                        $('#badgeTotalRecords').text(list.length + " Items");
+                        $('#treeBadgeCount').text(list.length);
+
+                        // Auto-expand target parent if specified
+                        if (expandParentId && expandParentId > 0 && gridInstance.expandRow) {
+                            setTimeout(function () {
+                                try { gridInstance.expandRow(expandParentId); } catch (_) {}
+                            }, 200);
+                        }
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Error', text: res ? res.message : 'Failed to load records' });
+                    }
+                },
+                error: function (xhr, status, err) {
+                    if (gridInstance) gridInstance.endCustomLoading();
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Server error: ' + err });
+                }
+            });
+        }
+
+        // ── Tree Expand / Collapse All ──
+        function expandAll() {
+            if (gridInstance && gridInstance.expandAll) {
+                gridInstance.expandAll();
+            }
+        }
+
+        function collapseAll() {
+            if (gridInstance && gridInstance.collapseAll) {
+                gridInstance.collapseAll();
+            }
+        }
+
+        // ── Excel Export ──
+        function exportTreeToExcel() {
+            if (!gridInstance) return;
+            if (typeof ExcelJS !== 'undefined' && DevExpress.excelExporter && DevExpress.excelExporter.exportTreeList) {
+                var workbook = new ExcelJS.Workbook();
+                var worksheet = workbook.addWorksheet("WBSMaster");
+                DevExpress.excelExporter.exportTreeList({
+                    component: gridInstance,
+                    worksheet: worksheet,
+                    autoFilterEnabled: true
+                }).then(function () {
+                    workbook.xlsx.writeBuffer().then(function (buffer) {
+                        saveAs(new Blob([buffer], { type: "application/octet-stream" }), "WBSMaster.xlsx");
+                    });
+                });
+            } else {
+                Swal.fire({ icon: 'info', title: 'Export', text: 'Excel export initializing...' });
+            }
+        }
+
+        // ── Modal Actions ──
+        function openCreateModal() {
+            $('#txtWBSId').val(0);
+            $('#txtParentId').val('0');
+            $('#modalTitle').text('Add New Root WBS');
+            $('#btnSaveText').text('Create');
+
+            $('#txtParentDisplay').val('Top Level (Root / No Parent)');
+            $('#lblParentHelper').html('<span class="text-emerald-600 dark:text-emerald-400 font-medium"><i class="fas fa-check-circle mr-1"></i>Creating a top-level root WBS</span>');
+
+            $('#txtWBSName').val('');
+            showModal();
+        }
+
+        function openAddSubModal(parentId, parentName) {
+            $('#txtWBSId').val(0);
+            $('#txtParentId').val(String(parentId));
+            $('#modalTitle').html('Add Sub-WBS under <span class="text-primary font-bold">"' + parentName + '"</span>');
+            $('#btnSaveText').text('Create');
+
+            $('#txtParentDisplay').val('[' + parentId + '] ' + parentName);
+            $('#lblParentHelper').html('<span class="text-sky-600 dark:text-sky-400 font-medium"><i class="fas fa-level-down-alt rotate-180 mr-1"></i>Sub-WBS strictly locked under: <strong>' + parentName + '</strong></span>');
+
+            $('#txtWBSName').val('');
+            showModal();
+        }
+
+        function openEditModal(item) {
+            $('#txtWBSId').val(item.wbsId);
+            var pId = (!item.parentId || item.parentId === "0" || item.parentId === 0) ? 0 : Number(item.parentId);
+            $('#txtParentId').val(String(pId));
+
+            if (pId === 0) {
+                $('#txtParentDisplay').val('Top Level (Root / No Parent)');
+                $('#lblParentHelper').html('<span class="text-slate-400"><i class="fas fa-lock mr-1"></i>Root WBS item</span>');
+            } else {
+                var parentItem = allWBSList.find(function (g) { return Number(g.wbsId) === pId; });
+                var pLabel = parentItem ? ('[' + parentItem.wbsId + '] ' + parentItem.wbsName) : ('WBS #' + pId);
+                $('#txtParentDisplay').val(pLabel);
+                $('#lblParentHelper').html('<span class="text-slate-400"><i class="fas fa-lock mr-1"></i>Locked to parent — hierarchy cannot be displaced directly</span>');
+            }
+
+            $('#txtWBSName').val(item.wbsName || '');
+            $('#modalTitle').text('Edit WBS #' + item.wbsId);
+            $('#btnSaveText').text('Update');
+
+            showModal();
+        }
+
+        function showModal() {
+            $('#wbsModalOverlay').css('display', 'flex').hide().fadeIn(150);
+            setTimeout(function () {
+                $('#txtWBSName').focus();
+            }, 200);
+        }
+
+        function closeWbsModal() {
+            $('#wbsModalOverlay').fadeOut(150);
+        }
+
+        $(document).on('click', '#wbsModalOverlay', function (e) {
+            if (e.target === this) {
+                closeWbsModal();
+            }
+        });
+
+        // ── Save / Update ──
+        function saveWBS(e) {
+            e.preventDefault();
+
+            var wbsIdVal = parseInt($('#txtWBSId').val()) || 0;
+            var parentIdVal = $('#txtParentId').val() || '0';
+            var nameVal = $('#txtWBSName').val().trim();
+
+            if (!nameVal) {
+                Swal.fire({ icon: 'warning', title: 'Required', text: 'Please enter WBS Name' });
+                return;
+            }
+
+            var payload = {
+                WBSId: wbsIdVal,
+                WBSName: nameVal,
+                ParentId: parentIdVal
+            };
+
+            $('#btnSaveWBS').prop('disabled', true).addClass('opacity-60');
+
+            $.ajax({
+                url: '/WBSMaster/Save',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function (res) {
+                    $('#btnSaveWBS').prop('disabled', false).removeClass('opacity-60');
+
+                    if (res && res.success) {
+                        closeWbsModal();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: res.message,
+                            timer: 1800,
+                            showConfirmButton: false
+                        });
+                        loadGridData(Number(parentIdVal));
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Save Failed', text: res ? res.message : 'Unknown error' });
+                    }
+                },
+                error: function (xhr, status, err) {
+                    $('#btnSaveWBS').prop('disabled', false).removeClass('opacity-60');
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Error saving: ' + err });
+                }
+            });
+        }
+
+        // ── Delete WBS ──
+        function deleteWBS(id, name) {
+            var hasChildren = allWBSList.some(function (g) { return Number(g.parentId) === Number(id); });
+            var warningText = hasChildren 
+                ? 'This WBS item has sub-breakdowns under it. Are you sure you want to delete "' + name + '"?' 
+                : 'Are you sure you want to delete "' + name + '"?';
+
+            Swal.fire({
+                title: 'Delete WBS?',
+                text: warningText,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary)',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, Delete'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/WBSMaster/Delete',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ WBSId: id }),
+                        success: function (res) {
+                            if (res && res.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted',
+                                    text: res.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                                loadGridData();
+                            } else {
+                                Swal.fire({ icon: 'error', title: 'Delete Failed', text: res ? res.message : 'Error' });
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

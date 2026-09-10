@@ -1,0 +1,3149 @@
+@{
+    ViewBag.Title = "Request for Creation - Project IOW Add — VGN ERP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="p-3 sm:p-4 space-y-3 font-sans text-slate-800 dark:text-slate-100 max-w-[1700px] mx-auto">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         STEP 1 — HEADER SECTION (img-1)
+         Exact Match: Light Blue Title, 3 Top-Right Action Buttons, Form Inputs
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xs p-3.5 sm:p-4 space-y-3">
+        <!-- Top Bar: Title & Top-Right Action Buttons (Exact Match to Image 1) -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2.5 border-b border-slate-100 dark:border-slate-700">
+            <div>
+                <h1 class="text-base font-bold text-[#0088cc] dark:text-[#38bdf8] tracking-tight">Request for Creation - Project IOW Add</h1>
+            </div>
+
+            <!-- Top Right Action Buttons (Image 1: Sheet Rate Duplication, WBS Master, Apply Qualifier) -->
+            <div class="flex items-center gap-2 flex-wrap">
+                <button type="button" class="px-3 py-1 rounded text-xs font-semibold bg-[#f3e8ff] text-[#7e22ce] hover:bg-[#e9d5ff] border border-[#e9d5ff] transition cursor-pointer shadow-2xs">
+                    <i class="fas fa-bell mr-1 text-[10px]"></i> Sheet Rate Duplication
+                </button>
+                <button type="button" onclick="openWBSMasterModal()" class="px-3 py-1 rounded text-xs font-semibold bg-[#e0f2fe] text-[#0369a1] hover:bg-[#bae6fd] border border-[#bae6fd] transition cursor-pointer shadow-2xs">
+                    <i class="fas fa-th-list mr-1 text-[10px]"></i> WBS Master
+                </button>
+                <button type="button" class="px-3 py-1 rounded text-xs font-semibold bg-[#ccfbf1] text-[#0f766e] hover:bg-[#99f6e4] border border-[#99f6e4] transition cursor-pointer shadow-2xs">
+                    <i class="fas fa-sliders-h mr-1 text-[10px]"></i> Apply Qualifier
+                </button>
+            </div>
+        </div>
+
+        <!-- Form Inputs Strip: Reference Date, Ref No, Project Name (Dropdown), Type, Revision -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            <!-- Reference Date: Date Picker (read-only, no manual keyboard typing allowed) -->
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                    Reference Date <span class="text-rose-500">*</span>
+                </label>
+                <div class="relative">
+                    <input type="text" id="txtReferenceDate" readonly value="@ViewBag.CurrentDate" class="w-full text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#f8fafc] dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 cursor-pointer focus:ring-1 focus:ring-sky-500 focus:outline-none" placeholder="Select Date" />
+                    <i class="fas fa-calendar-alt absolute right-3 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
+                </div>
+            </div>
+
+            <!-- Reference No: auto-generated ID, not editable -->
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Reference No</label>
+                <input type="text" id="txtReferenceNo" value="51070" readonly class="w-full text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 cursor-not-allowed select-none focus:outline-none" placeholder="51070" />
+            </div>
+
+            <!-- Project Name: comes from dropdown (User specified) -->
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                    Project Name <span class="text-rose-500">*</span>
+                </label>
+                <select id="ddlProject" onchange="onProjectChange(this.value)" class="w-full text-xs font-bold px-3 py-1.5 rounded-lg bg-[#f8fafc] dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 focus:ring-1 focus:ring-sky-500 focus:outline-none cursor-pointer">
+                    <option value="1">Demo Project</option>
+                </select>
+                <input type="hidden" id="txtProjectName" value="Demo Project" />
+            </div>
+
+            <!-- Type: Budget / Estimate / Actual -->
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Type</label>
+                <select id="ddlType" class="w-full text-xs font-medium px-3 py-1.5 rounded-lg bg-[#f8fafc] dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 focus:ring-1 focus:ring-sky-500 focus:outline-none cursor-pointer">
+                    <option value="Budget" selected>Budget</option>
+                    <option value="Estimate">Estimate</option>
+                    <option value="Actual">Actual</option>
+                </select>
+            </div>
+
+            <!-- Revision: default value = "No", user can switch to Yes/No -->
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Revision</label>
+                <select id="ddlRevision" class="w-full text-xs font-medium px-3 py-1.5 rounded-lg bg-[#f8fafc] dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 focus:ring-1 focus:ring-sky-500 focus:outline-none cursor-pointer">
+                    <option value="No" selected>No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         STEP 2 — DX GRID CARD, GREEN RIBBON & ACTION BAR (img-1, img-2)
+         Exact Match: No unwanted buttons, Exact Column Widths, Smooth Scroll
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="space-y-0">
+        <!-- Top Ribbon Tag: Only One WorkGroup Button + Library IOW PickList Button -->
+        <div class="flex items-center gap-2 flex-wrap">
+            <button type="button" onclick="openWorkgroupPickListModal()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-t-md text-xs font-bold bg-[#0284c7] hover:bg-[#0369a1] text-white shadow-xs transition cursor-pointer" title="Choose WorkGroup">
+                <i class="fas fa-folder-open text-[10px]"></i>
+                <span>Choose WorkGroup</span>
+            </button>
+            <button type="button" onclick="openLibraryIOWModal(null)" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-t-md text-xs font-bold bg-[#84cc16] hover:bg-[#65a30d] text-white shadow-xs transition cursor-pointer" title="Browse Library IOWs">
+                <i class="fas fa-external-link-alt text-[10px]"></i>
+                <span>Library IOW PickList</span>
+            </button>
+        </div>
+
+        <!-- Native HTML Table Container with Exact Column Widths, Sticky Header & Smooth Scrolling -->
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-b-xl rounded-tr-xl shadow-2xs overflow-hidden p-2.5 relative">
+            <div class="overflow-x-auto overflow-y-auto custom-scrollbar rounded border border-[#bce1f4] dark:border-slate-700" style="max-height: calc(100vh - 290px);">
+                <table id="tblProjectIOW" class="w-full border-collapse text-xs table-fixed">
+                    <thead class="sticky top-0 z-20 bg-[#ebf5fa] dark:bg-slate-800 text-[#004085] dark:text-sky-200 font-bold border-b-2 border-[#bce1f4] dark:border-slate-700 shadow-xs">
+                        <tr>
+                            <th class="w-[40px] px-1 py-2 text-center">#</th>
+                            <th class="w-[105px] px-2 py-2 text-left">RefNo</th>
+                            <th class="min-w-[480px] px-2 py-2 text-left">Specification</th>
+                            <th class="w-[85px] px-2 py-2 text-left">Unit</th>
+                            <th class="w-[130px] px-2 py-2 text-right">Qty</th>
+                            <th class="w-[140px] px-2 py-2 text-right">Rate</th>
+                            <th class="w-[140px] px-2 py-2 text-right">Amount</th>
+                            <th class="w-[65px] px-1 py-2 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblProjectIOWBody" class="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-900">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Total Amount Bar directly beneath Grid -->
+            <div class="total-amount-bar flex justify-end items-center gap-3 mt-2 px-3 py-1.5 rounded-lg bg-[#eaf5d8] dark:bg-emerald-950/30 border border-[#d2e7b8] dark:border-emerald-800/60 select-none">
+                <span class="text-xs font-bold text-slate-700 dark:text-emerald-200">Total Amount:</span>
+                <div class="px-4 py-1 border border-emerald-500/50 rounded bg-white dark:bg-slate-900 text-right font-bold text-xs text-emerald-600 dark:text-emerald-400 min-w-[130px] shadow-2xs" id="lblGridTotalAmount">
+                    0
+                </div>
+            </div>
+        </div>
+
+        <!-- Remarks & Project Resource Bar directly beneath (Exact Match to Image 1 & 2) -->
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-2xs mt-2">
+            <div class="flex items-center gap-2.5 w-full md:w-auto">
+                <label class="text-xs font-bold text-slate-600 dark:text-slate-400 whitespace-nowrap">Enter Remarks:</label>
+                <input type="text" id="txtMainRemarks" placeholder="Enter Remarks" class="w-full sm:w-80 md:w-96 text-xs px-3 py-1.5 rounded-lg bg-[#f8fafc] dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-sky-500 focus:outline-none" />
+            </div>
+
+            <!-- Project Resource Button matching Image 1 & 2 bottom left -->
+            <div>
+                <button type="button" onclick="openResourcePickListModal(null)" class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#65a30d] hover:bg-[#4d7c0f] text-white inline-flex items-center gap-2 shadow-2xs transition cursor-pointer">
+                    <span>Project Resource :</span>
+                    <i class="fas fa-arrow-right text-[10px]"></i>
+                    <span id="badgeResourceCount" class="w-4 h-4 rounded-full bg-white text-[#65a30d] font-black text-[10px] inline-flex items-center justify-center">2</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         BOTTOM FOOTER BAR: READY FOR APPROVAL, CANCEL, SUBMIT (Matching Image 2)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="sticky bottom-0 z-30 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-xl shadow-md p-2.5 flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center gap-2 select-none">
+            <input type="checkbox" id="chkReadyForApproval" checked class="w-4 h-4 rounded text-sky-600 focus:ring-sky-500 border-slate-300 dark:border-slate-600 cursor-pointer" />
+            <label for="chkReadyForApproval" class="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">Ready for Approval</label>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+            <button type="button" onclick="resetEntireForm()" class="px-4 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 transition cursor-pointer">
+                Cancel
+            </button>
+            <button type="button" onclick="submitProjectIOW()" class="px-5 py-1.5 rounded-lg text-xs font-bold bg-[#0284c7] hover:bg-[#0369a1] text-white shadow-sm flex items-center gap-1.5 transition cursor-pointer">
+                <i class="fas fa-check-circle text-xs"></i>
+                <span>Submit</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MODAL 1: PROJECT WORKGROUP / HEADER PICKLIST (img-3 & img-4)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div id="modalWorkgroupOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[1050] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto" style="display: none;">
+    <div class="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[85vh] my-auto overflow-hidden z-[1055]">
+        <div class="px-4 py-2.5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-[#ebf5fa] dark:bg-slate-800 flex-shrink-0">
+            <div class="flex items-center gap-2">
+                <div class="w-5 h-5 rounded bg-sky-500 text-white flex items-center justify-center text-xs font-bold">
+                    <i class="fas fa-list-ul"></i>
+                </div>
+                <h3 class="text-xs font-bold text-sky-950 dark:text-sky-200">Project Workgroup/Header PickList</h3>
+            </div>
+            <button onclick="closeWorkgroupPickListModal()" type="button" class="w-6 h-6 flex items-center justify-center rounded-full text-sky-400 hover:bg-sky-200/50 hover:text-sky-700 transition cursor-pointer">
+                <i class="fas fa-times text-xs"></i>
+            </button>
+        </div>
+
+        <div class="p-2.5 border-b border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex items-center gap-2 flex-wrap">
+            <select id="ddlWgSearchField" class="text-xs font-semibold px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+                <option value="SerialNo">SerialNo</option>
+                <option value="Description">Description</option>
+            </select>
+            <div class="relative flex-1 min-w-[150px]">
+                <input type="text" id="txtWgSearchKeyword" onkeyup="filterWorkgroupList()" placeholder="Search..." class="w-full text-xs px-2.5 py-1 pr-7 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500" />
+                <i class="fas fa-search absolute right-2 top-1.5 text-slate-400 text-xs pointer-events-none"></i>
+            </div>
+            <button type="button" onclick="filterWorkgroupList()" class="w-6 h-6 rounded-full bg-amber-400 text-white flex items-center justify-center text-xs shadow-xs hover:bg-amber-500 transition" title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+            <button type="button" onclick="toggleExpandAllWorkgroups()" class="w-6 h-6 rounded-full bg-pink-400 text-white flex items-center justify-center text-xs shadow-xs hover:bg-pink-500 transition" title="Expand/Collapse">
+                <i class="fas fa-arrows-alt-v"></i>
+            </button>
+            <a href="@Url.Action("Index", "WorkGroupMaster")" target="_blank" class="w-6 h-6 rounded-full bg-sky-500 text-white flex items-center justify-center text-xs shadow-xs hover:bg-sky-600 transition" title="Manage Work Groups">
+                <i class="fas fa-pencil-alt"></i>
+            </a>
+        </div>
+
+        <div class="p-2.5 overflow-y-auto flex-1 max-h-[50vh] custom-scrollbar">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="bg-[#ebf5fa] dark:bg-slate-700 text-sky-900 dark:text-sky-200 font-bold border-b border-sky-200 dark:border-slate-600">
+                        <th class="py-1.5 px-3 w-32">SerialNo</th>
+                        <th class="py-1.5 px-3">Description</th>
+                        <th class="py-1.5 px-3 w-16 text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tblWorkgroupPickListBody" class="divide-y divide-slate-100 dark:divide-slate-700">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="px-4 py-2 border-t border-slate-100 dark:border-slate-700 bg-[#ebf5fa] dark:bg-slate-800 flex justify-between items-center flex-wrap gap-2 flex-shrink-0">
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-slate-500 dark:text-slate-400" id="lblWgCountInfo">1-4 of 4</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="closeWorkgroupPickListModal()" class="px-3 py-1 rounded text-xs font-semibold bg-[#a855f7] hover:bg-[#9333ea] text-white transition cursor-pointer">
+                    Cancel
+                </button>
+                <button type="button" onclick="applySelectedWorkgroups()" class="px-4 py-1 rounded text-xs font-bold bg-[#06b6d4] hover:bg-[#0891b2] text-white transition cursor-pointer">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MODAL 2: WBS MASTER PICKLIST (img-9 & img-10)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div id="modalWBSOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[1060] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto" style="display: none;">
+    <div class="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[85vh] my-auto overflow-hidden z-[1065]">
+        <div class="px-4 py-2.5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-[#ebf5fa] dark:bg-slate-800 flex-shrink-0">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-list-ul text-sky-600 text-xs"></i>
+                <h3 class="text-xs font-bold text-sky-950 dark:text-sky-200">PickList</h3>
+            </div>
+            <button onclick="closeWBSPickListModal()" type="button" class="w-6 h-6 flex items-center justify-center rounded-full text-sky-400 hover:text-sky-700 transition cursor-pointer">
+                <i class="fas fa-times text-xs"></i>
+            </button>
+        </div>
+
+        <div class="p-2.5 bg-[#ebf5fa]/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700 space-y-1">
+            <span class="block text-[11px] font-bold text-slate-700 dark:text-slate-300">WBSName</span>
+            <input type="text" id="txtWBSFilter" onkeyup="filterWBSPickList()" placeholder="" class="w-full text-xs px-2.5 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500" />
+        </div>
+
+        <div class="p-2.5 overflow-y-auto flex-1 max-h-[48vh] custom-scrollbar">
+            <table class="w-full text-left text-xs border-collapse">
+                <tbody id="tblWBSPickListBody" class="divide-y divide-slate-100 dark:divide-slate-700">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="px-4 py-2 border-t border-slate-100 dark:border-slate-700 bg-[#ebf5fa] dark:bg-slate-800 flex justify-between items-center flex-wrap gap-2 flex-shrink-0">
+            <div class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                <span>Go to page:</span>
+                <input type="number" id="wbsCurrentPage" value="1" min="1" class="w-10 text-center text-xs py-0.5 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200" />
+                <span>Show rows:</span>
+                <select id="wbsPageSize" onchange="filterWBSPickList()" class="text-xs py-0.5 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                </select>
+                <span id="lblWBSCountInfo">1-6 of 6</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="closeWBSPickListModal()" class="px-3 py-1 rounded text-xs font-semibold bg-[#a855f7] hover:bg-[#9333ea] text-white transition cursor-pointer">
+                    Cancel
+                </button>
+                <button type="button" onclick="applySelectedWBSToActiveIOW()" class="px-4 py-1 rounded text-xs font-bold bg-[#06b6d4] hover:bg-[#0891b2] text-white transition cursor-pointer">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MODAL 3: RESOURCE / IOW PICKLIST (img-12, img-13, img-14)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div id="modalResourceOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[1060] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto" style="display: none;">
+    <div class="relative w-full max-w-3xl bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[88vh] my-auto overflow-hidden z-[1065]">
+        <div class="px-4 py-2.5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-[#ebf5fa] dark:bg-slate-800 flex-shrink-0">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-list-ul text-sky-600 text-xs"></i>
+                <h3 class="text-xs font-bold text-sky-950 dark:text-sky-200">Resource/IOW Picklist</h3>
+            </div>
+            <button onclick="closeResourcePickListModal()" type="button" class="w-6 h-6 flex items-center justify-center rounded-full text-sky-400 hover:text-sky-700 transition cursor-pointer">
+                <i class="fas fa-times text-xs"></i>
+            </button>
+        </div>
+
+        <div class="flex border-b border-slate-200 dark:border-slate-700 px-3 bg-slate-50 dark:bg-slate-800/60">
+            <button type="button" onclick="switchResourceModalTab('Resource')" id="tabBtnResource" class="py-1.5 px-3 text-xs font-bold border-b-2 border-teal-500 text-teal-600 dark:text-teal-400 focus:outline-none">
+                Resource
+            </button>
+            <button type="button" onclick="switchResourceModalTab('IOW')" id="tabBtnIOW" class="py-1.5 px-3 text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 border-b-2 border-transparent focus:outline-none">
+                Item of Work
+            </button>
+        </div>
+
+        <div class="p-2.5 border-b border-slate-100 dark:border-slate-700 bg-[#ebf5fa]/40 dark:bg-slate-800/40">
+            <div class="grid grid-cols-5 gap-2 text-xs">
+                <div>
+                    <span class="block text-[10px] font-bold text-slate-600 dark:text-slate-300 mb-0.5">Code</span>
+                    <input type="text" id="filResCode" onkeyup="filterResourcePickList()" class="w-full text-xs px-2 py-0.5 border border-slate-300 rounded bg-white dark:bg-slate-700" />
+                </div>
+                <div>
+                    <span class="block text-[10px] font-bold text-slate-600 dark:text-slate-300 mb-0.5">ResourceName</span>
+                    <input type="text" id="filResName" onkeyup="filterResourcePickList()" class="w-full text-xs px-2 py-0.5 border border-slate-300 rounded bg-white dark:bg-slate-700" />
+                </div>
+                <div>
+                    <span class="block text-[10px] font-bold text-slate-600 dark:text-slate-300 mb-0.5">Unit</span>
+                    <input type="text" id="filResUnit" onkeyup="filterResourcePickList()" class="w-full text-xs px-2 py-0.5 border border-slate-300 rounded bg-white dark:bg-slate-700" />
+                </div>
+                <div>
+                    <span class="block text-[10px] font-bold text-slate-600 dark:text-slate-300 mb-0.5">Type</span>
+                    <input type="text" id="filResType" onkeyup="filterResourcePickList()" class="w-full text-xs px-2 py-0.5 border border-slate-300 rounded bg-white dark:bg-slate-700" />
+                </div>
+                <div>
+                    <span class="block text-[10px] font-bold text-slate-600 dark:text-slate-300 mb-0.5">ResourceGroup</span>
+                    <input type="text" id="filResGroup" onkeyup="filterResourcePickList()" class="w-full text-xs px-2 py-0.5 border border-slate-300 rounded bg-white dark:bg-slate-700" />
+                </div>
+            </div>
+        </div>
+
+        <div class="p-2.5 overflow-y-auto flex-1 max-h-[46vh] custom-scrollbar">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="bg-[#ebf5fa] dark:bg-slate-700 text-sky-900 dark:text-sky-200 font-bold border-b border-sky-200 dark:border-slate-600">
+                        <th class="py-1.5 px-3 w-10 text-center">
+                            <input type="checkbox" onchange="toggleSelectAllResources(this)" class="rounded text-teal-600" />
+                        </th>
+                        <th class="py-1.5 px-3 w-20">Code</th>
+                        <th class="py-1.5 px-3">ResourceName</th>
+                        <th class="py-1.5 px-3 w-16">Unit</th>
+                        <th class="py-1.5 px-3 w-20">Type</th>
+                        <th class="py-1.5 px-3">ResourceGroup</th>
+                    </tr>
+                </thead>
+                <tbody id="tblResourcePickListBody" class="divide-y divide-slate-100 dark:divide-slate-700">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="px-4 py-2 border-t border-slate-100 dark:border-slate-700 bg-[#ebf5fa] dark:bg-slate-800 flex justify-between items-center flex-wrap gap-2 flex-shrink-0">
+            <div class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                <span>Go to page:</span>
+                <input type="number" id="resCurrentPage" value="1" min="1" class="w-10 text-center text-xs py-0.5 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200" />
+                <span>Show rows:</span>
+                <select id="resPageSize" onchange="filterResourcePickList()" class="text-xs py-0.5 border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                </select>
+                <span id="lblResPageInfo">1-10 of 42448</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="closeResourcePickListModal()" class="px-3 py-1 rounded text-xs font-semibold bg-[#a855f7] hover:bg-[#9333ea] text-white transition cursor-pointer">
+                    Cancel
+                </button>
+                <button type="button" onclick="applySelectedResourcesToActiveIOW()" class="px-4 py-1 rounded text-xs font-bold bg-[#06b6d4] hover:bg-[#0891b2] text-white transition cursor-pointer">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MODAL 4: LIBRARY IOW PICKLIST (img-1, img-2, img-5)
+     Browse existing library items from dbo.IOWMas
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div id="modalLibraryIOWOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[1050] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto" style="display: none;">
+    <div class="relative w-full max-w-3xl bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[85vh] my-auto overflow-hidden z-[1055]">
+        <div class="px-4 py-2.5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-[#ebf5fa] dark:bg-slate-800 flex-shrink-0">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-book-open text-emerald-600 text-xs"></i>
+                <h3 class="text-xs font-bold text-emerald-950 dark:text-emerald-300">Library IOW PickList</h3>
+            </div>
+            <button onclick="closeLibraryIOWModal()" type="button" class="w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-700 transition cursor-pointer">
+                <i class="fas fa-times text-xs"></i>
+            </button>
+        </div>
+
+        <div class="p-2.5 border-b border-slate-100 dark:border-slate-700">
+            <input type="text" id="txtLibrarySearch" onkeyup="filterLibraryIOWList()" placeholder="Search Library Specifications..." class="w-full text-xs px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500" />
+        </div>
+
+        <div class="p-2.5 overflow-y-auto flex-1 max-h-[48vh] custom-scrollbar">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="bg-emerald-50 dark:bg-slate-700 text-emerald-900 dark:text-emerald-200 font-bold border-b border-emerald-200 dark:border-slate-600">
+                        <th class="py-1.5 px-3 w-20">Code</th>
+                        <th class="py-1.5 px-3 w-28">Source</th>
+                        <th class="py-1.5 px-3 w-28">WorkGroup</th>
+                        <th class="py-1.5 px-3">Specification</th>
+                        <th class="py-1.5 px-3 w-16">Unit</th>
+                        <th class="py-1.5 px-3 w-24 text-right">Default Rate</th>
+                        <th class="py-1.5 px-3 w-16 text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tblLibraryIOWBody" class="divide-y divide-slate-100 dark:divide-slate-700">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="px-4 py-2 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex justify-end gap-2">
+            <button type="button" onclick="closeLibraryIOWModal()" class="px-3 py-1 rounded text-xs font-semibold bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-200">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MODAL 5: FINAL SAVE — CLEAN NESTED JSON PREVIEW
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div id="modalBOQJsonPayload" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[1070] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto" style="display: none;">
+    <div class="relative w-full max-w-3xl bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[88vh] my-auto overflow-hidden z-[1075]">
+        <div class="px-5 py-3 border-b border-slate-100 dark:border-slate-700 bg-[#f8fafc] dark:bg-slate-800 flex justify-between items-center flex-shrink-0">
+            <div class="flex items-center gap-2.5">
+                <i class="fas fa-file-code text-teal-600 text-sm"></i>
+                <div>
+                    <h3 class="text-xs font-bold text-slate-900 dark:text-white">Bill of Quantity (BOQ) — Submission Payload</h3>
+                    <p class="text-[10px] text-slate-500">Clean, structured JSON format</p>
+                </div>
+            </div>
+            <button onclick="closeBOQJsonModal()" type="button" class="w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-700 transition cursor-pointer">
+                <i class="fas fa-times text-xs"></i>
+            </button>
+        </div>
+
+        <div class="p-2.5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between flex-wrap gap-2 text-xs">
+            <div class="flex items-center gap-2 flex-wrap text-slate-600 dark:text-slate-300 text-xs">
+                <span>Items: <strong id="payloadModalItemCount" class="font-bold text-sky-600">0</strong></span>
+                <span>• Resources: <strong id="payloadModalResCount" class="font-bold text-purple-600">0</strong></span>
+                <span>• Total: <strong id="payloadModalTotalAmount" class="font-bold text-emerald-600">₹ 0</strong></span>
+            </div>
+            <button type="button" onclick="copyBOQJsonToClipboard()" class="px-3 py-1 rounded text-xs font-bold bg-[#0284c7] hover:bg-[#0369a1] text-white flex items-center gap-1 shadow-2xs transition cursor-pointer">
+                <i class="fas fa-copy text-[10px]"></i>
+                <span>Copy JSON</span>
+            </button>
+        </div>
+
+        <div class="p-3 flex-1 overflow-y-auto max-h-[50vh] bg-slate-900 custom-scrollbar">
+            <pre id="txtThemedJsonContent" class="text-xs font-mono text-emerald-400 whitespace-pre-wrap leading-relaxed select-all"></pre>
+        </div>
+
+        <div class="px-5 py-2.5 border-t border-slate-100 dark:border-slate-700 bg-[#f8fafc] dark:bg-slate-800 flex justify-end gap-2 flex-shrink-0">
+            <button type="button" onclick="closeBOQJsonModal()" class="px-3 py-1 rounded text-xs font-semibold border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200">
+                Close
+            </button>
+            <button type="button" onclick="copyBOQJsonToClipboard()" class="px-4 py-1 rounded text-xs font-bold bg-[#0284c7] hover:bg-[#0369a1] text-white flex items-center gap-1">
+                <i class="fas fa-copy text-[10px]"></i> Copy JSON
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ALERT MODAL: REFNO VALIDATION (img-6)
+     "RefNo is Empty" matching exact dialog in Image 6
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div id="modalRefNoAlert" class="fixed inset-0 bg-slate-900/40 z-[1080] hidden flex items-center justify-center p-4" style="display: none;">
+    <div class="w-full max-w-[340px] bg-white dark:bg-slate-800 rounded-lg shadow-2xl border border-slate-300 dark:border-slate-600 p-5 space-y-4">
+        <div class="space-y-2 text-left">
+            <p class="text-xs text-slate-500 font-medium font-sans">172.16.1.3:8080 says</p>
+            <p class="text-sm font-semibold text-slate-900 dark:text-white pl-0.5">RefNo is Empty</p>
+        </div>
+        <div class="text-right pt-2">
+            <button type="button" onclick="closeRefNoAlert()" class="px-5 py-1.5 rounded-md text-xs font-bold bg-[#1976d2] hover:bg-[#1565c0] text-white shadow-xs transition cursor-pointer min-w-[75px]">
+                OK
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     FLOATING AUTOCOMPLETE DROPDOWN FOR SPECIFICATION (img-5)
+     High z-index, positioned dynamically under Specification input
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div id="specAutocompleteDropdown" class="fixed z-[9999] hidden bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-2xl max-h-60 overflow-y-auto text-xs w-[520px] custom-scrollbar">
+    <div id="specAutocompleteItems" class="divide-y divide-slate-100 dark:divide-slate-700"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     FLOATING AUTOCOMPLETE DROPDOWN FOR WBS (img-8, img-9, Slice 4 & 5)
+     Loads dynamically while typing, positioned right under WBS input
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div id="wbsAutocompleteDropdown" class="fixed z-[9999] hidden bg-white dark:bg-slate-800 border-2 border-slate-600 dark:border-slate-400 rounded-lg shadow-2xl max-h-60 overflow-y-auto text-xs w-[480px] custom-scrollbar">
+    <div id="wbsAutocompleteItems" class="divide-y divide-slate-200 dark:divide-slate-700"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     INLINE MEASUREMENT SHEET TOOLTIP (img-7)
+     "Do You Need Measurement Sheet? [Yes] [No]"
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div id="tooltipMeasurementSheet" class="fixed z-[9999] hidden bg-[#6b21a8] text-white text-xs px-3 py-1.5 rounded-md shadow-xl flex items-center gap-2 select-none">
+    <span class="font-semibold text-[11px]">Do You Need Measurement Sheet?</span>
+    <button type="button" onclick="confirmMeasurementSheet(true)" class="px-2 py-0.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] flex items-center gap-1 cursor-pointer">
+        <i class="fas fa-check text-[9px]"></i> Yes
+    </button>
+    <button type="button" onclick="confirmMeasurementSheet(false)" class="px-2 py-0.5 rounded bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] flex items-center gap-1 cursor-pointer">
+        <i class="fas fa-times text-[9px]"></i> No
+    </button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     CUSTOM STYLES: CONVENIENT SCROLLING & EXACT PIXEL MATCHING
+     ═══════════════════════════════════════════════════════════════════════ -->
+<style>
+    /* Smooth custom scrollbars for convenient scrolling */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(241, 245, 249, 0.6);
+        border-radius: 4px;
+    }
+    [data-theme="dark"] .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(30, 41, 59, 0.6);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 4px;
+    }
+    [data-theme="dark"] .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #475569;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
+    }
+    [data-theme="dark"] .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
+    }
+
+    /* Highlighting for selected table rows matching Image 3, 4, 9, 10, 12, 13 */
+    .highlight-green {
+        background-color: #dcfce7 !important;
+        color: #15803d !important;
+        font-weight: 700 !important;
+    }
+    [data-theme="dark"] .highlight-green {
+        background-color: rgba(34, 197, 94, 0.22) !important;
+        color: #4ade80 !important;
+    }
+
+    /* Inc/Exc Toggle Switch matching Image 11 & 15 */
+    .switch-inc-exc {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 20px;
+    }
+    .switch-inc-exc input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .slider-inc-exc {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #ef4444; /* Exc: Red */
+        transition: .25s;
+        border-radius: 20px;
+    }
+    .slider-inc-exc:before {
+        position: absolute;
+        content: "Exc";
+        font-size: 8px;
+        font-weight: 800;
+        color: white;
+        height: 14px;
+        width: 16px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        color: #ef4444;
+        transition: .25s;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    input:checked + .slider-inc-exc {
+        background-color: #10b981; /* Inc: Green */
+    }
+    input:checked + .slider-inc-exc:before {
+        transform: translateX(21px);
+        color: #10b981;
+        content: "Inc";
+    }
+
+    /* Grid Cell Inputs & Dark Theme Adoption - Crisp, clearly visible dark borders */
+    .grid-cell-box {
+        border: 1.5px solid #334155 !important; /* Crisp dark slate border in light mode */
+        border-radius: 4px;
+        padding: 3px 6px;
+        min-height: 28px;
+        display: flex;
+        align-items: center;
+        background-color: #ffffff;
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 12px;
+        transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    [data-theme="dark"] .grid-cell-box {
+        background-color: #1e293b !important;
+        border: 1.5px solid #64748b !important; /* Clearly visible light slate border in dark mode */
+        color: #f1f5f9 !important;
+    }
+    .grid-cell-box:focus-within {
+        border-color: var(--primary, #0284c7) !important;
+        box-shadow: 0 0 0 2px var(--primary, #0284c7) !important;
+    }
+    [data-theme="dark"] .grid-cell-box:focus-within {
+        border-color: var(--primary, #38bdf8) !important;
+        box-shadow: 0 0 0 2px var(--primary, #38bdf8) !important;
+    }
+    .grid-entry-box {
+        border: 2px solid #059669 !important;
+        background-color: rgba(240, 253, 244, 0.7) !important;
+    }
+    [data-theme="dark"] .grid-entry-box {
+        border: 2px solid #10b981 !important;
+        background-color: rgba(6, 78, 59, 0.35) !important;
+    }
+    .grid-cell-box input,
+    .grid-cell-box select {
+        border: none !important;
+        outline: none !important;
+        background: transparent !important;
+        width: 100%;
+        font-size: 12px;
+        color: inherit !important;
+        padding: 0;
+    }
+    [data-theme="dark"] .grid-cell-box input,
+    [data-theme="dark"] .grid-cell-box select {
+        color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] select option {
+        background-color: #1e293b !important;
+        color: #f1f5f9 !important;
+    }
+
+    /* Prominent Dark Borders for All Inputs, Dropdowns & Modals */
+    #txtReferenceDate,
+    #txtReferenceNo,
+    #ddlProject,
+    #ddlType,
+    #ddlRevision,
+    #txtMainRemarks,
+    [id^="txtNewWBSName_"],
+    [id^="txtNewWBSQty_"],
+    #txtLibrarySearch,
+    #txtWBSFilter,
+    #filResCode, #filResName, #filResUnit, #filResType, #filResGroup,
+    #wbsCurrentPage, #wbsPageSize, #resCurrentPage, #resPageSize,
+    .dark-border-input {
+        border: 1.5px solid #334155 !important;
+    }
+    [data-theme="dark"] #txtReferenceDate,
+    [data-theme="dark"] #txtReferenceNo,
+    [data-theme="dark"] #ddlProject,
+    [data-theme="dark"] #ddlType,
+    [data-theme="dark"] #ddlRevision,
+    [data-theme="dark"] #txtMainRemarks,
+    [data-theme="dark"] [id^="txtNewWBSName_"],
+    [data-theme="dark"] [id^="txtNewWBSQty_"],
+    [data-theme="dark"] #txtLibrarySearch,
+    [data-theme="dark"] #txtWBSFilter,
+    [data-theme="dark"] #filResCode, [data-theme="dark"] #filResName, [data-theme="dark"] #filResUnit, [data-theme="dark"] #filResType, [data-theme="dark"] #filResGroup,
+    [data-theme="dark"] #wbsCurrentPage, [data-theme="dark"] #wbsPageSize, [data-theme="dark"] #resCurrentPage, [data-theme="dark"] #resPageSize,
+    [data-theme="dark"] .dark-border-input {
+        border: 1.5px solid #64748b !important;
+    }
+
+    /* Native Table Styling matching ERP Image 1, 2, 5, 8 & Theme */
+    #tblProjectIOW th {
+        font-size: 11.5px;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
+    }
+    #tblProjectIOW td {
+        padding: 3px 5px;
+        vertical-align: middle;
+    }
+    [data-theme="dark"] #tblProjectIOW {
+        background-color: #0f172a !important;
+        color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] #tblProjectIOW thead tr {
+        background-color: #1e293b !important;
+        border-color: #334155 !important;
+        color: #93c5fd !important;
+    }
+    [data-theme="dark"] #tblProjectIOW thead th {
+        color: #93c5fd !important;
+        border-color: #334155 !important;
+    }
+    [data-theme="dark"] #tblProjectIOW tbody tr {
+        border-color: #334155 !important;
+    }
+    [data-theme="dark"] #tblProjectIOW tbody tr:hover {
+        background-color: rgba(51, 65, 85, 0.4) !important;
+    }
+
+    .ref-empty-error {
+        border: 2px solid #ef4444 !important;
+        background-color: #fee2e2 !important;
+        outline: none !important;
+        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25) !important;
+    }
+    [data-theme="dark"] .ref-empty-error {
+        background-color: rgba(153, 27, 27, 0.35) !important;
+        border-color: #f87171 !important;
+    }
+    .ref-empty-error input {
+        background: transparent !important;
+        color: #b91c1c !important;
+    }
+    [data-theme="dark"] .ref-empty-error input {
+        color: #fca5a5 !important;
+    }
+
+    .wbs-name-error {
+        border: 2px solid #ef4444 !important;
+        background-color: #fee2e2 !important;
+        outline: none !important;
+        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25) !important;
+        color: #b91c1c !important;
+    }
+    [data-theme="dark"] .wbs-name-error {
+        background-color: rgba(153, 27, 27, 0.35) !important;
+        border-color: #f87171 !important;
+        color: #fca5a5 !important;
+    }
+
+    /* Autocomplete Dropdown in Dark Mode */
+    [data-theme="dark"] #specAutocompleteDropdown,
+    [data-theme="dark"] #wbsAutocompleteDropdown {
+        background-color: #1e293b !important;
+        border-color: #475569 !important;
+        color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] .spec-dropdown-item:hover,
+    [data-theme="dark"] .wbs-drop-item:hover {
+        background-color: #334155 !important;
+    }
+</style>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     JAVASCRIPT LOGIC (STEPS 1 THROUGH 14 & FINAL JSON SAVE)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<script>
+    // ── APPLICATION STATE ──
+    var state = {
+        header: {
+            referenceDate: '@ViewBag.CurrentDate',
+            referenceNo: '51070',
+            projectKickoffId: 1,
+            projectName: 'Demo Project',
+            costCentreId: '1',
+            type: 'Budget',
+            revision: 'No',
+            readyForApproval: true,
+            remarks: '',
+            totalAmount: 0.0
+        },
+        workgroups: [],         // All workgroups from master
+        selectedWorkgroups: [], // Workgroups in grid hierarchy
+        libraryIOWs: [
+            { iowId: 1, code: "123", serialNo: "123", workGroupName: "CIVIL WORKS", specification: "Inner side civil touch up works", unit: "LS", unitId: "9", defaultRate: 53400.00 },
+            { iowId: 2, code: "011.1.28", serialNo: "011.1.28", workGroupName: "CIVIL WORKS", specification: "Inner side cold touch up works.", unit: "LS", unitId: "9", defaultRate: 32450.00 },
+            { iowId: 3, code: "0118", serialNo: "0118", workGroupName: "CIVIL WORKS", specification: "Drive way area Dust filling and Paver block relaid work", unit: "Sft", unitId: "10", defaultRate: 85.00 },
+            { iowId: 4, code: "011.1.02", serialNo: "011.1.02", workGroupName: "CIVIL WORKS", specification: "Dust open plastering and finishing work", unit: "Sft", unitId: "10", defaultRate: 42.00 },
+            { iowId: 5, code: "011.1.16", serialNo: "011.1.16", workGroupName: "CIVIL WORKS", specification: "A/c platform making work", unit: "Nos", unitId: "4", defaultRate: 3500.00 },
+            { iowId: 6, code: "0120", serialNo: "0120", workGroupName: "CIVIL WORKS", specification: "Water tank and sump top works", unit: "LS", unitId: "9", defaultRate: 71326.00 }
+        ],
+        resources: [],          // Resources from dbo.ResourceMas
+        uomList: [],            // UOM list from dbo.UOM
+        wbsList: [
+            { wbsId: 1, wbsName: "Demo Project 2", fullWBSName: "Demo Project 2" },
+            { wbsId: 2, wbsName: "1st Floor", fullWBSName: "1st Floor" },
+            { wbsId: 3, wbsName: "2nd Floor", fullWBSName: "2nd Floor" },
+            { wbsId: 4, wbsName: "3rd Floor", fullWBSName: "3rd Floor" },
+            { wbsId: 5, wbsName: "Demo WBS2", fullWBSName: "Demo Project->Demo WBS2" },
+            { wbsId: 6, wbsName: "Demo WBS4", fullWBSName: "Demo Project->Demo WBS4" },
+            { wbsId: 7, wbsName: "Demo WBS5", fullWBSName: "Demo Project->Demo WBS5" },
+            { wbsId: 8, wbsName: "Demo WBS6", fullWBSName: "Demo Project->Demo WBS6" },
+            { wbsId: 9, wbsName: "Retaining Wall", fullWBSName: "Demo Project->Retaining Wall" },
+            { wbsId: 10, wbsName: "test", fullWBSName: "Demo Project->test" }
+        ],
+        items: [],              // BOQ Items
+        activeIOWForResource: null,
+        activeIOWForWBS: null,
+        activeSpecContext: null,
+        selectedWorkgroupRadioId: null,
+        collapsedWorkgroups: {} // Tracks collapsed workgroup ids
+    };
+
+    var entryRowState = {};     // Input state for active entry row
+    var itemActiveSection = {}; // Tracks active drawer ('wbs' or 'rate') per item
+
+    // ── INITIALIZATION ──
+    document.addEventListener("DOMContentLoaded", function () {
+        if ($("#specAutocompleteDropdown").length && $("#specAutocompleteDropdown").parent()[0] !== document.body) {
+            $("#specAutocompleteDropdown").appendTo("body");
+        }
+        if ($("#wbsAutocompleteDropdown").length && $("#wbsAutocompleteDropdown").parent()[0] !== document.body) {
+            $("#wbsAutocompleteDropdown").appendTo("body");
+        }
+        if ($("#tooltipMeasurementSheet").length && $("#tooltipMeasurementSheet").parent()[0] !== document.body) {
+            $("#tooltipMeasurementSheet").appendTo("body");
+        }
+
+        // STEP 1 — Reference Date -> Date Picker (read-only, no manual typing allowed)
+        if (typeof flatpickr !== 'undefined') {
+            flatpickr("#txtReferenceDate", {
+                dateFormat: "d-m-Y",
+                allowInput: false,
+                clickOpens: true,
+                defaultDate: "@ViewBag.CurrentDate" || new Date(),
+                onChange: function (selectedDates, dateStr) {
+                    state.header.referenceDate = dateStr;
+                }
+            });
+        }
+
+        initDataLoad();
+    });
+
+    // Close autocomplete on click outside
+    document.addEventListener("click", function (e) {
+        if (!$(e.target).closest("#specAutocompleteDropdown").length && !$(e.target).hasClass("spec-input-target")) {
+            hideSpecAutocomplete();
+        }
+        if (!$(e.target).closest("#wbsAutocompleteDropdown").length && !$(e.target).hasClass("wbs-input-target")) {
+            hideWBSAutocomplete();
+        }
+    });
+
+    // ── STEP 1: INITIAL DATA LOADING ──
+    async function initDataLoad() {
+        try {
+            // 1. Projects Dropdown
+            fetch('@Url.Action("GetProjects", "ProjectIOW")')
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success && res.data && res.data.length > 0) {
+                        var ddl = document.getElementById("ddlProject");
+                        if (ddl) {
+                            ddl.innerHTML = "";
+                            res.data.forEach(p => {
+                                var pId = p.projectKickoffId || p.ProjectKickoffId || 1;
+                                var pName = p.projectName || p.ProjectName || ('Project ' + pId);
+                                var opt = document.createElement("option");
+                                opt.value = pId;
+                                opt.text = pName;
+                                ddl.appendChild(opt);
+                            });
+                            state.header.projectKickoffId = ddl.value;
+                            state.header.projectName = ddl.options[ddl.selectedIndex].text;
+                            var txtP = document.getElementById("txtProjectName");
+                            if (txtP) txtP.value = state.header.projectName;
+                        }
+                    }
+                });
+
+            // 2. Workgroups Hierarchy Master
+            fetch('@Url.Action("GetWorkgroups", "ProjectIOW")')
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success && res.data) {
+                        state.workgroups = res.data;
+                        renderWorkgroupPickListTable();
+                        renderMainDataGrid(); // STEP 2: Render initial empty grid
+                    }
+                });
+
+            // 3. Library IOWs (dbo.IOWMas)
+            fetch('@Url.Action("GetLibraryIOWs", "ProjectIOW")')
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success && res.data) {
+                        state.libraryIOWs = res.data;
+                        renderLibraryIOWTable();
+                    }
+                });
+
+            // 4. Resources Master (dbo.ResourceMas)
+            fetch('@Url.Action("GetResources", "ProjectIOW")')
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success && res.data) {
+                        state.resources = res.data;
+                        renderResourcePickListTable();
+                    }
+                });
+
+            // 5. UOM Master (dbo.UOM)
+            fetch('@Url.Action("GetUOMList", "ProjectIOW")')
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success && res.data) {
+                        state.uomList = res.data;
+                    }
+                });
+
+            // 6. Project WBS List (dbo.Web_GetProjectWBSList)
+            loadWBSListForProject(state.header.projectKickoffId || 1);
+
+            // Render table immediately
+            renderMainDataGrid();
+
+        } catch (err) {
+            console.error("Data load error:", err);
+        }
+    }
+
+    function loadWBSListForProject(projectId) {
+        fetch('@Url.Action("GetProjectWBSList", "ProjectIOW")?projectId=' + projectId)
+            .then(r => r.json())
+            .then(res => {
+                if (res.success && res.data && res.data.length > 0) {
+                    state.wbsList = res.data;
+                } else if (!state.wbsList || state.wbsList.length === 0) {
+                    state.wbsList = [
+                        { wbsId: 1, wbsName: "Demo Project 2", fullWBSName: "Demo Project 2" },
+                        { wbsId: 2, wbsName: "1st Floor", fullWBSName: "1st Floor" },
+                        { wbsId: 3, wbsName: "2nd Floor", fullWBSName: "2nd Floor" },
+                        { wbsId: 4, wbsName: "3rd Floor", fullWBSName: "3rd Floor" },
+                        { wbsId: 5, wbsName: "Demo WBS2", fullWBSName: "Demo Project->Demo WBS2" },
+                        { wbsId: 6, wbsName: "Demo WBS4", fullWBSName: "Demo Project->Demo WBS4" },
+                        { wbsId: 7, wbsName: "Demo WBS5", fullWBSName: "Demo Project->Demo WBS5" },
+                        { wbsId: 8, wbsName: "Demo WBS6", fullWBSName: "Demo Project->Demo WBS6" },
+                        { wbsId: 9, wbsName: "Retaining Wall", fullWBSName: "Demo Project->Retaining Wall" },
+                        { wbsId: 10, wbsName: "test", fullWBSName: "Demo Project->test" }
+                    ];
+                }
+                renderWBSPickListTable();
+            })
+            .catch(err => {
+                if (!state.wbsList || state.wbsList.length === 0) {
+                    state.wbsList = [
+                        { wbsId: 1, wbsName: "Demo Project 2", fullWBSName: "Demo Project 2" },
+                        { wbsId: 2, wbsName: "1st Floor", fullWBSName: "1st Floor" },
+                        { wbsId: 3, wbsName: "2nd Floor", fullWBSName: "2nd Floor" },
+                        { wbsId: 4, wbsName: "3rd Floor", fullWBSName: "3rd Floor" },
+                        { wbsId: 5, wbsName: "Demo WBS2", fullWBSName: "Demo Project->Demo WBS2" }
+                    ];
+                }
+                renderWBSPickListTable();
+            });
+    }
+
+    function onProjectChange(val) {
+        state.header.projectKickoffId = val;
+        var ddl = document.getElementById("ddlProject");
+        if (ddl && ddl.selectedIndex >= 0) {
+            state.header.projectName = ddl.options[ddl.selectedIndex].text;
+            var txtP = document.getElementById("txtProjectName");
+            if (txtP) txtP.value = state.header.projectName;
+        }
+        loadWBSListForProject(val);
+    }
+
+    // ── STEP 2 — RENDER BOQ NATIVE HTML TABLE (img-1, img-2, img-5) ──
+    // Columns: RefNo | Specification | Unit | Qty | Rate | Amount | Action [📁]
+    function escapeHtml(text) {
+        if (text == null) return '';
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    // Formats numbers cleanly: shows '0' instead of '0.00'/'0.000', but preserves decimal precision when non-zero
+    function cleanNum(val) {
+        if (val == null || val === '') return '0';
+        var n = Number(val);
+        if (isNaN(n) || n === 0) return '0';
+        return parseFloat(n.toFixed(3)).toString();
+    }
+
+    function cleanCurrency(val) {
+        if (val == null || val === '') return '0';
+        var n = Number(val);
+        if (isNaN(n) || n === 0) return '0';
+        return Number(n.toFixed(3)).toLocaleString('en-IN', { maximumFractionDigits: 3 });
+    }
+
+    function getUOMOptionsHtml(selectedVal) {
+        var units = (state.uomList && state.uomList.length > 0) ? state.uomList : [
+            { unitId: 1, unitName: 'Cum' }, { unitId: 2, unitName: 'Sqm' },
+            { unitId: 3, unitName: 'Rmt' }, { unitId: 4, unitName: 'Nos' },
+            { unitId: 5, unitName: 'Each' }, { unitId: 9, unitName: 'LS' },
+            { unitId: 10, unitName: 'Sft' }, { unitId: 15, unitName: 'Cft' }
+        ];
+        return units.map(function (u) {
+            var uName = u.unitName || u.UnitName;
+            var uId = u.unitId || u.UnitId;
+            var isSel = (String(selectedVal).toLowerCase() === String(uName).toLowerCase() || String(selectedVal) === String(uId)) ? 'selected' : '';
+            return `<option value='${uName}' data-id='${uId}' ${isSel}>${uName}</option>`;
+        }).join('');
+    }
+
+    function handleEntryWbsChevron(wgId) {
+        var currRef = entryRowState[wgId]?.refNo;
+        if (!currRef || currRef.trim() === '') {
+            triggerRefNoEmptyValidation(wgId);
+            return;
+        }
+        saveEntryRow(wgId, function (newItem) {
+            if (newItem) toggleDetailSection('item_' + newItem.iowId, 'wbs');
+        });
+    }
+
+    function handleEntryRateChevron(wgId) {
+        var currRef = entryRowState[wgId]?.refNo;
+        if (!currRef || currRef.trim() === '') {
+            triggerRefNoEmptyValidation(wgId);
+            return;
+        }
+        saveEntryRow(wgId, function (newItem) {
+            if (newItem) toggleDetailSection('item_' + newItem.iowId, 'rate');
+        });
+    }
+
+    function handleSpecKeydown(e, wgId) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if ($("#specAutocompleteDropdown").is(":visible") && $(".spec-dropdown-item.active").length) {
+                $(".spec-dropdown-item.active").click();
+            } else {
+                hideSpecAutocomplete();
+                saveEntryRow(wgId);
+            }
+        } else if (e.key === 'Escape') {
+            hideSpecAutocomplete();
+        }
+    }
+
+    function renderMainDataGrid() {
+        var tbody = document.getElementById("tblProjectIOWBody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+
+        state.expandedIOWs = state.expandedIOWs || {};
+
+        // Empty state matching Image 1 & 2: Prompt to Choose WorkGroup
+        if (!state.selectedWorkgroups || state.selectedWorkgroups.length === 0) {
+            var trInit = document.createElement("tr");
+            trInit.className = "h-10 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition";
+            trInit.innerHTML = `
+                <td class="w-[40px] px-1 py-1.5 text-center">
+                    <button type="button" onclick="openWorkgroupPickListModal()" class="w-5 h-5 rounded-full bg-cyan-400 hover:bg-cyan-500 text-slate-900 inline-flex items-center justify-center shadow-xs transition cursor-pointer" title="Choose WorkGroup">
+                        <i class="fas fa-external-link-alt text-[9px]"></i>
+                    </button>
+                </td>
+                <td class="w-[105px] px-2 py-1.5">
+                    <div class="grid-cell-box border-none bg-transparent">
+                        <button type="button" onclick="openWorkgroupPickListModal()" class="px-2.5 py-1 rounded bg-[#1e293b] hover:bg-[#0f172a] text-white font-bold text-xs flex items-center gap-1 shadow-2xs transition cursor-pointer">
+                            <i class="fas fa-folder-open text-[10px] text-cyan-400"></i> Choose WorkGroup
+                        </button>
+                    </div>
+                </td>
+                <td class="min-w-[480px] px-2 py-1.5">
+                    <div class="grid-cell-box">
+                        <input type="text" placeholder="Choose WorkGroup to begin..." class="w-full cursor-pointer text-slate-400 bg-transparent focus:outline-none" onclick="openWorkgroupPickListModal()" />
+                    </div>
+                </td>
+                <td class="w-[85px] px-2 py-1.5"></td>
+                <td class="w-[130px] px-2 py-1.5"></td>
+                <td class="w-[140px] px-2 py-1.5"></td>
+                <td class="w-[140px] px-2 py-1.5"></td>
+                <td class="w-[65px] px-1 py-1.5 text-center"></td>
+            `;
+            tbody.appendChild(trInit);
+            recalculateOverallProject();
+            return;
+        }
+
+        // Determine active leaf workgroup for the single entry row
+        var leafWorkgroups = state.selectedWorkgroups.filter(w => 
+            !state.selectedWorkgroups.some(other => String(other.parentId) === String(w.workGroupId))
+        );
+        var activeLeafWg = leafWorkgroups.length > 0 ? leafWorkgroups[leafWorkgroups.length - 1] : state.selectedWorkgroups[state.selectedWorkgroups.length - 1];
+
+        var drawersToRender = [];
+
+        state.selectedWorkgroups.forEach(wg => {
+            var isChild = wg.parentId && wg.parentId != '0' && wg.parentId != 0;
+            var isCollapsed = state.collapsedWorkgroups[wg.workGroupId] === true;
+            var collapseIcon = isCollapsed ? 'fa-plus-square' : 'fa-minus-square';
+
+            // 1. WorkGroup Header Row
+            var trWg = document.createElement("tr");
+            trWg.className = "h-9 bg-slate-50 dark:bg-slate-800/80 font-bold border-b border-slate-200 dark:border-slate-700";
+            trWg.id = "wgRow_" + wg.workGroupId;
+            trWg.innerHTML = `
+                <td class="w-[40px] px-1 py-1.5 text-center text-sky-600 dark:text-sky-400">
+                    <i class="fas fa-folder text-xs"></i>
+                </td>
+                <td class="w-[105px] px-2 py-1.5">
+                    <div class="grid-cell-box bg-white dark:bg-slate-800">
+                        <span class="text-sky-600 dark:text-sky-400 font-semibold ${isChild ? 'italic' : ''}">${wg.serialNo || ''}</span>
+                    </div>
+                </td>
+                <td class="min-w-[480px] px-2 py-1.5">
+                    <div class="grid-cell-box bg-white dark:bg-slate-800">
+                        <span class="${isChild ? 'italic text-purple-700 dark:text-purple-300 font-semibold' : 'font-bold text-slate-900 dark:text-slate-100'}">${wg.workGroupName || ''}</span>
+                    </div>
+                </td>
+                <td class="w-[85px] px-2 py-1.5"></td>
+                <td class="w-[130px] px-2 py-1.5"></td>
+                <td class="w-[140px] px-2 py-1.5"></td>
+                <td class="w-[140px] px-2 py-1.5"></td>
+                <td class="w-[65px] px-1 py-1.5 text-center">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <button type="button" onclick="toggleWorkGroupCollapse(${wg.workGroupId})" class="text-sky-600 hover:text-sky-800 p-0.5 transition cursor-pointer" title="${isCollapsed ? 'Expand' : 'Collapse'} WorkGroup">
+                            <i class="fas ${collapseIcon} text-xs"></i>
+                        </button>
+                        <button type="button" onclick="deleteWorkGroup(${wg.workGroupId})" class="text-slate-400 hover:text-rose-600 p-0.5 transition cursor-pointer" title="Delete WorkGroup">
+                            <i class="fas fa-trash-alt text-[10px]"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(trWg);
+
+            // 2. If not collapsed, render this workgroup's items
+            if (!isCollapsed) {
+                var wgItems = state.items.filter(it => it.workGroupId == wg.workGroupId);
+                wgItems.forEach(item => {
+                    var formattedQty = cleanNum(item.qty);
+                    var formattedRate = cleanNum(item.rate);
+                    var formattedAmt = cleanCurrency(item.amount);
+                    var isDrawerOpen = state.expandedIOWs[item.iowId] === true;
+                    var chevronClass = isDrawerOpen ? 'fa-chevron-up' : 'fa-chevron-down';
+                    var currentTab = itemActiveSection[item.iowId] || 'wbs';
+                    var wbsChevronClass = (isDrawerOpen && currentTab === 'wbs') ? 'fa-chevron-up' : 'fa-chevron-down';
+                    var rateChevronClass = (isDrawerOpen && currentTab === 'rate') ? 'fa-chevron-up' : 'fa-chevron-down';
+
+                    // Item Row
+                    var trItem = document.createElement("tr");
+                    trItem.className = "h-9 hover:bg-sky-50/40 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-700";
+                    trItem.id = "itemRow_" + item.iowId;
+                    trItem.innerHTML = `
+                        <td class="w-[40px] px-1 py-1.5 text-center text-slate-400 text-xs">
+                            <i class="fas fa-cube"></i>
+                        </td>
+                        <td class="w-[105px] px-2 py-1.5">
+                            <div class="grid-cell-box">
+                                <input type="text" value="${item.refNo || ''}" onchange="updateItemDirect(${item.iowId}, 'refNo', this.value)" class="font-medium" />
+                            </div>
+                        </td>
+                        <td class="min-w-[480px] px-2 py-1.5">
+                            <div class="grid-cell-box">
+                                <input type="text" value="${escapeHtml(item.specification || '')}" oninput="handleSpecInput(this, ${item.workGroupId}, ${item.iowId}, false)" onchange="updateItemDirect(${item.iowId}, 'specification', this.value)" class="w-full font-medium spec-input-target" />
+                            </div>
+                        </td>
+                        <td class="w-[85px] px-2 py-1.5">
+                            <div class="grid-cell-box !p-0.5">
+                                <select class="w-full text-xs py-0.5 px-1 border-none rounded bg-transparent text-slate-800 dark:text-slate-100 font-medium focus:outline-none" onchange="updateItemDirect(${item.iowId}, 'unitId', this.value)">
+                                    ${getUOMOptionsHtml(item.unitId || 'LS')}
+                                </select>
+                            </div>
+                        </td>
+                        <td class="w-[130px] px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 w-full">
+                                <div class="grid-cell-box flex-1">
+                                    <input type="number" step="any" value="${formattedQty}" oninput="updateItemDirect(${item.iowId}, 'qty', this.value)" onchange="updateItemDirect(${item.iowId}, 'qty', this.value)" class="text-right font-bold w-full item-qty-val-${item.iowId}" />
+                                </div>
+                                <button type="button" id="btnToggleWBS_${item.iowId}" onclick="toggleDetailSection('item_${item.iowId}', 'wbs')" class="w-5 h-5 rounded-full bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center text-[9px] flex-shrink-0 transition shadow-2xs cursor-pointer btn-toggle-wbs-${item.iowId}" title="WBS Breakdown (Calculates Qty)">
+                                    <i class="fas ${wbsChevronClass}" id="iconToggleWBS_${item.iowId}"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td class="w-[140px] px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 w-full">
+                                <div class="grid-cell-box flex-1">
+                                    <input type="number" step="any" value="${formattedRate}" oninput="updateItemDirect(${item.iowId}, 'rate', this.value)" onchange="updateItemDirect(${item.iowId}, 'rate', this.value);" class="text-right font-bold w-full item-rate-val-${item.iowId}" />
+                                </div>
+                                <button type="button" id="btnToggleRate_${item.iowId}" onclick="toggleDetailSection('item_${item.iowId}', 'rate')" class="w-5 h-5 rounded-full bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center text-[9px] flex-shrink-0 transition shadow-2xs cursor-pointer btn-toggle-rate-${item.iowId}" title="Toggle Resource Rate Analysis">
+                                    <i class="fas ${rateChevronClass}" id="iconToggleRate_${item.iowId}"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td class="w-[140px] px-2 py-1.5">
+                            <div class="grid-cell-box justify-end font-bold text-emerald-600 dark:text-emerald-400">
+                                <span class="item-amount-val-${item.iowId}">${formattedAmt}</span>
+                            </div>
+                        </td>
+                        <td class="w-[65px] px-1 py-1.5 text-center">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <button type="button" onclick="toggleDetailRow('item_${item.iowId}')" class="text-slate-400 hover:text-sky-600 p-1 transition cursor-pointer" title="Toggle Detail Breakdown">
+                                    <i class="fas ${chevronClass} text-xs" id="toggleIcon_${item.iowId}"></i>
+                                </button>
+                                <button type="button" onclick="deleteIOWItem(${item.iowId})" class="text-slate-400 hover:text-rose-600 p-1 transition cursor-pointer" title="Delete BOQ Item">
+                                    <i class="fas fa-trash-alt text-xs"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(trItem);
+
+                    // Detail Drawer Row (WBS & Rate Cards)
+                    var trDrawer = document.createElement("tr");
+                    trDrawer.id = "drawerRow_" + item.iowId;
+                    trDrawer.className = (isDrawerOpen ? "" : "hidden ") + "bg-[#f0f9ff]/50 dark:bg-slate-900/60 border-b border-sky-200 dark:border-sky-800";
+                    trDrawer.innerHTML = `
+                        <td colspan="8" class="p-3">
+                            <div class="bg-slate-50/70 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-2xs space-y-2">
+                                <!-- STEPS 8–12: WBS BREAKDOWN SECTION (img-8, slices 4 & 5) -->
+                                <div id="detailSectionWBS_${item.iowId}" class="${currentTab === 'wbs' ? '' : 'hidden'} bg-[#ebf5fa] dark:bg-slate-900 border border-sky-300 dark:border-sky-800 rounded-md p-2 space-y-1.5">
+                                    <div class="flex items-center justify-between bg-[#cce3f5] dark:bg-sky-950 px-3 py-1.5 rounded-t border border-[#b8d7ee] dark:border-sky-800 text-xs font-bold text-sky-900 dark:text-sky-100">
+                                        <div class="flex-1">WBS Name</div>
+                                        <div class="w-32 text-right pr-6">Qty</div>
+                                        <div class="w-8 text-right">
+                                            <button type="button" onclick="openWBSPickListModal(state.items.find(i => i.iowId == ${item.iowId}))" class="w-5 h-5 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white inline-flex items-center justify-center text-[10px] shadow-2xs transition cursor-pointer" title="WBS PickList Modal">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="bg-white dark:bg-slate-800 border-x border-b border-[#b8d7ee] dark:border-sky-800 rounded-b divide-y divide-slate-100 dark:divide-slate-700 max-h-56 overflow-y-auto custom-scrollbar" id="wbsRowsContainer_${item.iowId}"></div>
+                                    <div class="flex items-center justify-end gap-3 pt-1 text-xs">
+                                        <span class="font-bold text-[#6b21a8] dark:text-purple-400">Total Qty</span>
+                                        <span class="px-3 py-1 rounded border border-purple-200 dark:border-purple-800 bg-white dark:bg-slate-800 font-mono font-bold text-[#6b21a8] dark:text-purple-300 text-xs min-w-[90px] text-right shadow-inner" id="lblWBSTotalQty_${item.iowId}">
+                                            ${cleanNum(item.qty)}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- STEP 14: RESOURCE RATE ANALYSIS (img-14, img-15) -->
+                                <div id="detailSectionRate_${item.iowId}" class="${currentTab === 'rate' ? '' : 'hidden'} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-3 space-y-3">
+                                    <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-700 flex-wrap gap-2 text-xs">
+                                        <div class="flex items-center gap-4 flex-wrap text-slate-700 dark:text-slate-300">
+                                            <div><span class="font-bold text-slate-500 uppercase text-[10px] block">Library WorkGroup</span> <b>${item.libraryWorkGroup || 'CIVIL WORKS'}</b></div>
+                                            <div><span class="font-bold text-slate-500 uppercase text-[10px] block">Library SerialNo</span> <b>${item.librarySerialNo || item.refNo}</b></div>
+                                            <div><span class="font-bold text-slate-500 uppercase text-[10px] block">Library Specification</span> <span class="truncate max-w-xs inline-block">${escapeHtml(item.specification || '')}</span></div>
+                                            <div class="flex items-center gap-1">
+                                                <span class="font-bold text-slate-500 uppercase text-[10px] block">Working Qty:</span>
+                                                <input type="number" step="any" value="${cleanNum(item.workingQty || 1.0)}" onchange="updateWorkingQty(${item.iowId}, this.value)" class="w-16 text-xs px-1.5 py-0.5 border border-slate-300 rounded text-right font-bold" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <button type="button" onclick="openResourcePickListModal(${item.iowId})" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-500 hover:bg-sky-600 text-white shadow-2xs transition flex items-center gap-1.5 cursor-pointer">
+                                                <i class="fas fa-list-ul text-[10px]"></i> Resource/IOW PickList
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="max-h-64 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded custom-scrollbar" id="resourceTableContainer_${item.iowId}"></div>
+                                    <div class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs space-y-2">
+                                        <div class="flex items-center justify-between flex-wrap gap-2">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-bold text-slate-600 dark:text-slate-300">Total Weightage %</span>
+                                                <input type="text" id="lblTotalWeightage_${item.iowId}" readonly value="${cleanNum(item.totalWeightagePct)} %" class="w-20 text-xs py-0.5 px-1.5 border border-slate-300 rounded text-right font-mono font-bold bg-white text-emerald-600" />
+                                            </div>
+                                            <div class="space-y-1 text-right text-xs">
+                                                <div class="flex items-center justify-end gap-3">
+                                                    <span class="text-slate-600">Wastage Amount:</span>
+                                                    <input type="number" step="any" value="${cleanNum(item.wastageAmount)}" onchange="updateItemCalculation(${item.iowId}, 'wastageAmount', this.value)" class="w-24 text-xs py-0.5 px-1.5 border border-slate-300 rounded text-right font-mono bg-white" />
+                                                </div>
+                                                <div class="flex items-center justify-end gap-3">
+                                                    <span class="text-slate-600">Loading/Unloading:</span>
+                                                    <input type="number" step="any" value="${cleanNum(item.loadingUnloading)}" onchange="updateItemCalculation(${item.iowId}, 'loadingUnloading', this.value)" class="w-24 text-xs py-0.5 px-1.5 border border-slate-300 rounded text-right font-mono bg-white" />
+                                                </div>
+                                                <div class="flex items-center justify-end gap-3">
+                                                    <span class="text-slate-600">Handling Charges:</span>
+                                                    <input type="number" step="any" value="${cleanNum(item.handlingCharges)}" onchange="updateItemCalculation(${item.iowId}, 'handlingCharges', this.value)" class="w-24 text-xs py-0.5 px-1.5 border border-slate-300 rounded text-right font-mono bg-white" />
+                                                </div>
+                                                <div class="flex items-center justify-end gap-3 font-bold">
+                                                    <span class="text-slate-700">Base Total for 1 ${item.unitId || 'LS'}:</span>
+                                                    <span class="w-24 font-mono text-right" id="calcBaseTotal_${item.iowId}">₹ ${cleanCurrency(item.baseTotal)}</span>
+                                                </div>
+                                                <div class="flex items-center justify-end gap-3">
+                                                    <span class="text-slate-600">Qualifier Value:</span>
+                                                    <input type="number" step="any" value="${cleanNum(item.qualifierValue)}" onchange="updateItemCalculation(${item.iowId}, 'qualifierValue', this.value)" class="w-24 text-xs py-0.5 px-1.5 border border-slate-300 rounded text-right font-mono bg-white" />
+                                                </div>
+                                                <div class="flex items-center justify-end gap-3 font-bold">
+                                                    <span class="text-slate-700">Grand Total for 1 ${item.unitId || 'LS'}:</span>
+                                                    <span class="w-24 font-mono text-right" id="calcGrandTotal_${item.iowId}">₹ ${cleanCurrency(item.grandTotal)}</span>
+                                                </div>
+                                                <div class="flex items-center justify-end gap-3">
+                                                    <span class="text-slate-600">Base Rate per ${item.unitId || 'LS'}:</span>
+                                                    <span class="w-24 font-mono text-right" id="calcBaseRate_${item.iowId}">₹ ${cleanCurrency(item.baseTotal)}</span>
+                                                </div>
+                                                <div class="flex items-center justify-end gap-3">
+                                                    <span class="text-slate-600">IOW Rate per ${item.unitId || 'LS'}:</span>
+                                                    <span class="w-24 font-mono text-right" id="calcIOWRate_${item.iowId}">₹ ${cleanCurrency(item.netRate)}</span>
+                                                </div>
+                                                <div class="flex items-center justify-end gap-3">
+                                                    <span class="text-slate-600">Rounding Off:</span>
+                                                    <input type="number" step="any" value="${cleanNum(item.roundingOff)}" onchange="updateItemCalculation(${item.iowId}, 'roundingOff', this.value)" class="w-24 text-xs py-0.5 px-1.5 border border-slate-300 rounded text-right font-mono bg-white" />
+                                                </div>
+                                                <div class="flex items-center justify-end gap-3 font-bold text-emerald-600">
+                                                    <span class="text-slate-800 dark:text-slate-200">Net Rate:</span>
+                                                    <span class="w-24 font-mono text-right font-black" id="calcNetRate_${item.iowId}">₹ ${cleanCurrency(item.netRate)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(trDrawer);
+
+                    if (isDrawerOpen) {
+                        drawersToRender.push(item);
+                    }
+                });
+
+                // 3. If active leaf workgroup, render the single entry row beneath it
+                if (activeLeafWg && activeLeafWg.workGroupId === wg.workGroupId) {
+                    var pendingEntry = entryRowState[wg.workGroupId] || {};
+                    var trEntry = document.createElement("tr");
+                    trEntry.id = "entryRow_" + wg.workGroupId;
+                    trEntry.className = "h-9 bg-[#f0fdf4]/80 dark:bg-emerald-950/20 border-b border-emerald-300 dark:border-emerald-800/50";
+                    trEntry.innerHTML = `
+                        <td class="w-[40px] px-1 py-1.5 text-center">
+                            <span class="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 inline-flex items-center justify-center text-[10px] font-bold" title="New Entry">
+                                <i class="fas fa-plus"></i>
+                            </span>
+                        </td>
+                        <td class="w-[105px] px-2 py-1.5">
+                            <div class="grid-cell-box grid-entry-box" id="refBox_${wg.workGroupId}">
+                                <input type="text" id="refInput_${wg.workGroupId}" placeholder="" value="${pendingEntry.refNo || ''}" class="font-bold ref-input-target" oninput="handleRefNoInput(${wg.workGroupId}, this.value)" onblur="handleRefNoBlur(${wg.workGroupId}, this.value)" onkeydown="if (event.key === 'Enter') validateAndApplyRefNo(${wg.workGroupId}, this.value)" />
+                            </div>
+                        </td>
+                        <td class="min-w-[480px] px-2 py-1.5">
+                            <div class="grid-cell-box grid-entry-box">
+                                <input type="text" id="specInput_${wg.workGroupId}" placeholder="Pick from Library" value="${escapeHtml(pendingEntry.specification || '')}" class="w-full font-medium spec-input-target" onfocus="handleSpecInput(this, ${wg.workGroupId}, null, true)" oninput="handleSpecInput(this, ${wg.workGroupId}, null, true)" onblur="handleSpecBlur(${wg.workGroupId})" onkeydown="handleSpecKeydown(event, ${wg.workGroupId})" />
+                            </div>
+                        </td>
+                        <td class="w-[85px] px-2 py-1.5">
+                            <div class="grid-cell-box grid-entry-box !p-0.5">
+                                <select id="unitSelect_${wg.workGroupId}" class="w-full text-xs py-0.5 px-1 border-none rounded bg-transparent text-slate-800 dark:text-slate-100 font-medium focus:outline-none" onchange="updateEntryRowData(${wg.workGroupId}, 'unitId', this.value)">
+                                    ${getUOMOptionsHtml(pendingEntry.unitId || 'LS')}
+                                </select>
+                            </div>
+                        </td>
+                        <td class="w-[130px] px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 w-full">
+                                <div class="grid-cell-box grid-entry-box flex-1">
+                                    <input type="number" step="any" id="qtyInput_${wg.workGroupId}" placeholder="0" class="text-right font-bold w-full" value="${pendingEntry.qty != null && pendingEntry.qty !== '' ? cleanNum(pendingEntry.qty) : '0'}" onfocus="showMeasurementSheetTooltip(this, ${wg.workGroupId}, null)" oninput="updateEntryRowData(${wg.workGroupId}, 'qty', this.value)" onkeydown="if (event.key === 'Enter') saveEntryRow(${wg.workGroupId})" />
+                                </div>
+                                <button type="button" onclick="handleEntryWbsChevron(${wg.workGroupId})" class="w-5 h-5 rounded-full bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center text-[9px] flex-shrink-0 transition shadow-2xs cursor-pointer" title="WBS Quantity Breakdown">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td class="w-[140px] px-2 py-1.5">
+                            <div class="flex items-center gap-1.5 w-full">
+                                <div class="grid-cell-box grid-entry-box flex-1">
+                                    <input type="number" step="any" id="rateInput_${wg.workGroupId}" placeholder="0" class="text-right font-bold w-full" value="${pendingEntry.rate != null && pendingEntry.rate !== '' ? cleanNum(pendingEntry.rate) : ''}" oninput="updateEntryRowData(${wg.workGroupId}, 'rate', this.value)" onkeydown="if (event.key === 'Enter') saveEntryRow(${wg.workGroupId})" />
+                                </div>
+                                <button type="button" onclick="handleEntryRateChevron(${wg.workGroupId})" class="w-5 h-5 rounded-full bg-purple-600 hover:bg-purple-700 text-white flex items-center justify-center text-[9px] flex-shrink-0 transition shadow-2xs cursor-pointer" title="Resource Rate Analysis">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td class="w-[140px] px-2 py-1.5">
+                            <div class="grid-cell-box grid-entry-box justify-end">
+                                <input type="text" id="amountInput_${wg.workGroupId}" readonly class="text-right bg-transparent text-emerald-700 dark:text-emerald-300 font-bold" value="${pendingEntry.amount ? cleanCurrency(pendingEntry.amount) : '0'}" />
+                            </div>
+                        </td>
+                        <td class="w-[65px] px-1 py-1.5 text-center">
+                            <div class="flex items-center justify-center gap-1">
+                                <button type="button" onclick="saveEntryRow(${wg.workGroupId})" class="w-5 h-5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white inline-flex items-center justify-center text-[9px] shadow-2xs transition transform hover:scale-105 cursor-pointer" title="Add Entry">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(trEntry);
+                }
+            }
+        });
+
+        // Render contents for any already open drawers
+        drawersToRender.forEach(item => {
+            renderWBSRows(item);
+            renderCompactResourceTable(item);
+        });
+
+        recalculateOverallProject();
+    }
+
+    // ── STEP 3 — WORK GROUP SELECTION LOGIC (img-3 & img-4) ──
+    function openWorkgroupPickListModal() {
+        renderWorkgroupPickListTable();
+        document.getElementById("modalWorkgroupOverlay").style.display = "flex";
+        document.getElementById("modalWorkgroupOverlay").classList.remove("hidden");
+    }
+
+    function closeWorkgroupPickListModal() {
+        document.getElementById("modalWorkgroupOverlay").style.display = "none";
+        document.getElementById("modalWorkgroupOverlay").classList.add("hidden");
+    }
+
+    function toggleWorkGroupCollapse(wgId) {
+        state.collapsedWorkgroups[wgId] = !state.collapsedWorkgroups[wgId];
+        renderMainDataGrid();
+    }
+
+    function getParentWorkgroup(wg) {
+        if (!wg) return null;
+        var pId = wg.parentId;
+        if (pId && pId !== '0' && pId !== 0 && String(pId).trim() !== '') {
+            var byId = state.workgroups.find(w => String(w.workGroupId) === String(pId));
+            if (byId) return byId;
+            var bySerial = state.workgroups.find(w => w.serialNo === String(pId));
+            if (bySerial) return bySerial;
+        }
+        if (wg.serialNo && String(wg.serialNo).includes('.')) {
+            var parts = String(wg.serialNo).split('.');
+            parts.pop();
+            var parentSerial = parts.join('.');
+            var bySerialDot = state.workgroups.find(w => w.serialNo === parentSerial);
+            if (bySerialDot) return bySerialDot;
+        }
+        return null;
+    }
+
+    function getAncestorsAndSelf(targetWg) {
+        if (!targetWg) return [];
+        var chain = [targetWg];
+        var curr = targetWg;
+        var loopGuard = 0;
+        while (curr && loopGuard < 20) {
+            loopGuard++;
+            var parent = getParentWorkgroup(curr);
+            if (parent && !chain.some(c => c.workGroupId == parent.workGroupId)) {
+                chain.unshift(parent); // Top-down order: [Parent, Child]
+                curr = parent;
+            } else {
+                break;
+            }
+        }
+        return chain;
+    }
+
+    function renderWorkgroupPickListTable(keyword) {
+        var tbody = document.getElementById("tblWorkgroupPickListBody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+
+        var filtered = state.workgroups;
+        if (keyword) {
+            filtered = state.workgroups.filter(w => w.workGroupName.toLowerCase().includes(keyword.toLowerCase()) || w.serialNo.includes(keyword));
+        }
+
+        function getDirectChildren(pId) {
+            var pWg = filtered.find(w => w.workGroupId == pId);
+            return filtered.filter(w => {
+                if (w.workGroupId == pId) return false;
+                if (String(w.parentId) === String(pId)) return true;
+                if (pWg && pWg.serialNo && w.serialNo && String(w.serialNo).startsWith(String(pWg.serialNo) + '.')) {
+                    var pDots = (String(pWg.serialNo).match(/\./g) || []).length;
+                    var wDots = (String(w.serialNo).match(/\./g) || []).length;
+                    return wDots === pDots + 1;
+                }
+                return false;
+            }).sort((a, b) => String(a.serialNo || '').localeCompare(String(b.serialNo || ''), undefined, { numeric: true, sensitivity: 'base' }));
+        }
+
+        function renderNode(node, level, parentChainIds) {
+            var children = getDirectChildren(node.workGroupId);
+            var hasChildren = children.length > 0;
+            var isSelected = (state.selectedWorkgroupRadioId == node.workGroupId);
+
+            var tr = document.createElement("tr");
+            var childClasses = parentChainIds.map(p => `wg-child-of-${p}`).join(' ');
+            tr.className = `hover:bg-sky-50/70 dark:hover:bg-slate-700/60 transition cursor-pointer ${childClasses} ${isSelected ? 'highlight-green' : ''}`;
+            tr.dataset.wgId = node.workGroupId;
+
+            var padLeft = 12 + (level * 20);
+            tr.style.display = (level === 0) ? "table-row" : "none";
+
+            tr.onclick = function (e) {
+                if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'I') {
+                    onWgRadioSelect(node.workGroupId);
+                }
+            };
+
+            var titleWeight = (level === 0) ? "font-bold text-slate-800 dark:text-slate-200" : "font-semibold text-slate-700 dark:text-slate-300";
+
+            tr.innerHTML = `
+                <td class="py-2 px-3" style="padding-left: ${padLeft}px;">
+                    <div class="flex items-center gap-2">
+                        ${hasChildren ? `<i class="fas fa-caret-right wg-caret-${node.workGroupId} text-sky-600 text-xs cursor-pointer p-1" onclick="event.stopPropagation(); toggleWgNodeChildren(this, '${node.workGroupId}')"></i>` : `<span class="w-3 inline-block"></span>`}
+                        <input type="radio" name="wgSelectRadio" value="${node.workGroupId}" ${isSelected ? 'checked' : ''} onchange="onWgRadioSelect(${node.workGroupId})" class="wg-radio w-3.5 h-3.5 text-sky-600 focus:ring-sky-500 border-slate-300 cursor-pointer" />
+                        <span class="${titleWeight}">${node.serialNo}</span>
+                    </div>
+                </td>
+                <td class="py-2 px-3 ${titleWeight}">${node.workGroupName}</td>
+                <td class="py-2 px-3 text-center">
+                    <button type="button" onclick="event.stopPropagation(); selectWorkGroupWithHierarchy(${node.workGroupId})" class="w-5 h-5 rounded bg-sky-500 hover:bg-sky-600 text-white inline-flex items-center justify-center text-xs shadow-2xs" title="Select WorkGroup">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+
+            if (hasChildren) {
+                var nextChain = parentChainIds.concat([node.workGroupId]);
+                children.forEach(c => renderNode(c, level + 1, nextChain));
+            }
+        }
+
+        var roots = filtered.filter(w => {
+            if (!w.parentId || w.parentId === '0' || w.parentId === 0 || String(w.parentId).trim() === '') {
+                if (w.serialNo && String(w.serialNo).includes('.')) {
+                    var parts = String(w.serialNo).split('.');
+                    parts.pop();
+                    var pSerial = parts.join('.');
+                    if (filtered.some(other => other.serialNo === pSerial)) return false;
+                }
+                return true;
+            }
+            if (filtered.some(other => String(other.workGroupId) === String(w.parentId))) return false;
+            return true;
+        }).sort((a, b) => String(a.serialNo || '').localeCompare(String(b.serialNo || ''), undefined, { numeric: true, sensitivity: 'base' }));
+
+        roots.forEach(root => renderNode(root, 0, []));
+    }
+
+    function onWgRadioSelect(wgId) {
+        state.selectedWorkgroupRadioId = wgId;
+        var tbody = document.getElementById("tblWorkgroupPickListBody");
+        if (!tbody) return;
+
+        tbody.querySelectorAll("tr").forEach(r => r.classList.remove("highlight-green"));
+        tbody.querySelectorAll(".wg-radio").forEach(r => {
+            if (r.value == wgId) {
+                r.checked = true;
+                var tr = r.closest("tr");
+                if (tr) tr.classList.add("highlight-green");
+            } else {
+                r.checked = false;
+            }
+        });
+    }
+
+    function toggleWgNodeChildren(icon, parentId) {
+        var isExpanding = icon.classList.contains("fa-caret-right");
+        var childRows = document.querySelectorAll(`.wg-child-of-${parentId}`);
+
+        if (isExpanding) {
+            icon.classList.remove("fa-caret-right");
+            icon.classList.add("fa-caret-down");
+            childRows.forEach(r => r.style.display = 'table-row');
+        } else {
+            icon.classList.remove("fa-caret-down");
+            icon.classList.add("fa-caret-right");
+            childRows.forEach(r => r.style.display = 'none');
+        }
+    }
+
+    function toggleExpandAllWorkgroups() {
+        var anyHidden = false;
+        document.querySelectorAll("[class*='wg-child-of-']").forEach(r => {
+            if (r.style.display === 'none') anyHidden = true;
+        });
+        document.querySelectorAll("[class*='wg-child-of-']").forEach(r => {
+            r.style.display = anyHidden ? 'table-row' : 'none';
+        });
+        document.querySelectorAll("[class*='wg-caret-']").forEach(icon => {
+            if (anyHidden) {
+                icon.classList.remove("fa-caret-right");
+                icon.classList.add("fa-caret-down");
+            } else {
+                icon.classList.remove("fa-caret-down");
+                icon.classList.add("fa-caret-right");
+            }
+        });
+    }
+
+    function selectWorkGroupWithHierarchy(wgId) {
+        var selected = state.workgroups.find(w => w.workGroupId == wgId);
+        if (!selected) return;
+
+        state.selectedWorkgroupRadioId = wgId;
+        var chain = getAncestorsAndSelf(selected);
+
+        state.selectedWorkgroups = chain;
+
+        var leafWg = chain[chain.length - 1];
+        if (!entryRowState[leafWg.workGroupId]) {
+            entryRowState[leafWg.workGroupId] = {
+                workGroupId: leafWg.workGroupId,
+                refNo: '',
+                specification: '',
+                unitId: 'LS',
+                qty: '',
+                rate: '',
+                amount: ''
+            };
+        }
+
+        closeWorkgroupPickListModal();
+        renderMainDataGrid();
+    }
+
+    function applySelectedWorkgroups() {
+        if (!state.selectedWorkgroupRadioId) {
+            Swal.fire({ icon: 'info', text: 'Please select a workgroup from the list.' });
+            return;
+        }
+        selectWorkGroupWithHierarchy(state.selectedWorkgroupRadioId);
+    }
+
+    function deleteWorkGroup(wgId) {
+        state.selectedWorkgroups = state.selectedWorkgroups.filter(w => w.workGroupId != wgId);
+        state.items = state.items.filter(i => i.workGroupId != wgId);
+        delete entryRowState[wgId];
+        delete state.collapsedWorkgroups[wgId];
+        recalculateOverallProject();
+        renderMainDataGrid();
+    }
+
+    // ── STEP 4 & 6 — REFNO HANDLING & LIBRARY VALIDATION (img-4, img-5, img-6) ──
+    function handleRefNoInput(wgId, val) {
+        if (!entryRowState[wgId]) entryRowState[wgId] = { workGroupId: wgId };
+        entryRowState[wgId].refNo = val;
+
+        // Clear error highlight when user starts typing RefNo
+        $(`#refInput_${wgId}`).removeClass("ref-empty-error");
+        $(`#refBox_${wgId}`).removeClass("ref-empty-error");
+        $(`#refInput_${wgId}`).closest(".grid-cell-box").removeClass("ref-empty-error");
+
+        if (!val || val.trim().length === 0) return;
+
+        // Check if entered RefNo matches an existing library item in dbo.IOWMas
+        var cleanVal = val.trim().toLowerCase();
+        var match = (state.libraryIOWs || []).find(lib => 
+            (lib.serialNo && String(lib.serialNo).toLowerCase() === cleanVal) ||
+            (lib.code && String(lib.code).toLowerCase() === cleanVal)
+        );
+
+        if (match) {
+            // Auto-load Specification, Unit, Rate from dbo.IOWMas library!
+            var spec = match.specification || '';
+            var unit = match.unit || 'LS';
+            var rate = Number(match.defaultRate || match.rate || 0);
+
+            updateEntryRowData(wgId, 'specification', spec);
+            updateEntryRowData(wgId, 'unitId', unit);
+            updateEntryRowData(wgId, 'rate', rate);
+
+            if (entryRowState[wgId]) {
+                entryRowState[wgId].isNewSpec = false;
+                entryRowState[wgId].libraryIOWId = match.iowId || match.IOWId;
+                entryRowState[wgId].libraryWorkGroup = match.workGroupName || 'CIVIL WORKS';
+                entryRowState[wgId].librarySerialNo = match.serialNo || match.code;
+            }
+
+            // Directly update input elements in DOM without full grid re-render (preserves focus!)
+            $(`#specInput_${wgId}`).val(spec);
+            $(`#unitSelect_${wgId}`).val(unit);
+            $(`#rateInput_${wgId}`).val(rate === 0 ? '0' : cleanNum(rate));
+
+            var q = parseFloat(entryRowState[wgId].qty) || 0;
+            var amt = q * rate;
+            entryRowState[wgId].amount = amt;
+            $(`#amountInput_${wgId}`).val(cleanCurrency(amt));
+        }
+    }
+
+    function validateAndApplyRefNo(wgId, val) {
+        if (!val || val.trim() === '') return;
+
+        var cleanVal = val.trim().toLowerCase();
+        var match = (state.libraryIOWs || []).find(lib => 
+            (lib.serialNo && String(lib.serialNo).toLowerCase() === cleanVal) ||
+            (lib.code && String(lib.code).toLowerCase() === cleanVal)
+        );
+
+        if (match) {
+            handleRefNoInput(wgId, val);
+            $(`#specInput_${wgId}`).focus();
+        }
+    }
+
+    function handleRefNoBlur(wgId, val) {
+        if (val && val.trim() !== '') {
+            validateAndApplyRefNo(wgId, val);
+        }
+    }
+
+    // Specification handling with library autocomplete from IOWMas & Project_IOWMas
+    function handleSpecInput(inputEl, workGroupId, iowId, isEntryRow) {
+        state.activeSpecContext = { workGroupId: workGroupId, iowId: iowId, isEntryRow: isEntryRow, inputEl: inputEl };
+        var q = $(inputEl).val() || '';
+
+        if (isEntryRow) {
+            updateEntryRowData(workGroupId, 'specification', q);
+
+            var match = (state.libraryIOWs || []).find(lib => 
+                (lib.specification || '').trim().toLowerCase() === q.trim().toLowerCase()
+            );
+
+            if (match) {
+                entryRowState[workGroupId].isNewSpec = (match.sourceTable === 'Project_IOWMas');
+                entryRowState[workGroupId].libraryIOWId = match.iowId || match.IOWId;
+                entryRowState[workGroupId].libraryWorkGroup = match.workGroupName || 'CIVIL WORKS';
+                entryRowState[workGroupId].librarySerialNo = match.serialNo || match.code;
+            } else {
+                entryRowState[workGroupId].isNewSpec = true;
+                entryRowState[workGroupId].libraryIOWId = null;
+                entryRowState[workGroupId].libraryWorkGroup = 'CIVIL WORKS';
+                entryRowState[workGroupId].librarySerialNo = entryRowState[workGroupId].refNo || '';
+            }
+        }
+
+        if (q.trim().length === 0) {
+            showSpecAutocomplete(state.libraryIOWs.slice(0, 15), inputEl, "");
+            return;
+        }
+
+        var matches = state.libraryIOWs.filter(lib => {
+            return (lib.specification && lib.specification.toLowerCase().includes(q.toLowerCase())) ||
+                   (lib.serialNo && lib.serialNo.toLowerCase().includes(q.toLowerCase())) ||
+                   (lib.code && lib.code.toLowerCase().includes(q.toLowerCase()));
+        });
+
+        showSpecAutocomplete(matches, inputEl, q);
+    }
+
+    function handleSpecBlur(wgId) {
+        setTimeout(function () {
+            hideSpecAutocomplete();
+        }, 250);
+    }
+
+    function showSpecAutocomplete(matches, anchorEl, q) {
+        var dropdown = $("#specAutocompleteDropdown");
+        var itemsContainer = $("#specAutocompleteItems");
+        itemsContainer.empty();
+
+        var rect = anchorEl.getBoundingClientRect();
+        dropdown.css({
+            top: (rect.bottom + 2) + "px",
+            left: rect.left + "px",
+            width: Math.max(rect.width, 560) + "px"
+        });
+
+        q = (q || '').trim();
+
+        // 1. Render matches
+        if (matches && matches.length > 0) {
+            matches.slice(0, 12).forEach((m, idx) => {
+                var code = m.serialNo || m.code || '';
+                var isProjectIOW = (m.sourceTable === 'Project_IOWMas');
+                var tagBadge = isProjectIOW 
+                    ? `<span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 font-bold uppercase tracking-wider">Project_IOWMas</span>`
+                    : `<span class="text-[9px] px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 font-bold uppercase tracking-wider">IOWMas</span>`;
+
+                var itemEl = $(`
+                    <div class="spec-dropdown-item px-3 py-1.5 hover:bg-sky-50 dark:hover:bg-slate-700 cursor-pointer flex items-center justify-between text-xs transition" data-idx="${idx}">
+                        <div class="font-medium text-slate-800 dark:text-slate-200 flex-1 pr-2 truncate">
+                            <span class="font-bold text-sky-700 dark:text-sky-300 mr-1.5">${code}</span>
+                            <span>${m.specification}</span>
+                        </div>
+                        <div class="text-[11px] text-slate-500 flex items-center gap-2 flex-shrink-0">
+                            ${tagBadge}
+                            <span class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold">${m.unit || 'LS'}</span>
+                            <span class="font-mono font-bold text-emerald-600">₹ ${cleanCurrency(m.defaultRate)}</span>
+                        </div>
+                    </div>
+                `);
+
+                itemEl.on("mousedown", function (e) {
+                    e.preventDefault();
+                    selectLibrarySpecification(m);
+                });
+                itemsContainer.append(itemEl);
+            });
+        }
+
+        // 2. "+ Add New Specification to Project_IOWMas" Option
+        var exactMatch = state.libraryIOWs.some(lib => (lib.specification || '').trim().toLowerCase() === q.toLowerCase());
+        if (q.length > 0 && !exactMatch) {
+            var addEl = $(`
+                <div class="px-3 py-2 bg-emerald-50 dark:bg-slate-800/90 border-t border-emerald-200 dark:border-slate-700 flex items-center justify-between hover:bg-emerald-100 dark:hover:bg-slate-700 cursor-pointer text-xs transition">
+                    <div class="flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold"><i class="fas fa-plus"></i></span>
+                        <div>
+                            <span class="font-bold text-emerald-800 dark:text-emerald-300">Save "${escapeHtml(q)}"</span>
+                            <span class="text-[10px] text-slate-500 dark:text-slate-400 block">Add to Project_IOWMas table & load</span>
+                        </div>
+                    </div>
+                    <button type="button" class="text-xs font-bold px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs transition cursor-pointer">
+                        + Add & Load
+                    </button>
+                </div>
+            `);
+            addEl.on("mousedown", function (e) {
+                e.preventDefault();
+                addNewSpecificationDirect(q);
+            });
+            itemsContainer.append(addEl);
+        } else if (!matches || matches.length === 0) {
+            itemsContainer.append(`<div class="p-2.5 text-slate-500 text-xs italic">No matching specifications found in IOWMas. Type your specification above to save to Project_IOWMas.</div>`);
+        }
+
+        dropdown.show();
+    }
+
+    function hideSpecAutocomplete() {
+        $("#specAutocompleteDropdown").hide();
+    }
+
+    function addNewSpecificationDirect(specText) {
+        var ctx = state.activeSpecContext;
+        var wgId = ctx?.workGroupId;
+        var currentRef = wgId ? (entryRowState[wgId]?.refNo || '') : '';
+        var currentUnit = wgId ? (entryRowState[wgId]?.unitId || 'LS') : 'LS';
+        var currentRate = wgId ? (parseFloat(entryRowState[wgId]?.rate) || 0) : 0;
+        var projId = $('#ddlProject').val() || '1';
+
+        $.ajax({
+            url: '/ProjectIOW/SaveNewSpecification',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                CostcenterId: projId,
+                ProectKickOfId: projId,
+                WorkGroupId: wgId ? String(wgId) : null,
+                RefNo: currentRef,
+                SerialNo: currentRef,
+                Specification: specText,
+                UnitId: currentUnit,
+                Rate: currentRate
+            }),
+            success: function (res) {
+                var newLib = {
+                    iowId: (res.success && res.data && res.data.Project_IOWId) ? res.data.Project_IOWId : Date.now(),
+                    code: currentRef || 'NEW',
+                    serialNo: currentRef || 'NEW',
+                    workGroupName: 'CIVIL WORKS',
+                    specification: specText,
+                    unit: currentUnit,
+                    unitId: currentUnit,
+                    defaultRate: currentRate,
+                    sourceTable: 'Project_IOWMas'
+                };
+                state.libraryIOWs.unshift(newLib);
+                if (typeof renderLibraryIOWTable === 'function') renderLibraryIOWTable();
+                selectLibrarySpecification(newLib);
+                hideSpecAutocomplete();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Saved to Project_IOWMas',
+                    text: `"${specText}" added to Project_IOWMas & loaded!`,
+                    timer: 1600,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+            },
+            error: function () {
+                var newLib = {
+                    iowId: Date.now(),
+                    code: currentRef || 'NEW',
+                    serialNo: currentRef || 'NEW',
+                    workGroupName: 'CIVIL WORKS',
+                    specification: specText,
+                    unit: currentUnit,
+                    unitId: currentUnit,
+                    defaultRate: currentRate,
+                    sourceTable: 'Project_IOWMas'
+                };
+                state.libraryIOWs.unshift(newLib);
+                if (typeof renderLibraryIOWTable === 'function') renderLibraryIOWTable();
+                selectLibrarySpecification(newLib);
+                hideSpecAutocomplete();
+            }
+        });
+    }
+
+    function selectLibrarySpecification(libItem) {
+        var ctx = state.activeSpecContext;
+        if (!ctx) return;
+
+        var spec = libItem.specification || '';
+        var unit = libItem.unit || 'LS';
+        var rate = Number(libItem.defaultRate || 0);
+
+        if (ctx.isEntryRow) {
+            updateEntryRowData(ctx.workGroupId, 'specification', spec);
+            updateEntryRowData(ctx.workGroupId, 'unitId', unit);
+            updateEntryRowData(ctx.workGroupId, 'rate', rate);
+
+            if (entryRowState[ctx.workGroupId]) {
+                entryRowState[ctx.workGroupId].isNewSpec = (libItem.sourceTable === 'Project_IOWMas');
+                entryRowState[ctx.workGroupId].libraryIOWId = libItem.iowId;
+                entryRowState[ctx.workGroupId].libraryWorkGroup = libItem.workGroupName || 'CIVIL WORKS';
+                entryRowState[ctx.workGroupId].librarySerialNo = libItem.serialNo || libItem.code;
+            }
+
+            // Immediately display picked values in row inputs
+            $(`#specInput_${ctx.workGroupId}`).val(spec);
+            $(`#unitSelect_${ctx.workGroupId}`).val(unit);
+            $(`#rateInput_${ctx.workGroupId}`).val(rate === 0 ? '0' : cleanNum(rate));
+
+            var q = parseFloat(entryRowState[ctx.workGroupId].qty) || 0;
+            var amt = q * rate;
+            entryRowState[ctx.workGroupId].amount = amt;
+            $(`#amountInput_${ctx.workGroupId}`).val(cleanCurrency(amt));
+
+            hideSpecAutocomplete();
+
+            var currentRef = entryRowState[ctx.workGroupId]?.refNo;
+            if (!currentRef || currentRef.trim() === '') {
+                var $refInput = $(`#refInput_${ctx.workGroupId}`);
+                $refInput.focus();
+            }
+        } else if (ctx.iowId) {
+            var it = state.items.find(i => i.iowId == ctx.iowId);
+            if (it) {
+                it.specification = spec;
+                it.unitId = unit;
+                it.rate = rate;
+                it.isNewSpec = (libItem.sourceTable === 'Project_IOWMas');
+                it.amount = (it.qty || 0) * rate;
+                $(`.item-amount-val-${it.iowId}`).text(cleanCurrency(it.amount));
+                $(`.item-rate-val-${it.iowId}`).val(cleanNum(rate));
+            }
+            hideSpecAutocomplete();
+            recalculateOverallProject();
+            renderMainDataGrid();
+        }
+    }
+
+    function updateEntryRowData(wgId, field, val) {
+        if (!entryRowState[wgId]) entryRowState[wgId] = { workGroupId: wgId };
+        entryRowState[wgId][field] = val;
+
+        var q = parseFloat(entryRowState[wgId].qty) || 0;
+        var r = parseFloat(entryRowState[wgId].rate) || 0;
+        entryRowState[wgId].amount = (q * r);
+    }
+
+    function updateItemDirect(iowId, prop, val) {
+        var it = state.items.find(i => i.iowId == iowId);
+        if (!it) return;
+
+        if (prop === 'qty') {
+            it.qty = parseFloat(val) || 0;
+            it.amount = it.qty * (it.rate || 0);
+            $(`.item-amount-val-${iowId}`).text(cleanCurrency(it.amount));
+        } else if (prop === 'rate') {
+            it.rate = parseFloat(val) || 0;
+            it.amount = (it.qty || 0) * it.rate;
+            $(`.item-amount-val-${iowId}`).text(cleanCurrency(it.amount));
+        } else if (prop === 'refNo') {
+            it.refNo = val;
+        } else if (prop === 'specification') {
+            it.specification = val;
+            var match = (state.libraryIOWs || []).find(lib => 
+                (lib.specification || '').trim().toLowerCase() === (val || '').trim().toLowerCase()
+            );
+            it.isNewSpec = !match;
+        } else if (prop === 'unitId') {
+            it.unitId = val;
+        }
+
+        recalculateOverallProject();
+    }
+
+    // ── STEP 6 — REFNO VALIDATION (Clean non-blocking toast, no infinite loops!) ──
+    function triggerRefNoEmptyValidation(wgId) {
+        var $refInput = $(`#refInput_${wgId}`);
+        var $refBox = $(`#refBox_${wgId}`).length ? $(`#refBox_${wgId}`) : $refInput.closest('.grid-cell-box');
+
+        $refInput.addClass("ref-empty-error");
+        $refBox.addClass("ref-empty-error");
+        $refInput.focus();
+
+        Swal.fire({
+            icon: 'warning',
+            title: 'RefNo is Required',
+            text: 'Please enter a RefNo before saving the item.',
+            timer: 2200,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+        });
+    }
+
+    function saveEntryRow(wgId, callback) {
+        var entry = entryRowState[wgId] || {};
+
+        // STEP 6: RefNo cannot be empty
+        if (!entry.refNo || !entry.refNo.trim()) {
+            triggerRefNoEmptyValidation(wgId);
+            return;
+        }
+
+        if (!entry.specification || !entry.specification.trim()) {
+            Swal.fire({ icon: 'warning', text: 'Please enter Specification or select from library.' });
+            return;
+        }
+
+        var specTrimmed = (entry.specification || '').trim();
+        var matchLib = (state.libraryIOWs || []).find(lib => 
+            (lib.specification || '').trim().toLowerCase() === specTrimmed.toLowerCase()
+        );
+        var isNew = !matchLib;
+
+        var newId = Date.now();
+        var q = parseFloat(entry.qty) || 0;
+        var r = parseFloat(entry.rate) || 0;
+
+        var targetWg = state.workgroups.find(w => w.workGroupId == wgId);
+        var wgName = targetWg ? targetWg.workGroupName : '';
+
+        var newItem = {
+            iowId: newId,
+            workGroupId: wgId,
+            workGroupName: wgName,
+            refNo: entry.refNo.trim(),
+            serialNo: entry.refNo.trim(),
+            specification: specTrimmed,
+            unitId: entry.unitId || 'LS',
+            qty: q,
+            rate: r,
+            amount: q * r,
+            isNewSpec: isNew,
+            libraryWorkGroup: entry.libraryWorkGroup || (matchLib ? matchLib.workGroupName : 'CIVIL WORKS'),
+            librarySerialNo: entry.librarySerialNo || (matchLib ? (matchLib.serialNo || matchLib.code) : entry.refNo.trim()),
+            librarySpecification: specTrimmed,
+            workingQty: 1.0,
+            wbsBreakdown: [],
+            resources: [],
+            totalWeightagePct: 0.0,
+            wastageAmount: 0.0,
+            loadingUnloading: 0.0,
+            handlingCharges: 0.0,
+            baseTotal: r,
+            qualifierValue: 0.0,
+            grandTotal: r,
+            roundingOff: 0.0,
+            netRate: r
+        };
+
+        // If specification is not present in library dropdown, save as new and add to state.libraryIOWs so it immediately appears in dropdown!
+        if (isNew && specTrimmed.length > 0) {
+            var newLibItem = {
+                iowId: newId,
+                code: entry.refNo.trim(),
+                serialNo: entry.refNo.trim(),
+                workGroupName: wgName || 'CIVIL WORKS',
+                specification: specTrimmed,
+                unit: entry.unitId || 'LS',
+                unitId: entry.unitId || '9',
+                defaultRate: r,
+                sourceTable: 'Project_IOWMas'
+            };
+            state.libraryIOWs.unshift(newLibItem);
+            if (typeof renderLibraryIOWTable === 'function') {
+                renderLibraryIOWTable();
+            }
+
+            // Persist to dbo.Project_IOWMas
+            var projId = $('#ddlProject').val() || '1';
+            $.ajax({
+                url: '/ProjectIOW/SaveNewSpecification',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    CostcenterId: projId,
+                    ProectKickOfId: projId,
+                    WorkGroupId: wgId ? String(wgId) : null,
+                    RefNo: entry.refNo.trim(),
+                    SerialNo: entry.refNo.trim(),
+                    Specification: specTrimmed,
+                    UnitId: entry.unitId || '9',
+                    Rate: r
+                })
+            });
+        }
+
+        state.items.push(newItem);
+
+        // Reset entry row
+        entryRowState[wgId] = {
+            workGroupId: wgId,
+            refNo: '',
+            specification: '',
+            unitId: 'LS',
+            qty: '0',
+            rate: '',
+            amount: '0'
+        };
+
+        recalculateOverallProject();
+        renderMainDataGrid();
+
+        if (callback) callback(newItem);
+    }
+
+    function deleteIOWItem(iowId) {
+        state.items = state.items.filter(i => i.iowId != iowId);
+        recalculateOverallProject();
+        renderMainDataGrid();
+    }
+
+    // ── STEP 7 & STEPS 8–12 — WBS FLOW & DEFAULT INPUT ROW (img-6, img-8, img-9) ──
+    function showMeasurementSheetTooltip(anchorEl, wgId, iowId) {
+        var rect = anchorEl.getBoundingClientRect();
+        var tooltip = $("#tooltipMeasurementSheet");
+        tooltip.css({
+            top: (rect.top - 34) + "px",
+            left: rect.left + "px"
+        }).show();
+
+        tooltip.data("context", { wgId: wgId, iowId: iowId });
+    }
+
+    function confirmMeasurementSheet(isYes) {
+        var tooltip = $("#tooltipMeasurementSheet");
+        var ctx = tooltip.data("context");
+        tooltip.hide();
+
+        if (isYes && ctx) {
+            if (ctx.iowId) {
+                toggleDetailSection('item_' + ctx.iowId, 'wbs');
+            } else if (ctx.wgId) {
+                saveEntryRow(ctx.wgId, function (newItem) {
+                    if (newItem) toggleDetailSection('item_' + newItem.iowId, 'wbs');
+                });
+            }
+        }
+    }
+
+    function updateRowChevronIcons(iowId, isOpen, activeTab) {
+        var rowIcon = document.getElementById('toggleIcon_' + iowId);
+        var wbsIcon = document.getElementById('iconToggleWBS_' + iowId);
+        var rateIcon = document.getElementById('iconToggleRate_' + iowId);
+
+        if (rowIcon) {
+            rowIcon.classList.toggle('fa-chevron-up', isOpen);
+            rowIcon.classList.toggle('fa-chevron-down', !isOpen);
+        }
+        if (wbsIcon) {
+            var isWbsOpen = isOpen && activeTab === 'wbs';
+            wbsIcon.classList.toggle('fa-chevron-up', isWbsOpen);
+            wbsIcon.classList.toggle('fa-chevron-down', !isWbsOpen);
+        }
+        if (rateIcon) {
+            var isRateOpen = isOpen && activeTab === 'rate';
+            rateIcon.classList.toggle('fa-chevron-up', isRateOpen);
+            rateIcon.classList.toggle('fa-chevron-down', !isRateOpen);
+        }
+    }
+
+    function toggleDetailRow(rowKey) {
+        var iowId = parseInt(String(rowKey).replace('item_', ''));
+        if (isNaN(iowId)) return;
+        state.expandedIOWs = state.expandedIOWs || {};
+        var isCurrentlyOpen = state.expandedIOWs[iowId] === true;
+
+        // Collapse all other rows
+        state.items.forEach(it => {
+            if (it.iowId !== iowId) {
+                state.expandedIOWs[it.iowId] = false;
+                var r = document.getElementById('drawerRow_' + it.iowId);
+                if (r) r.classList.add('hidden');
+                updateRowChevronIcons(it.iowId, false, 'wbs');
+            }
+        });
+
+        state.expandedIOWs[iowId] = !isCurrentlyOpen;
+        var drawer = document.getElementById('drawerRow_' + iowId);
+        var currentTab = itemActiveSection[iowId] || 'wbs';
+
+        if (state.expandedIOWs[iowId]) {
+            if (drawer) drawer.classList.remove('hidden');
+            updateRowChevronIcons(iowId, true, currentTab);
+            var item = state.items.find(it => it.iowId == iowId);
+            if (item) {
+                var wbsSec = document.getElementById('detailSectionWBS_' + iowId);
+                var rateSec = document.getElementById('detailSectionRate_' + iowId);
+                if (wbsSec) wbsSec.classList.toggle('hidden', currentTab !== 'wbs');
+                if (rateSec) rateSec.classList.toggle('hidden', currentTab !== 'rate');
+                renderWBSRows(item);
+                renderCompactResourceTable(item);
+            }
+        } else {
+            if (drawer) drawer.classList.add('hidden');
+            updateRowChevronIcons(iowId, false, currentTab);
+        }
+    }
+
+    function toggleDetailSection(rowKey, targetTab) {
+        var iowId = parseInt(String(rowKey).replace('item_', ''));
+        if (isNaN(iowId)) return;
+        state.expandedIOWs = state.expandedIOWs || {};
+
+        var isCurrentlyOpen = state.expandedIOWs[iowId] === true;
+        var currentTab = itemActiveSection[iowId] || 'wbs';
+
+        // If drawer is already open and clicked the same tab button, toggle (close) the drawer
+        if (isCurrentlyOpen && currentTab === targetTab) {
+            toggleDetailRow(rowKey);
+            return;
+        }
+
+        itemActiveSection[iowId] = targetTab;
+
+        // If drawer is not open, open it and close any other open drawer
+        if (!isCurrentlyOpen) {
+            state.items.forEach(it => {
+                if (it.iowId !== iowId) {
+                    state.expandedIOWs[it.iowId] = false;
+                    var r = document.getElementById('drawerRow_' + it.iowId);
+                    if (r) r.classList.add('hidden');
+                    updateRowChevronIcons(it.iowId, false, 'wbs');
+                }
+            });
+
+            state.expandedIOWs[iowId] = true;
+            var drawer = document.getElementById('drawerRow_' + iowId);
+            if (drawer) drawer.classList.remove('hidden');
+        }
+
+        updateRowChevronIcons(iowId, true, targetTab);
+
+        // Switch visible tab inside drawer
+        var wbsSec = document.getElementById('detailSectionWBS_' + iowId);
+        var rateSec = document.getElementById('detailSectionRate_' + iowId);
+        if (wbsSec) wbsSec.classList.toggle('hidden', targetTab !== 'wbs');
+        if (rateSec) rateSec.classList.toggle('hidden', targetTab !== 'rate');
+
+        var item = state.items.find(it => it.iowId == iowId);
+        if (item) {
+            if (targetTab === 'wbs') {
+                renderWBSRows(item);
+            } else {
+                renderCompactResourceTable(item);
+            }
+        }
+    }
+
+    // Render WBS rows inside item drawer (img-8, img-9, Slice 6 & 9)
+    // ALWAYS shows the Default Input Row matching user request!
+    function renderWBSRows(item) {
+        var container = document.getElementById("wbsRowsContainer_" + item.iowId);
+        if (!container) return;
+        container.innerHTML = "";
+
+        // 1. Existing rows
+        if (item.wbsBreakdown && item.wbsBreakdown.length > 0) {
+            item.wbsBreakdown.forEach((w, idx) => {
+                var row = document.createElement("div");
+                row.className = "flex items-center justify-between border-b border-[#b8d7ee]/50 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-sky-50/50";
+                row.innerHTML = `
+                    <div class="flex items-center gap-2 flex-1 min-w-0 px-3 py-1.5">
+                        <span class="w-4 h-4 rounded bg-sky-100 text-sky-700 font-bold text-[9px] flex items-center justify-center">${idx + 1}</span>
+                        <span class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">${w.fullWBSName || w.wbsName}</span>
+                    </div>
+                    <div class="w-32 px-2 py-1 text-right">
+                        <input type="number" step="any" value="${cleanNum(w.qty)}" 
+                               oninput="updateWBSQty(${item.iowId}, ${idx}, this.value)" 
+                               class="w-full text-xs font-bold font-mono py-0.5 px-2 border border-slate-300 dark:border-slate-600 rounded text-right bg-white dark:bg-slate-700 focus:outline-none focus:ring-1 focus:ring-sky-500" />
+                    </div>
+                    <div class="w-8 text-center px-1">
+                        <button type="button" onclick="deleteWBSRow(${item.iowId}, ${idx})" class="text-slate-400 hover:text-rose-600 p-1 transition cursor-pointer" title="Remove WBS"><i class="fas fa-trash-alt text-xs"></i></button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // 2. DEFAULT INPUT ROW (Matches zoom_slice_4 & zoom_slice_5: Always shown by default!)
+        var inputRow = document.createElement("div");
+        inputRow.className = "flex items-center justify-between bg-white dark:bg-slate-800 p-1 border-t border-[#b8d7ee]/50 dark:border-slate-700 relative";
+        inputRow.innerHTML = `
+            <div class="flex-1 relative pr-2">
+                <input type="text" id="txtNewWBSName_${item.iowId}" 
+                       placeholder="Select or type WBS..." 
+                       autocomplete="off"
+                       class="w-full text-xs font-semibold px-2.5 py-1 rounded border-2 border-slate-600 dark:border-slate-400 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500 wbs-input-target" 
+                       onfocus="openWBSAutocomplete(this, ${item.iowId})" 
+                       oninput="handleWBSInput(this, ${item.iowId})"
+                       onkeydown="handleWBSNameKeydown(${item.iowId}, event)" />
+            </div>
+            <div class="w-32 text-right">
+                <input type="number" step="any" id="txtNewWBSQty_${item.iowId}" 
+                       placeholder="0" 
+                       class="w-full text-xs font-mono font-bold text-right px-2 py-1 border-2 border-slate-600 dark:border-slate-400 rounded bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500" 
+                       onkeydown="if(event.key === 'Enter') handleWBSCommit(${item.iowId})" 
+                       onblur="handleWBSCommit(${item.iowId})" />
+            </div>
+            <div class="w-8 text-center flex items-center justify-center">
+            </div>
+        `;
+        container.appendChild(inputRow);
+    }
+
+    // Floating WBS Dropdown under WBS Name Input (Slice 4 & 5)
+    var wbsSearchDebounce = null;
+
+    function openWBSAutocomplete(inputEl, iowId) {
+        state.activeWBSInputContext = { inputEl: inputEl, iowId: iowId };
+        showWBSAutocomplete(inputEl, inputEl.value || '');
+    }
+
+    function handleWBSInput(inputEl, iowId) {
+        state.activeWBSInputContext = { inputEl: inputEl, iowId: iowId };
+        var q = inputEl.value || '';
+        showWBSAutocomplete(inputEl, q);
+
+        clearTimeout(wbsSearchDebounce);
+        wbsSearchDebounce = setTimeout(function () {
+            var projId = $('#ddlProject').val() || '1';
+            fetch('@Url.Action("GetProjectWBSList", "ProjectIOW")?projectId=' + projId + '&q=' + encodeURIComponent(q))
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success && res.data && res.data.length > 0) {
+                        res.data.forEach(d => {
+                            if (!state.wbsList.some(w => w.wbsId == d.wbsId)) {
+                                state.wbsList.push(d);
+                            }
+                        });
+                        if (state.activeWBSInputContext?.inputEl === inputEl) {
+                            showWBSAutocomplete(inputEl, inputEl.value || '');
+                        }
+                    }
+                })
+                .catch(err => console.log("WBS search error:", err));
+        }, 150);
+    }
+
+    function showWBSAutocomplete(anchorEl, q) {
+        var dropdown = $("#wbsAutocompleteDropdown");
+        var itemsContainer = $("#wbsAutocompleteItems");
+        itemsContainer.empty();
+
+        var rect = anchorEl.getBoundingClientRect();
+        dropdown.css({
+            top: (rect.bottom + 2) + "px",
+            left: rect.left + "px",
+            width: Math.max(rect.width, 480) + "px"
+        });
+
+        var query = (q || '').trim().toLowerCase();
+        var matches = (state.wbsList || []).filter(w => 
+            (w.fullWBSName || '').toLowerCase().includes(query) || 
+            (w.wbsName || '').toLowerCase().includes(query)
+        );
+
+        if (matches.length > 0) {
+            matches.forEach((w, idx) => {
+                var itemEl = $(`
+                    <div class="wbs-drop-item px-3 py-2 hover:bg-sky-50 dark:hover:bg-slate-700 cursor-pointer flex items-center justify-between text-xs transition" data-idx="${idx}">
+                        <div class="font-medium text-slate-800 dark:text-slate-200 flex-1 pr-2 truncate">
+                            <i class="fas fa-folder text-sky-600 dark:text-sky-400 mr-2 text-[11px]"></i>
+                            <span>${w.fullWBSName || w.wbsName}</span>
+                        </div>
+                        <span class="text-[9px] px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 font-bold uppercase tracking-wider">WBS</span>
+                    </div>
+                `);
+
+                itemEl.on("mousedown", function (e) {
+                    e.preventDefault();
+                    selectWBSItem(w);
+                });
+
+                itemsContainer.append(itemEl);
+            });
+        } else {
+            itemsContainer.append(`<div class="p-3 text-slate-500 dark:text-slate-400 text-xs italic">No matching WBS found. Press Enter to use "${escapeHtml(q)}".</div>`);
+        }
+
+        dropdown.show();
+    }
+
+    function hideWBSAutocomplete() {
+        $("#wbsAutocompleteDropdown").hide();
+    }
+
+    function selectWBSItem(w) {
+        var ctx = state.activeWBSInputContext;
+        if (!ctx || !ctx.inputEl) return;
+
+        var inputEl = ctx.inputEl;
+        var iowId = ctx.iowId;
+
+        inputEl.value = w.fullWBSName || w.wbsName;
+        inputEl.dataset.wbsId = w.wbsId;
+        inputEl.dataset.wbsName = w.wbsName;
+        inputEl.dataset.fullWBSName = w.fullWBSName || w.wbsName;
+        $(inputEl).removeClass("wbs-name-error");
+
+        hideWBSAutocomplete();
+
+        setTimeout(function () {
+            var qtyEl = document.getElementById("txtNewWBSQty_" + iowId);
+            if (qtyEl) qtyEl.focus();
+        }, 50);
+    }
+
+    function handleWBSNameKeydown(iowId, e) {
+        var dropdown = $("#wbsAutocompleteDropdown");
+        if (e.key === 'Enter' || e.key === 'Tab') {
+            if (dropdown.is(":visible")) {
+                var firstItem = dropdown.find(".wbs-drop-item").first();
+                if (firstItem.length && !$("#txtNewWBSName_" + iowId).val().trim()) {
+                    firstItem.trigger("mousedown");
+                    return;
+                }
+                hideWBSAutocomplete();
+            }
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                $("#txtNewWBSQty_" + iowId).focus();
+            }
+        } else if (e.key === 'Escape') {
+            hideWBSAutocomplete();
+        }
+    }
+
+    // Save/Commit WBS Row from the Default Input Row
+    function handleWBSCommit(iowId) {
+        var txtName = document.getElementById("txtNewWBSName_" + iowId);
+        var txtQty = document.getElementById("txtNewWBSQty_" + iowId);
+        if (!txtName || !txtQty) return;
+
+        var nameVal = txtName.value.trim();
+        var qtyRaw = txtQty.value.trim();
+        var qtyVal = parseFloat(qtyRaw);
+
+        // If user entered quantity without WBS Name -> Highlight WBS Name in RED! (Image 5/Zoom 5)
+        if (!nameVal && !isNaN(qtyVal) && qtyVal > 0) {
+            $(txtName).addClass("wbs-name-error");
+            setTimeout(function () {
+                txtName.focus();
+            }, 50);
+            return;
+        }
+
+        // If both WBS Name and Qty are valid (> 0):
+        if (nameVal && !isNaN(qtyVal) && qtyVal > 0) {
+            $(txtName).removeClass("wbs-name-error");
+
+            var item = state.items.find(i => i.iowId == iowId);
+            if (!item) return;
+
+            if (!item.wbsBreakdown) item.wbsBreakdown = [];
+
+            var wbsId = txtName.dataset.wbsId ? parseInt(txtName.dataset.wbsId) : (Date.now() % 10000);
+            var fullWBSName = txtName.dataset.fullWBSName || nameVal;
+
+            var existing = item.wbsBreakdown.find(w => w.wbsId == wbsId || w.fullWBSName === fullWBSName);
+            if (existing) {
+                existing.qty = (parseFloat(existing.qty) || 0) + qtyVal;
+            } else {
+                item.wbsBreakdown.push({
+                    wbsId: wbsId,
+                    wbsName: txtName.dataset.wbsName || nameVal,
+                    fullWBSName: fullWBSName,
+                    qty: qtyVal
+                });
+            }
+
+            renderWBSRows(item);
+            updateWBSTotalAndSync(item);
+
+            setTimeout(function () {
+                var nextInput = document.getElementById("txtNewWBSName_" + iowId);
+                if (nextInput) nextInput.focus();
+            }, 50);
+        }
+    }
+
+    function updateWBSQty(iowId, idx, val) {
+        var item = state.items.find(i => i.iowId == iowId);
+        if (!item || !item.wbsBreakdown[idx]) return;
+
+        item.wbsBreakdown[idx].qty = parseFloat(val) || 0;
+        updateWBSTotalAndSync(item);
+    }
+
+    function deleteWBSRow(iowId, idx) {
+        var item = state.items.find(i => i.iowId == iowId);
+        if (!item) return;
+        item.wbsBreakdown.splice(idx, 1);
+        renderWBSRows(item);
+        updateWBSTotalAndSync(item);
+    }
+
+    // STEP 12: Calculate WBS Total and synchronize back to parent row Qty & Amount
+    function updateWBSTotalAndSync(item) {
+        var sum = (item.wbsBreakdown || []).reduce((acc, w) => acc + (parseFloat(w.qty) || 0), 0);
+        item.qty = sum;
+        item.amount = sum * (item.rate || 0);
+
+        var lbl = document.getElementById("lblWBSTotalQty_" + item.iowId);
+        if (lbl) lbl.innerText = cleanNum(sum);
+
+        $(`.item-qty-val-${item.iowId}`).val(cleanNum(sum));
+        $(`.item-amount-val-${item.iowId}`).text(cleanCurrency(item.amount));
+
+        recalculateOverallProject();
+    }
+
+    // WBS PickList Modal
+    function openWBSPickListModal(item) {
+        state.activeIOWForWBS = item;
+        renderWBSPickListTable();
+        document.getElementById("modalWBSOverlay").style.display = "flex";
+        document.getElementById("modalWBSOverlay").classList.remove("hidden");
+    }
+
+    function closeWBSPickListModal() {
+        document.getElementById("modalWBSOverlay").style.display = "none";
+        document.getElementById("modalWBSOverlay").classList.add("hidden");
+    }
+
+    function renderWBSPickListTable() {
+        var tbody = document.getElementById("tblWBSPickListBody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+
+        var q = (document.getElementById("txtWBSFilter").value || '').toLowerCase();
+        var filtered = state.wbsList.filter(w => (w.fullWBSName || w.wbsName || '').toLowerCase().includes(q));
+
+        var activeItem = state.activeIOWForWBS;
+        var existingWBSIds = (activeItem && activeItem.wbsBreakdown) ? activeItem.wbsBreakdown.map(w => w.wbsId) : [];
+
+        filtered.forEach(w => {
+            var isChecked = existingWBSIds.includes(w.wbsId);
+            var tr = document.createElement("tr");
+            tr.className = `hover:bg-sky-50 dark:hover:bg-slate-700 transition cursor-pointer ${isChecked ? 'highlight-green' : ''}`;
+            tr.innerHTML = `
+                <td class="py-1.5 px-3 w-10 text-center">
+                    <input type="checkbox" value="${w.wbsId}" ${isChecked ? 'checked' : ''} onchange="toggleWBSCheck(this)" class="wbs-pick-chk rounded text-sky-600 cursor-pointer" />
+                </td>
+                <td class="py-1.5 px-3 font-bold text-slate-800 dark:text-slate-200">${w.fullWBSName || w.wbsName}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById("lblWBSCountInfo").innerText = `1-${filtered.length} of ${filtered.length}`;
+    }
+
+    function toggleWBSCheck(chk) {
+        var tr = chk.closest("tr");
+        if (chk.checked) tr.classList.add("highlight-green");
+        else tr.classList.remove("highlight-green");
+    }
+
+    function filterWBSPickList() {
+        renderWBSPickListTable();
+        var q = (document.getElementById("txtWBSFilter").value || '').trim();
+        if (q.length > 0) {
+            var projId = $('#ddlProject').val() || '1';
+            fetch('@Url.Action("GetProjectWBSList", "ProjectIOW")?projectId=' + projId + '&q=' + encodeURIComponent(q))
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success && res.data && res.data.length > 0) {
+                        res.data.forEach(d => {
+                            if (!state.wbsList.some(w => w.wbsId == d.wbsId)) {
+                                state.wbsList.push(d);
+                            }
+                        });
+                        renderWBSPickListTable();
+                    }
+                });
+        }
+    }
+
+    function applySelectedWBSToActiveIOW() {
+        var item = state.activeIOWForWBS;
+        if (!item) return;
+
+        var selectedIds = [];
+        document.querySelectorAll(".wbs-pick-chk:checked").forEach(c => selectedIds.push(parseInt(c.value)));
+
+        if (!item.wbsBreakdown) item.wbsBreakdown = [];
+
+        var newBreakdown = [];
+        selectedIds.forEach(id => {
+            var existing = item.wbsBreakdown.find(w => w.wbsId == id);
+            if (existing) {
+                newBreakdown.push(existing);
+            } else {
+                var wObj = state.wbsList.find(w => w.wbsId == id);
+                if (wObj) {
+                    newBreakdown.push({
+                        wbsId: id,
+                        wbsName: wObj.wbsName,
+                        fullWBSName: wObj.fullWBSName || wObj.wbsName,
+                        qty: 0.0
+                    });
+                }
+            }
+        });
+
+        item.wbsBreakdown = newBreakdown;
+        closeWBSPickListModal();
+        renderWBSRows(item);
+        updateWBSTotalAndSync(item);
+    }
+
+    // ── STEP 14 — RESOURCE RATE CALCULATION (img-14+) ──
+    function openResourcePickListModal(iowId) {
+        state.activeIOWForResource = iowId || (state.items.length > 0 ? state.items[0].iowId : null);
+        renderResourcePickListTable();
+        document.getElementById("modalResourceOverlay").style.display = "flex";
+        document.getElementById("modalResourceOverlay").classList.remove("hidden");
+    }
+
+    function closeResourcePickListModal() {
+        document.getElementById("modalResourceOverlay").style.display = "none";
+        document.getElementById("modalResourceOverlay").classList.add("hidden");
+    }
+
+    function switchResourceModalTab(tab) {
+        var btnRes = document.getElementById("tabBtnResource");
+        var btnIOW = document.getElementById("tabBtnIOW");
+        if (tab === 'Resource') {
+            btnRes.className = "py-1.5 px-3 text-xs font-bold border-b-2 border-teal-500 text-teal-600 dark:text-teal-400";
+            btnIOW.className = "py-1.5 px-3 text-xs font-semibold text-slate-500 hover:text-slate-700 border-b-2 border-transparent";
+            renderResourcePickListTable();
+        } else {
+            btnIOW.className = "py-1.5 px-3 text-xs font-bold border-b-2 border-teal-500 text-teal-600 dark:text-teal-400";
+            btnRes.className = "py-1.5 px-3 text-xs font-semibold text-slate-500 hover:text-slate-700 border-b-2 border-transparent";
+        }
+    }
+
+    function renderResourcePickListTable() {
+        var tbody = document.getElementById("tblResourcePickListBody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+
+        var codeFil = (document.getElementById("filResCode")?.value || "").toLowerCase();
+        var nameFil = (document.getElementById("filResName")?.value || "").toLowerCase();
+        var typeFil = (document.getElementById("filResType")?.value || "").toLowerCase();
+        var groupFil = (document.getElementById("filResGroup")?.value || "").toLowerCase();
+
+        var filtered = state.resources.filter(r => {
+            return (r.code || "").toLowerCase().includes(codeFil) &&
+                   (r.resourceName || "").toLowerCase().includes(nameFil) &&
+                   (r.type || "").toLowerCase().includes(typeFil) &&
+                   (r.resourceGroup || "").toLowerCase().includes(groupFil);
+        });
+
+        filtered.forEach(res => {
+            var tr = document.createElement("tr");
+            tr.className = "hover:bg-teal-50 dark:hover:bg-slate-700 transition cursor-pointer";
+            tr.innerHTML = `
+                <td class="py-1.5 px-3 text-center">
+                    <input type="checkbox" value="${res.code}" onchange="toggleResourceRowHighlight(this)" class="res-check rounded text-teal-600 cursor-pointer" />
+                </td>
+                <td class="py-1.5 px-3 font-bold text-slate-800 dark:text-slate-200">${res.code}</td>
+                <td class="py-1.5 px-3 font-semibold text-slate-700 dark:text-slate-300">${res.resourceName}</td>
+                <td class="py-1.5 px-3 font-medium text-slate-600 dark:text-slate-400">${res.unit}</td>
+                <td class="py-1.5 px-3 font-semibold text-teal-600">${res.type}</td>
+                <td class="py-1.5 px-3 text-slate-600 dark:text-slate-400">${res.resourceGroup}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById("lblResPageInfo").innerText = `1-${filtered.length} of ${filtered.length}`;
+    }
+
+    function toggleResourceRowHighlight(chk) {
+        var tr = chk.closest("tr");
+        if (chk.checked) tr.classList.add("highlight-green");
+        else tr.classList.remove("highlight-green");
+    }
+
+    function toggleSelectAllResources(masterChk) {
+        document.querySelectorAll(".res-check").forEach(chk => {
+            chk.checked = masterChk.checked;
+            toggleResourceRowHighlight(chk);
+        });
+    }
+
+    function filterResourcePickList() {
+        renderResourcePickListTable();
+    }
+
+    function applySelectedResourcesToActiveIOW() {
+        var targetIOW = state.items.find(i => i.iowId === state.activeIOWForResource);
+        if (!targetIOW) {
+            Swal.fire({ icon: 'info', text: 'Please select an IOW row first.' });
+            return;
+        }
+
+        var selectedCodes = [];
+        document.querySelectorAll(".res-check:checked").forEach(chk => selectedCodes.push(chk.value));
+
+        if (selectedCodes.length === 0) {
+            closeResourcePickListModal();
+            return;
+        }
+
+        if (!targetIOW.resources) targetIOW.resources = [];
+
+        selectedCodes.forEach(code => {
+            var rData = state.resources.find(r => r.code === code);
+            if (rData) {
+                var nextRefNo = 'C' + (targetIOW.resources.length + 1);
+                targetIOW.resources.push({
+                    resourceDetailId: Date.now() + Math.random(),
+                    incExc: true,
+                    refNo: nextRefNo,
+                    type: rData.type === 'Activity' ? 'AC' : (rData.type === 'Material' ? 'MT' : 'EQ'),
+                    resourceId: rData.resourceId,
+                    resourceCode: rData.code,
+                    resourceName: rData.code + ' ' + rData.resourceName,
+                    coefficient: 1.0,
+                    unitId: rData.unit || 'LS',
+                    rate: rData.rate || 0,
+                    amount: rData.rate || 0,
+                    weightagePct: 0.0,
+                    wastagePct: 0.0
+                });
+            }
+        });
+
+        closeResourcePickListModal();
+        renderCompactResourceTable(targetIOW);
+        recalculateResourceRate(targetIOW);
+    }
+
+    // Render Compact Table for Resources with Row-Level Weightage % (Image 15)
+    function renderCompactResourceTable(item) {
+        var container = document.getElementById("resourceTableContainer_" + item.iowId);
+        if (!container) return;
+
+        if (!item.resources || item.resources.length === 0) {
+            container.innerHTML = `<div class="p-3 text-slate-500 text-xs italic bg-white dark:bg-slate-800">No resources assigned. Click <b>Resource/IOW PickList</b> above to add resources.</div>`;
+            return;
+        }
+
+        var html = `
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="bg-[#ebf5fa] dark:bg-slate-800 text-sky-950 dark:text-sky-200 font-bold border-b border-sky-200 dark:border-slate-700">
+                        <th class="py-1 px-2 w-14 text-center">Inc/Exc</th>
+                        <th class="py-1 px-2 w-12 text-center">RefNo</th>
+                        <th class="py-1 px-2 w-12">Type</th>
+                        <th class="py-1 px-3">Resource & Weightage %</th>
+                        <th class="py-1 px-2 w-20 text-right">Coefficient</th>
+                        <th class="py-1 px-2 w-14">Unit</th>
+                        <th class="py-1 px-2 w-24 text-right">Rate (₹)</th>
+                        <th class="py-1 px-2 w-24 text-right">Amount (₹)</th>
+                        <th class="py-1 px-2 w-10 text-center"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+        `;
+
+        item.resources.forEach((r, idx) => {
+            html += `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/80 transition">
+                    <td class="py-1 px-2 text-center">
+                        <label class="switch-inc-exc">
+                            <input type="checkbox" ${r.incExc ? 'checked' : ''} onchange="toggleResourceIncExc(${item.iowId}, ${idx}, this.checked)">
+                            <span class="slider-inc-exc"></span>
+                        </label>
+                    </td>
+                    <td class="py-1 px-2 text-center font-bold text-slate-600 dark:text-slate-400 font-mono">${r.refNo || ('C' + (idx + 1))}</td>
+                    <td class="py-1 px-2 font-bold text-teal-700 dark:text-teal-300 font-mono">${r.type || 'AC'}</td>
+                    <td class="py-1 px-3">
+                        <div class="space-y-0.5">
+                            <span class="font-semibold text-slate-800 dark:text-slate-200">${r.resourceName}</span>
+                            <div class="flex items-center gap-1 text-[11px] text-slate-500">
+                                <span>Weightage %:</span>
+                                <input type="number" step="any" min="0" max="100" value="${cleanNum(r.weightagePct)}" oninput="updateResourceWeightage(${item.iowId}, ${idx}, this.value)" class="w-14 px-1 py-0.5 border border-slate-300 rounded text-right bg-white dark:bg-slate-700 font-mono text-[11px]" />
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-1 px-2 text-right">
+                        <input type="number" step="any" value="${cleanNum(r.coefficient != null ? r.coefficient : 1.0)}" oninput="updateResourceCoeff(${item.iowId}, ${idx}, this.value)" class="w-16 px-1 py-0.5 border border-slate-300 rounded text-right font-mono text-xs bg-white dark:bg-slate-700" />
+                    </td>
+                    <td class="py-1 px-2 text-slate-600 font-medium">${r.unitId || 'LS'}</td>
+                    <td class="py-1 px-2 text-right">
+                        <input type="number" step="any" value="${cleanNum(r.rate)}" oninput="updateResourceRateDirect(${item.iowId}, ${idx}, this.value)" class="w-20 px-1 py-0.5 border border-slate-300 rounded text-right font-mono text-xs bg-white dark:bg-slate-700" />
+                    </td>
+                    <td class="py-1 px-2 text-right font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                        ₹ ${cleanCurrency(r.amount)}
+                    </td>
+                    <td class="py-1 px-2 text-center">
+                        <button type="button" onclick="deleteResourceRow(${item.iowId}, ${idx})" class="text-slate-400 hover:text-rose-600 p-1 transition cursor-pointer" title="Delete Resource"><i class="fas fa-trash-alt text-xs"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+    }
+
+    function toggleResourceIncExc(iowId, idx, isChecked) {
+        var it = state.items.find(i => i.iowId == iowId);
+        if (!it || !it.resources[idx]) return;
+        it.resources[idx].incExc = isChecked;
+        it.resources[idx].amount = isChecked ? ((it.resources[idx].coefficient || 1.0) * (it.resources[idx].rate || 0)) : 0;
+        renderCompactResourceTable(it);
+        recalculateResourceRate(it);
+    }
+
+    function updateResourceWeightage(iowId, idx, val) {
+        var it = state.items.find(i => i.iowId == iowId);
+        if (!it || !it.resources[idx]) return;
+        it.resources[idx].weightagePct = parseFloat(val) || 0;
+        recalculateResourceRate(it);
+    }
+
+    function updateResourceCoeff(iowId, idx, val) {
+        var it = state.items.find(i => i.iowId == iowId);
+        if (!it || !it.resources[idx]) return;
+        var c = parseFloat(val) || 0;
+        it.resources[idx].coefficient = c;
+        if (it.resources[idx].incExc) it.resources[idx].amount = c * (it.resources[idx].rate || 0);
+        renderCompactResourceTable(it);
+        recalculateResourceRate(it);
+    }
+
+    function updateResourceRateDirect(iowId, idx, val) {
+        var it = state.items.find(i => i.iowId == iowId);
+        if (!it || !it.resources[idx]) return;
+        var r = parseFloat(val) || 0;
+        it.resources[idx].rate = r;
+        if (it.resources[idx].incExc) it.resources[idx].amount = (it.resources[idx].coefficient || 1.0) * r;
+        renderCompactResourceTable(it);
+        recalculateResourceRate(it);
+    }
+
+    function deleteResourceRow(iowId, idx) {
+        var it = state.items.find(i => i.iowId == iowId);
+        if (!it) return;
+        it.resources.splice(idx, 1);
+        renderCompactResourceTable(it);
+        recalculateResourceRate(it);
+    }
+
+    function updateWorkingQty(iowId, val) {
+        var it = state.items.find(i => i.iowId == iowId);
+        if (!it) return;
+        it.workingQty = parseFloat(val) || 1.0;
+        recalculateResourceRate(it);
+    }
+
+    function updateItemCalculation(iowId, field, val) {
+        var it = state.items.find(i => i.iowId == iowId);
+        if (!it) return;
+        it[field] = parseFloat(val) || 0;
+        recalculateResourceRate(it);
+    }
+
+    // STEP 14: Rate Calculation & Auto-synchronization to parent item row's Rate column
+    function recalculateResourceRate(item) {
+        var totalWeightage = (item.resources || []).reduce((acc, r) => acc + (parseFloat(r.weightagePct) || 0), 0);
+        var baseTotal = (item.resources || []).reduce((acc, r) => acc + (r.incExc ? (parseFloat(r.amount) || 0) : 0), 0);
+
+        item.totalWeightagePct = totalWeightage;
+        item.baseTotal = baseTotal;
+
+        var qual = parseFloat(item.qualifierValue) || 0;
+        var grandTotal = baseTotal + qual;
+        item.grandTotal = grandTotal;
+
+        var workQty = parseFloat(item.workingQty) || 1.0;
+        if (workQty <= 0) workQty = 1.0;
+
+        var netRate = (grandTotal / workQty) + (parseFloat(item.roundingOff) || 0);
+        item.netRate = netRate;
+
+        // Auto-sync Net Rate to parent item row's Rate column!
+        item.rate = netRate;
+        item.amount = (item.qty || 0) * netRate;
+
+        var lblWeight = document.getElementById("lblTotalWeightage_" + item.iowId);
+        if (lblWeight) lblWeight.value = cleanNum(totalWeightage) + " %";
+
+        var elBase = document.getElementById("calcBaseTotal_" + item.iowId);
+        if (elBase) elBase.innerText = "₹ " + cleanCurrency(baseTotal);
+
+        var elGrand = document.getElementById("calcGrandTotal_" + item.iowId);
+        if (elGrand) elGrand.innerText = "₹ " + cleanCurrency(grandTotal);
+
+        var elBaseRate = document.getElementById("calcBaseRate_" + item.iowId);
+        if (elBaseRate) elBaseRate.innerText = "₹ " + cleanCurrency(baseTotal);
+
+        var elIOWRate = document.getElementById("calcIOWRate_" + item.iowId);
+        if (elIOWRate) elIOWRate.innerText = "₹ " + cleanCurrency(netRate);
+
+        var elNet = document.getElementById("calcNetRate_" + item.iowId);
+        if (elNet) elNet.innerText = "₹ " + cleanCurrency(netRate);
+
+        $(`.item-rate-val-${item.iowId}`).val(cleanNum(netRate));
+        $(`.item-amount-val-${item.iowId}`).text(cleanCurrency(item.amount));
+
+        recalculateOverallProject();
+    }
+
+    // ── OVERALL TOTAL RECALCULATION ──
+    function recalculateOverallProject() {
+        var grandTotal = state.items.reduce((acc, it) => acc + (parseFloat(it.amount) || 0), 0);
+        state.header.totalAmount = grandTotal;
+
+        var formatted = cleanCurrency(grandTotal);
+        var el = document.getElementById("lblGridTotalAmount");
+        if (el) el.innerText = formatted;
+    }
+
+    // ── MODAL 4: LIBRARY IOWS TABLE ──
+    function openLibraryIOWModal(wgId) {
+        renderLibraryIOWTable();
+        document.getElementById("modalLibraryIOWOverlay").style.display = "flex";
+        document.getElementById("modalLibraryIOWOverlay").classList.remove("hidden");
+    }
+
+    function closeLibraryIOWModal() {
+        document.getElementById("modalLibraryIOWOverlay").style.display = "none";
+        document.getElementById("modalLibraryIOWOverlay").classList.add("hidden");
+    }
+
+    function renderLibraryIOWTable() {
+        var tbody = document.getElementById("tblLibraryIOWBody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+
+        var q = (document.getElementById("txtLibrarySearch").value || '').toLowerCase();
+        var filtered = state.libraryIOWs.filter(lib => 
+            (lib.specification || '').toLowerCase().includes(q) || 
+            (lib.code || '').toLowerCase().includes(q) || 
+            (lib.serialNo || '').toLowerCase().includes(q) ||
+            (lib.sourceTable || '').toLowerCase().includes(q)
+        );
+
+        filtered.forEach(lib => {
+            var tr = document.createElement("tr");
+            tr.className = "hover:bg-emerald-50/70 dark:hover:bg-slate-700/60 transition";
+            var sourceBadge = (lib.sourceTable === 'Project_IOWMas')
+                ? `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-100 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 whitespace-nowrap">Project_IOWMas</span>`
+                : `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-100 dark:bg-sky-950/70 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 whitespace-nowrap">IOWMas</span>`;
+
+            tr.innerHTML = `
+                <td class="py-1.5 px-3 font-bold text-slate-800 dark:text-slate-200">${lib.code || lib.serialNo || ''}</td>
+                <td class="py-1.5 px-3">${sourceBadge}</td>
+                <td class="py-1.5 px-3 text-slate-600 dark:text-slate-300">${lib.workGroupName || 'CIVIL WORKS'}</td>
+                <td class="py-1.5 px-3 font-semibold text-slate-800 dark:text-slate-200">${lib.specification}</td>
+                <td class="py-1.5 px-3 font-medium text-slate-600 dark:text-slate-300">${lib.unit || 'LS'}</td>
+                <td class="py-1.5 px-3 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">₹ ${cleanCurrency(lib.defaultRate || 0)}</td>
+                <td class="py-1.5 px-3 text-center">
+                    <button type="button" onclick='pickLibraryIOWDirect(${JSON.stringify(lib)})' class="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs transition cursor-pointer">
+                        Select
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function pickLibraryIOWDirect(lib) {
+        closeLibraryIOWModal();
+
+        if (!state.selectedWorkgroups || state.selectedWorkgroups.length === 0) {
+            if (state.workgroups.length > 0) {
+                selectWorkGroupWithHierarchy(state.workgroups[0].workGroupId);
+            }
+        }
+
+        var activeWg = state.selectedWorkgroups[state.selectedWorkgroups.length - 1];
+        if (activeWg) {
+            // STEP 6: Validate RefNo is not empty
+            var currRef = entryRowState[activeWg.workGroupId]?.refNo;
+            if (!currRef || currRef.trim() === '') {
+                // If RefNo is empty, prefill RefNo with library serialNo or alert
+                entryRowState[activeWg.workGroupId] = entryRowState[activeWg.workGroupId] || {};
+                entryRowState[activeWg.workGroupId].refNo = lib.serialNo || lib.code || '123';
+            }
+            state.activeSpecContext = { workGroupId: activeWg.workGroupId, isEntryRow: true };
+            selectLibrarySpecification(lib);
+        }
+    }
+
+    function filterLibraryIOWList() {
+        renderLibraryIOWTable();
+    }
+
+    function openWBSMasterModal() {
+        if (state.items.length > 0) openWBSPickListModal(state.items[0]);
+        else Swal.fire({ icon: 'info', text: 'Please add an item to configure WBS.' });
+    }
+
+    function resetEntireForm() {
+        Swal.fire({
+            title: 'Reset Form?',
+            text: 'All entered items and breakdowns will be cleared.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#0284c7',
+            cancelButtonColor: '#ef4444',
+            confirmButtonText: 'Yes, Reset'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                state.selectedWorkgroups = [];
+                state.items = [];
+                entryRowState = {};
+                state.collapsedWorkgroups = {};
+                recalculateOverallProject();
+                renderMainDataGrid();
+            }
+        });
+    }
+
+    // ── FINAL SAVE — OUTPUT COMPLETE COLLECTED VALUES AS JSON ──
+    function submitProjectIOW() {
+        var header = {
+            ReferenceDate: state.header.referenceDate || document.getElementById("txtReferenceDate").value,
+            ReferenceNo: state.header.referenceNo || document.getElementById("txtReferenceNo").value,
+            ProjectKickoffId: state.header.projectKickoffId || document.getElementById("ddlProject").value,
+            ProjectName: state.header.projectName || $("#ddlProject option:selected").text(),
+            Type: document.getElementById("ddlType").value,
+            Revision: document.getElementById("ddlRevision").value,
+            ReadyForApproval: document.getElementById("chkReadyForApproval").checked,
+            Remarks: document.getElementById("txtMainRemarks").value,
+            TotalAmount: state.header.totalAmount,
+            CreatedBy: 'Admin',
+            CreatedDate: new Date().toISOString()
+        };
+
+        var fullPayload = {
+            Header: header,
+            WorkGroups: state.selectedWorkgroups.map(w => ({
+                WorkGroupId: w.workGroupId,
+                SerialNo: w.serialNo,
+                WorkGroupName: w.workGroupName,
+                ParentId: w.parentId || '0',
+                ParentName: w.parentName || 'Root'
+            })),
+            Items: state.items.map(it => ({
+                IOWId: it.iowId,
+                WorkGroupId: it.workGroupId,
+                WorkGroupName: it.workGroupName,
+                RefNo: it.refNo,
+                SerialNo: it.serialNo,
+                Specification: it.specification,
+                Unit: it.unitId,
+                Qty: it.qty,
+                Rate: it.rate,
+                Amount: it.amount,
+                IsNewSpec: it.isNewSpec === true,
+                WBSBreakdown: (it.wbsBreakdown || []).map(w => ({
+                    WBSId: w.wbsId,
+                    WBSName: w.wbsName,
+                    FullWBSName: w.fullWBSName,
+                    Qty: w.qty
+                })),
+                Resources: (it.resources || []).map(r => ({
+                    RefNo: r.refNo,
+                    Type: r.type,
+                    ResourceCode: r.resourceCode,
+                    ResourceName: r.resourceName,
+                    IncExc: r.incExc !== false,
+                    Coefficient: r.coefficient,
+                    Unit: r.unitId,
+                    Rate: r.rate,
+                    Amount: r.amount,
+                    WeightagePct: r.weightagePct || 0,
+                    WastagePct: r.wastagePct || 0
+                })),
+                Calculations: {
+                    TotalWeightagePct: it.totalWeightagePct || 0,
+                    WastageAmount: it.wastageAmount || 0,
+                    LoadingUnloading: it.loadingUnloading || 0,
+                    HandlingCharges: it.handlingCharges || 0,
+                    BaseTotal: it.baseTotal || 0,
+                    QualifierValue: it.qualifierValue || 0,
+                    GrandTotal: it.grandTotal || 0,
+                    RoundingOff: it.roundingOff || 0,
+                    NetRate: it.netRate || 0
+                }
+            }))
+        };
+
+        var jsonString = JSON.stringify(fullPayload, null, 2);
+
+        var resCount = state.items.reduce((acc, i) => acc + (i.resources?.length || 0), 0);
+        var formattedTotal = cleanCurrency(state.header.totalAmount || 0);
+
+        var modalEl = document.getElementById("modalBOQJsonPayload");
+        var countEl = document.getElementById("payloadModalItemCount");
+        var resEl = document.getElementById("payloadModalResCount");
+        var amtEl = document.getElementById("payloadModalTotalAmount");
+        var jsonEl = document.getElementById("txtThemedJsonContent");
+
+        if (countEl) countEl.innerText = state.items.length;
+        if (resEl) resEl.innerText = resCount;
+        if (amtEl) amtEl.innerText = "₹ " + formattedTotal;
+        if (jsonEl) jsonEl.innerText = jsonString;
+
+        if (modalEl) {
+            modalEl.style.display = "flex";
+            modalEl.classList.remove("hidden");
+        }
+    }
+
+    function closeBOQJsonModal() {
+        var modalEl = document.getElementById("modalBOQJsonPayload");
+        if (modalEl) {
+            modalEl.style.display = "none";
+            modalEl.classList.add("hidden");
+        }
+    }
+
+    function copyBOQJsonToClipboard() {
+        var jsonEl = document.getElementById("txtThemedJsonContent");
+        if (!jsonEl) return;
+        var text = jsonEl.innerText;
+        navigator.clipboard.writeText(text).then(function () {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'BOQ JSON copied to clipboard!',
+                showConfirmButton: false,
+                timer: 2000
+            });
+        }).catch(function (err) {
+            console.error("Copy failed", err);
+        });
+    }
+</script>

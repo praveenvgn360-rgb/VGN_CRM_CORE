@@ -1,0 +1,529 @@
+@{
+    ViewBag.Title = "Resource Master — VGN ERP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="p-4 sm:p-6 space-y-6">
+    <!-- ── HEADER BAR ── -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[var(--surface)] p-5 rounded-2xl shadow-sm border border-[var(--border)]">
+        <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-[rgba(var(--primary-rgb),0.12)] border border-[rgba(var(--primary-rgb),0.25)] flex items-center justify-center text-primary text-xl shadow-sm">
+                <i class="fas fa-cubes"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2.5">
+                    <h1 class="text-xl font-bold text-[var(--text)] tracking-tight">Resource Master</h1>
+                    <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 border border-blue-500/20" id="badgeTotalRecords">
+                        0 Resources
+                    </span>
+                </div>
+                <p class="text-xs text-[var(--text-muted)] mt-0.5">Manage materials, labours, activities, equipment assets, unit types, and base rates</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2.5 w-full md:w-auto justify-end">
+            <button type="button" onclick="loadGridData()" class="btn-clear !text-xs !py-2 !px-3.5" title="Refresh Grid">
+                <i class="fas fa-sync-alt mr-1.5 text-slate-500"></i> Refresh
+            </button>
+            <button type="button" onclick="openCreateModal()" class="btn-save !text-xs !py-2 !px-4 text-white flex items-center gap-2 shadow-md">
+                <i class="fas fa-plus"></i>
+                <span>Add Resource</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ── SUMMARY STATS STRIP ── -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Total Resources</span>
+                <span class="text-2xl font-black text-[var(--text)] mt-1 block" id="statTotalCount">0</span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-[rgba(var(--primary-rgb),0.1)] text-primary flex items-center justify-center text-lg">
+                <i class="fas fa-boxes-stacked"></i>
+            </div>
+        </div>
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Material / Labour</span>
+                <div class="text-xl font-black text-[var(--text)] mt-1 flex items-center gap-1.5">
+                    <span id="statMatCount" class="text-emerald-600 dark:text-emerald-400">0</span>
+                    <span class="text-xs font-medium text-[var(--text-muted)]">Mat /</span>
+                    <span id="statLabCount" class="text-amber-600 dark:text-amber-400">0</span>
+                    <span class="text-xs font-medium text-[var(--text-muted)]">Lab</span>
+                </div>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-lg">
+                <i class="fas fa-dolly"></i>
+            </div>
+        </div>
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Active Status</span>
+                <span class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block" id="statActiveCount">0</span>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-lg">
+                <i class="fas fa-check-double"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── DATA GRID CARD ── -->
+    <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-md p-4 sm:p-5">
+        <div id="dxGridResource"></div>
+    </div>
+</div>
+
+<style>
+    .swal2-container {
+        z-index: 1000000 !important;
+    }
+</style>
+
+<!-- ── MODAL DIALOG (CREATE / EDIT) ── -->
+<div id="resourceModalOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[1050] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto" style="display: none;">
+    <div id="resourceModal" class="relative w-full max-w-lg bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh] my-auto overflow-hidden z-[1055]">
+        <!-- Modal Header -->
+        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800 flex-shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-[rgba(var(--primary-rgb),0.12)] text-primary flex items-center justify-center text-sm font-bold">
+                    <i class="fas fa-cubes"></i>
+                </div>
+                <h3 class="text-base sm:text-lg font-bold text-slate-800 dark:text-white" id="modalTitle">Add Resource</h3>
+            </div>
+            <button onclick="closeResourceModal()" type="button" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-white transition-colors cursor-pointer">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <form id="frmResource" onsubmit="saveResource(event)" class="p-6 space-y-4 overflow-y-auto flex-1">
+            <input type="hidden" id="txtResourceId" value="0" />
+
+            <!-- Resource Name -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Resource Name <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="txtResourceName" required placeholder="e.g. Portland Cement 53 Grade, Electrician, Sand (M-Sand)" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white" />
+            </div>
+
+            <!-- Resource Group Dropdown (Loaded from ResourceGroupMas) -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Resource Group <span class="text-red-500">*</span>
+                </label>
+                <select id="ddlResourceGroup" required onchange="onResourceGroupChanged()" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white">
+                    <option value="">-- Select Resource Group --</option>
+                </select>
+            </div>
+
+            <!-- Resource Type (Synced from selected Group, but user can change) -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Resource Type <span class="text-red-500">*</span>
+                </label>
+                <select id="ddlResourceType" required class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white">
+                    <option value="">-- Select Type --</option>
+                    <option value="Activity">Activity</option>
+                    <option value="Labour">Labour</option>
+                    <option value="Material">Material</option>
+                    <option value="Asset">Asset</option>
+                </select>
+            </div>
+
+            <!-- Unit Dropdown (Loaded from dbo.UOM) -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Unit of Measurement (UOM) <span class="text-red-500">*</span>
+                </label>
+                <select id="ddlUnit" required class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white">
+                    <option value="">-- Select UOM --</option>
+                </select>
+            </div>
+
+            <!-- Base Rate -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Base Rate (₹) <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                    <span class="absolute left-3 top-2 text-slate-400 dark:text-slate-500 text-xs font-bold">₹</span>
+                    <input type="number" step="0.01" min="0" id="txtRate" required placeholder="0.00" class="w-full pl-7 pr-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:border-primary outline-none text-slate-800 dark:text-white font-mono" />
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-end gap-2.5">
+                <button type="button" onclick="closeResourceModal()" class="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-colors">
+                    Cancel
+                </button>
+                <button type="submit" id="btnSaveResource" class="btn-save !text-xs !py-2 !px-4 text-white flex items-center gap-1.5 shadow-md">
+                    <i class="fas fa-check"></i>
+                    <span id="btnSaveText">Save Resource</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var gridInstance = null;
+        var lookupGroups = [];
+        var lookupUnits = [];
+
+        $(document).ready(function () {
+            initGrid();
+            loadLookups(function () {
+                loadGridData();
+            });
+        });
+
+        // ── Initialize DevExtreme DataGrid ──
+        function initGrid() {
+            $("#dxGridResource").dxDataGrid({
+                dataSource: [],
+                keyExpr: "resourceId",
+                showBorders: true,
+                showRowLines: true,
+                rowAlternationEnabled: true,
+                hoverStateEnabled: true,
+                columnAutoWidth: true,
+                wordWrapEnabled: false,
+                allowColumnResizing: true,
+                columnResizingMode: "widget",
+                allowColumnReordering: true,
+                searchPanel: {
+                    visible: true,
+                    width: 260,
+                    placeholder: "Search resources..."
+                },
+                headerFilter: { visible: true },
+                export: {
+                    enabled: true,
+                    fileName: "Resources_Master_" + new Date().toISOString().slice(0, 10)
+                },
+                paging: { pageSize: 15 },
+                pager: {
+                    showPageSizeSelector: true,
+                    allowedPageSizes: [10, 15, 25, 50],
+                    showInfo: true
+                },
+                columns: [
+                    {
+                        dataField: "resourceId",
+                        caption: "ID",
+                        width: 100,
+                        alignment: "center",
+                        sortOrder: "asc"
+                    },
+                    {
+                        dataField: "resourceName",
+                        caption: "Resource Name",
+                        width: 260,
+                        cellTemplate: function (container, options) {
+                            $('<span class="font-bold text-[var(--text)]"></span>')
+                                .text(options.value || "")
+                                .appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "resourceGroupName",
+                        caption: "Resource Group",
+                        width: 220,
+                        cellTemplate: function (container, options) {
+                            $('<span class="font-medium text-slate-700 dark:text-slate-300"></span>')
+                                .text(options.value || "—")
+                                .appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "typeId",
+                        caption: "Type",
+                        width: 140,
+                        alignment: "center",
+                        cellTemplate: function (container, options) {
+                            var val = options.value || "";
+                            var badgeClass = "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-300";
+
+                            if (val.toLowerCase() === "activity") {
+                                badgeClass = "bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border-sky-300 dark:border-sky-800";
+                            } else if (val.toLowerCase() === "labour") {
+                                badgeClass = "bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border-amber-300 dark:border-amber-800";
+                            } else if (val.toLowerCase() === "material") {
+                                badgeClass = "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800";
+                            } else if (val.toLowerCase() === "asset") {
+                                badgeClass = "bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border-purple-300 dark:border-purple-800";
+                            }
+
+                            $('<span class="text-xs font-semibold px-2.5 py-0.5 rounded-full border"></span>')
+                                .addClass(badgeClass)
+                                .text(val || "—")
+                                .appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "unitName",
+                        caption: "Unit",
+                        width: 140,
+                        alignment: "center",
+                        cellTemplate: function (container, options) {
+                            $('<span class="text-xs font-medium px-2 py-0.5 rounded bg-blue-50 dark:bg-slate-800 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-slate-700"></span>')
+                                .text(options.value || "—")
+                                .appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "rate",
+                        caption: "Base Rate",
+                        width: 150,
+                        alignment: "right",
+                        cellTemplate: function (container, options) {
+                            var val = parseFloat(options.value) || 0;
+                            $('<span class="font-mono font-bold text-slate-800 dark:text-slate-100"></span>')
+                                .text('₹ ' + val.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))
+                                .appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "createdBy",
+                        caption: "Created By",
+                        width: 140,
+                        alignment: "center"
+                    },
+                    {
+                        dataField: "createdDate",
+                        caption: "Created Date",
+                        width: 140,
+                        dataType: "date",
+                        format: "dd MMM yyyy",
+                        alignment: "center"
+                    },
+                    {
+                        caption: "Action",
+                        alignment: "center",
+                        width: 110,
+                        allowFiltering: false,
+                        allowSorting: false,
+                        cellTemplate: function (container, options) {
+                            var data = options.data;
+                            var $wrapper = $('<div class="flex items-center justify-center gap-1.5"></div>');
+
+                            var $btnEdit = $('<button class="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-slate-700 dark:text-blue-400 transition-colors" title="Edit Resource"><i class="fas fa-edit text-xs"></i></button>');
+                            $btnEdit.on('click', function () { openEditModal(data); });
+
+                            var $btnDel = $('<button class="w-7 h-7 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-600 dark:bg-slate-700 dark:text-red-400 transition-colors" title="Delete Resource"><i class="fas fa-trash-alt text-xs"></i></button>');
+                            $btnDel.on('click', function () { deleteResource(data.resourceId, data.resourceName); });
+
+                            $wrapper.append($btnEdit).append($btnDel);
+                            container.append($wrapper);
+                        }
+                    }
+                ]
+            });
+
+            gridInstance = $("#dxGridResource").dxDataGrid("instance");
+        }
+
+        // ── Load Dropdown Lookups (Groups from ResourceGroupMas & Units from UnitType) ──
+        function loadLookups(callback) {
+            $.ajax({
+                url: '/Resource/GetLookups',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (res && res.success) {
+                        lookupGroups = res.groups || [];
+                        lookupUnits = res.units || [];
+
+                        // Populate Groups Dropdown (pure group name without type)
+                        var $ddlGroup = $('#ddlResourceGroup');
+                        $ddlGroup.empty().append('<option value="">-- Select Resource Group --</option>');
+                        lookupGroups.forEach(function (g) {
+                            $ddlGroup.append($('<option></option>').val(g.resourceGroupId).text(g.resourceGroupName).data('type', g.typeId));
+                        });
+
+                        // Populate Units Dropdown (dbo.UOM)
+                        var $ddlUnit = $('#ddlUnit');
+                        $ddlUnit.empty().append('<option value="">-- Select UOM --</option>');
+                        lookupUnits.forEach(function (u) {
+                            var uid = u.unitId || u.typeId;
+                            var uname = u.unitName || u.typeName;
+                            $ddlUnit.append($('<option></option>').val(uid).text(uname));
+                        });
+
+                        if (typeof callback === 'function') callback();
+                    }
+                }
+            });
+        }
+
+        // ── When Resource Group Changed: Auto-fill Type ──
+        function onResourceGroupChanged() {
+            var selectedVal = $('#ddlResourceGroup').val();
+            var group = lookupGroups.find(function (x) { return x.resourceGroupId == selectedVal; });
+            if (group && group.typeId) {
+                $('#ddlResourceType').val(group.typeId);
+            }
+        }
+
+        // ── Load Grid Data ──
+        function loadGridData() {
+            if (gridInstance) gridInstance.beginCustomLoading("Loading resources...");
+
+            $.ajax({
+                url: '/Resource/GetAll',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (gridInstance) gridInstance.endCustomLoading();
+
+                    if (res && res.success) {
+                        var list = res.data || [];
+                        gridInstance.option("dataSource", list);
+
+                        var matCount = list.filter(function (x) { return (x.typeId || '').toLowerCase() === 'material'; }).length;
+                        var labCount = list.filter(function (x) { return (x.typeId || '').toLowerCase() === 'labour'; }).length;
+
+                        $('#statTotalCount').text(list.length);
+                        $('#statMatCount').text(matCount);
+                        $('#statLabCount').text(labCount);
+                        $('#statActiveCount').text(list.length);
+                        $('#badgeTotalRecords').text(list.length + " Resources");
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Error', text: res ? res.message : 'Failed to load records' });
+                    }
+                },
+                error: function (xhr, status, err) {
+                    if (gridInstance) gridInstance.endCustomLoading();
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Server error: ' + err });
+                }
+            });
+        }
+
+        // ── Modal Handlers ──
+        function openCreateModal() {
+            $('#txtResourceId').val(0);
+            $('#txtResourceName').val('');
+            $('#ddlResourceGroup').val('');
+            $('#ddlResourceType').val('');
+            $('#ddlUnit').val('');
+            $('#txtRate').val('');
+
+            $('#modalTitle').text('Add Resource');
+            $('#btnSaveText').text('Save Resource');
+
+            showModal();
+        }
+
+        function openEditModal(item) {
+            $('#txtResourceId').val(item.resourceId);
+            $('#txtResourceName').val(item.resourceName || '');
+            $('#ddlResourceGroup').val(item.resourceGroupId || '');
+            $('#ddlResourceType').val(item.typeId || '');
+            $('#ddlUnit').val(item.unitId || '');
+            $('#txtRate').val(item.rate || '0');
+
+            $('#modalTitle').text('Edit Resource #' + item.resourceId);
+            $('#btnSaveText').text('Update Resource');
+
+            showModal();
+        }
+
+        function showModal() {
+            $('#resourceModalOverlay').css('display', 'flex').hide().fadeIn(150);
+        }
+
+        function closeResourceModal() {
+            $('#resourceModalOverlay').fadeOut(150);
+        }
+
+        $(document).on('click', '#resourceModalOverlay', function (e) {
+            if (e.target === this) {
+                closeResourceModal();
+            }
+        });
+
+        // ── Save Resource ──
+        function saveResource(e) {
+            e.preventDefault();
+
+            var resId = parseInt($('#txtResourceId').val()) || 0;
+            var payload = {
+                ResourceId: resId,
+                ResourceName: $('#txtResourceName').val().trim(),
+                ResourceGroupId: $('#ddlResourceGroup').val(),
+                TypeId: $('#ddlResourceType').val(),
+                UnitId: $('#ddlUnit').val(),
+                Rate: $('#txtRate').val().trim() || '0'
+            };
+
+            $('#btnSaveResource').prop('disabled', true).addClass('opacity-60');
+
+            $.ajax({
+                url: '/Resource/Save',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function (res) {
+                    $('#btnSaveResource').prop('disabled', false).removeClass('opacity-60');
+
+                    if (res && res.success) {
+                        closeResourceModal();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: res.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        loadGridData();
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Save Failed', text: res ? res.message : 'Unknown error' });
+                    }
+                },
+                error: function (xhr, status, err) {
+                    $('#btnSaveResource').prop('disabled', false).removeClass('opacity-60');
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Error saving: ' + err });
+                }
+            });
+        }
+
+        // ── Delete Resource ──
+        function deleteResource(id, name) {
+            Swal.fire({
+                title: 'Delete Resource?',
+                text: 'Are you sure you want to delete "' + name + '"?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary)',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, Delete'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Resource/Delete',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ ResourceId: id }),
+                        success: function (res) {
+                            if (res && res.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted',
+                                    text: res.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                                loadGridData();
+                            } else {
+                                Swal.fire({ icon: 'error', title: 'Delete Failed', text: res ? res.message : 'Error' });
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

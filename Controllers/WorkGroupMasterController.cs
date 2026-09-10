@@ -15,6 +15,7 @@ namespace VGN_CRM_CORE.Controllers
     public class WorkGroupMasterController : Controller
     {
         private readonly string _connPROJ;
+        private const string SP_NAME = "Web_SaveWorkGroupMas";
 
         public WorkGroupMasterController(IConfiguration configuration)
         {
@@ -45,7 +46,7 @@ namespace VGN_CRM_CORE.Controllers
             try
             {
                 using (var con = new SqlConnection(_connPROJ))
-                using (var cmd = new SqlCommand("Web_SaveWorkGroupMas", con))
+                using (var cmd = new SqlCommand(SP_NAME, con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@Flag", "FetchbyAll");
@@ -93,7 +94,7 @@ namespace VGN_CRM_CORE.Controllers
             try
             {
                 using (var con = new SqlConnection(_connPROJ))
-                using (var cmd = new SqlCommand("Web_SaveWorkGroupMas", con))
+                using (var cmd = new SqlCommand(SP_NAME, con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@Flag", "FetchbyId");
@@ -154,11 +155,10 @@ namespace VGN_CRM_CORE.Controllers
                 string hostName = SessionHelper.GetClientHostName(ipAddress);
 
                 bool isInsert = !req.WorkGroupId.HasValue || req.WorkGroupId.Value <= 0;
-                // Note: The SP explicitly checks IF @Flag = 'U' for updates
                 string flag = isInsert ? "Insert" : "U";
 
                 using (var con = new SqlConnection(_connPROJ))
-                using (var cmd = new SqlCommand("Web_SaveWorkGroupMas", con))
+                using (var cmd = new SqlCommand(SP_NAME, con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@Flag", flag);
@@ -226,15 +226,32 @@ namespace VGN_CRM_CORE.Controllers
                     return Json(new { success = false, message = "Invalid Work Group ID." });
 
                 using (var con = new SqlConnection(_connPROJ))
-                using (var cmd = new SqlCommand("UPDATE dbo.WorkGroupMaster SET Status = 0, UpdatedBy = @UpdatedBy, UpdatedDate = GETDATE() WHERE WorkGroupId = @Id", con))
+                using (var cmd = new SqlCommand(SP_NAME, con))
                 {
-                    cmd.Parameters.AddWithValue("@Id", req.WorkGroupId.Value);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Flag", "DELETE");
+                    cmd.Parameters.AddWithValue("@WorkGroupId", req.WorkGroupId.Value);
                     cmd.Parameters.AddWithValue("@UpdatedBy", user.UserId ?? "User");
+                    cmd.Parameters.AddWithValue("@UpdatedDate", DateTime.Now);
 
                     await con.OpenAsync();
-                    int rows = await cmd.ExecuteNonQueryAsync();
 
-                    return Json(new { success = rows > 0, message = rows > 0 ? "Work group deleted successfully." : "Record not found." });
+                    using (var dr = await cmd.ExecuteReaderAsync())
+                    {
+                        if (await dr.ReadAsync())
+                        {
+                            string result = dr["Result"] != DBNull.Value ? dr["Result"].ToString() : "";
+                            bool isDeleted = result.Equals("DELETED", StringComparison.OrdinalIgnoreCase);
+
+                            return Json(new
+                            {
+                                success = isDeleted,
+                                message = isDeleted ? "Work group deleted successfully." : result
+                            });
+                        }
+                    }
+
+                    return Json(new { success = true, message = "Work group deleted successfully." });
                 }
             }
             catch (Exception ex)
@@ -252,11 +269,11 @@ namespace VGN_CRM_CORE.Controllers
             try
             {
                 using (var con = new SqlConnection(_connPROJ))
-                using (var cmd = new SqlCommand("Web_SaveWorkType", con))
+                using (var cmd = new SqlCommand(SP_NAME, con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@Flag", "FetchByAll");
-                    cmd.Parameters.AddWithValue("@WorkTypeId", DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Flag", "LOOKUP_WORKTYPES");
+                    cmd.Parameters.AddWithValue("@WorkGroupId", DBNull.Value);
 
                     await con.OpenAsync();
 

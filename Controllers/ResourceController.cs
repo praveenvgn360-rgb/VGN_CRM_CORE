@@ -12,45 +12,45 @@ using VGN_CRM_CORE.Models;
 namespace VGN_CRM_CORE.Controllers
 {
     [AuthorizeSession]
-    public class ProjectBudgetAllocationController : Controller
+    public class ResourceController : Controller
     {
         private readonly string _connPROJ;
-        private const string SP_NAME = "Web_SaveProjectBudgetAllocation";
+        private const string SP_SAVE = "Web_SaveResourceMas";
+        private const string SP_LOAD = "Web_LoadResourceMas";
 
-        public ProjectBudgetAllocationController(IConfiguration configuration)
+        public ResourceController(IConfiguration configuration)
         {
             _connPROJ = configuration.GetActiveConnectionString("connPROJ")
                         ?? configuration.GetConnectionString("ConnPROJ")
                         ?? configuration.GetConnectionString("connPROJ");
         }
 
-        // GET: /ProjectBudgetAllocation/Index
+        // GET: /Resource/Index
         [HttpGet]
         public IActionResult Index()
         {
             var user = SessionHelper.GetUserSession(HttpContext.Session);
             if (user == null) return RedirectToAction("Login", "Account");
 
-            ViewBag.Title = "Project Budget Allocation — VGN ERP";
+            ViewBag.Title = "Resource Master — VGN ERP";
             ViewBag.UserId = user.UserId;
             ViewBag.UserName = user.UserName;
             return View();
         }
 
-        // GET: /ProjectBudgetAllocation/GetAll
+        // GET: /Resource/GetAll
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var list = new List<ProjectBudgetAllocationModel>();
+            var list = new List<ResourceModel>();
 
             try
             {
                 using (var con = new SqlConnection(_connPROJ))
-                using (var cmd = new SqlCommand(SP_NAME, con))
+                using (var cmd = new SqlCommand(SP_LOAD, con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@Flag", "FetchbyAll");
-                    cmd.Parameters.AddWithValue("@BudgetAllocationId", DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Flag", "FETCHALL");
 
                     await con.OpenAsync();
 
@@ -61,13 +61,16 @@ namespace VGN_CRM_CORE.Controllers
 
                         foreach (DataRow row in dt.Rows)
                         {
-                            list.Add(new ProjectBudgetAllocationModel
+                            list.Add(new ResourceModel
                             {
-                                BudgetAllocationId = row["BudgetAllocationId"] != DBNull.Value ? Convert.ToInt32(row["BudgetAllocationId"]) : (int?)null,
-                                ProjectKickoffId = row["ProjectKickoffId"] != DBNull.Value ? Convert.ToInt32(row["ProjectKickoffId"]) : (int?)null,
-                                CostCentreId = row["CostCentreId"] != DBNull.Value ? Convert.ToInt32(row["CostCentreId"]) : (int?)null,
-                                BudgetAmount = row["BudgetAmount"] != DBNull.Value ? Convert.ToDouble(row["BudgetAmount"]) : (double?)null,
-                                BudgetDescription = row["BudgetDescription"] != DBNull.Value ? row["BudgetDescription"].ToString() : null,
+                                ResourceId = row["ResourceId"] != DBNull.Value ? Convert.ToInt32(row["ResourceId"]) : (int?)null,
+                                ResourceName = row["ResourceName"] != DBNull.Value ? row["ResourceName"].ToString() : "",
+                                TypeId = row["TypeId"] != DBNull.Value ? row["TypeId"].ToString() : "",
+                                ResourceGroupId = row["ResourceGroupId"] != DBNull.Value ? row["ResourceGroupId"].ToString() : "",
+                                ResourceGroupName = row.Table.Columns.Contains("ResourceGroupName") && row["ResourceGroupName"] != DBNull.Value ? row["ResourceGroupName"].ToString() : "—",
+                                UnitId = row["UnitId"] != DBNull.Value ? row["UnitId"].ToString() : "",
+                                UnitName = row.Table.Columns.Contains("UnitName") && row["UnitName"] != DBNull.Value ? row["UnitName"].ToString() : "—",
+                                Rate = row.Table.Columns.Contains("Rate") && row["Rate"] != DBNull.Value ? row["Rate"].ToString() : "0",
                                 CreatedBy = row.Table.Columns.Contains("CreatedBy") && row["CreatedBy"] != DBNull.Value ? row["CreatedBy"].ToString() : null,
                                 CreatedDate = row.Table.Columns.Contains("CreatedDate") && row["CreatedDate"] != DBNull.Value ? Convert.ToDateTime(row["CreatedDate"]) : (DateTime?)null,
                                 UpdatedBy = row.Table.Columns.Contains("UpdatedBy") && row["UpdatedBy"] != DBNull.Value ? row["UpdatedBy"].ToString() : null,
@@ -86,18 +89,18 @@ namespace VGN_CRM_CORE.Controllers
             }
         }
 
-        // GET: /ProjectBudgetAllocation/GetById?id=1
+        // GET: /Resource/GetById?id=1
         [HttpGet]
         public async Task<IActionResult> GetById(int id)
         {
             try
             {
                 using (var con = new SqlConnection(_connPROJ))
-                using (var cmd = new SqlCommand(SP_NAME, con))
+                using (var cmd = new SqlCommand(SP_LOAD, con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@Flag", "FetchbyId");
-                    cmd.Parameters.AddWithValue("@BudgetAllocationId", id);
+                    cmd.Parameters.AddWithValue("@Flag", "FETCHBYID");
+                    cmd.Parameters.AddWithValue("@ResourceId", id);
 
                     await con.OpenAsync();
 
@@ -109,13 +112,16 @@ namespace VGN_CRM_CORE.Controllers
                         if (dt.Rows.Count > 0)
                         {
                             var row = dt.Rows[0];
-                            var model = new ProjectBudgetAllocationModel
+                            var model = new ResourceModel
                             {
-                                BudgetAllocationId = row["BudgetAllocationId"] != DBNull.Value ? Convert.ToInt32(row["BudgetAllocationId"]) : (int?)null,
-                                ProjectKickoffId = row["ProjectKickoffId"] != DBNull.Value ? Convert.ToInt32(row["ProjectKickoffId"]) : (int?)null,
-                                CostCentreId = row["CostCentreId"] != DBNull.Value ? Convert.ToInt32(row["CostCentreId"]) : (int?)null,
-                                BudgetAmount = row["BudgetAmount"] != DBNull.Value ? Convert.ToDouble(row["BudgetAmount"]) : (double?)null,
-                                BudgetDescription = row["BudgetDescription"] != DBNull.Value ? row["BudgetDescription"].ToString() : null,
+                                ResourceId = row["ResourceId"] != DBNull.Value ? Convert.ToInt32(row["ResourceId"]) : (int?)null,
+                                ResourceName = row["ResourceName"] != DBNull.Value ? row["ResourceName"].ToString() : "",
+                                TypeId = row["TypeId"] != DBNull.Value ? row["TypeId"].ToString() : "",
+                                ResourceGroupId = row["ResourceGroupId"] != DBNull.Value ? row["ResourceGroupId"].ToString() : "",
+                                ResourceGroupName = row.Table.Columns.Contains("ResourceGroupName") && row["ResourceGroupName"] != DBNull.Value ? row["ResourceGroupName"].ToString() : "—",
+                                UnitId = row["UnitId"] != DBNull.Value ? row["UnitId"].ToString() : "",
+                                UnitName = row.Table.Columns.Contains("UnitName") && row["UnitName"] != DBNull.Value ? row["UnitName"].ToString() : "—",
+                                Rate = row.Table.Columns.Contains("Rate") && row["Rate"] != DBNull.Value ? row["Rate"].ToString() : "0",
                                 CreatedBy = row.Table.Columns.Contains("CreatedBy") && row["CreatedBy"] != DBNull.Value ? row["CreatedBy"].ToString() : null,
                                 CreatedDate = row.Table.Columns.Contains("CreatedDate") && row["CreatedDate"] != DBNull.Value ? Convert.ToDateTime(row["CreatedDate"]) : (DateTime?)null,
                                 UpdatedBy = row.Table.Columns.Contains("UpdatedBy") && row["UpdatedBy"] != DBNull.Value ? row["UpdatedBy"].ToString() : null,
@@ -128,7 +134,7 @@ namespace VGN_CRM_CORE.Controllers
                     }
                 }
 
-                return Json(new { success = false, message = "Record not found" });
+                return Json(new { success = false, message = "Record not found." });
             }
             catch (Exception ex)
             {
@@ -136,9 +142,9 @@ namespace VGN_CRM_CORE.Controllers
             }
         }
 
-        // POST: /ProjectBudgetAllocation/Save
+        // POST: /Resource/Save
         [HttpPost]
-        public async Task<IActionResult> Save([FromBody] ProjectBudgetAllocationModel req)
+        public async Task<IActionResult> Save([FromBody] ResourceModel req)
         {
             try
             {
@@ -146,25 +152,26 @@ namespace VGN_CRM_CORE.Controllers
                 if (user == null)
                     return Json(new { success = false, message = "Session expired. Please log in again." });
 
-                if (req == null)
-                    return Json(new { success = false, message = "Invalid data received." });
+                if (req == null || string.IsNullOrWhiteSpace(req.ResourceName))
+                    return Json(new { success = false, message = "Resource Name is required." });
 
                 string ipAddress = SessionHelper.GetClientIPAddress(Request);
                 string hostName = SessionHelper.GetClientHostName(ipAddress);
 
-                bool isInsert = !req.BudgetAllocationId.HasValue || req.BudgetAllocationId.Value <= 0;
-                string flag = isInsert ? "Insert" : "Update";
+                bool isInsert = !req.ResourceId.HasValue || req.ResourceId.Value <= 0;
+                string flag = isInsert ? "INSERT" : "UPDATE";
 
                 using (var con = new SqlConnection(_connPROJ))
-                using (var cmd = new SqlCommand(SP_NAME, con))
+                using (var cmd = new SqlCommand(SP_SAVE, con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@Flag", flag);
-                    cmd.Parameters.AddWithValue("@BudgetAllocationId", (object)(req.BudgetAllocationId ?? 0));
-                    cmd.Parameters.AddWithValue("@ProjectKickoffId", (object)(req.ProjectKickoffId ?? 0));
-                    cmd.Parameters.AddWithValue("@CostCentreId", (object)(req.CostCentreId ?? 0));
-                    cmd.Parameters.AddWithValue("@BudgetAmount", (object)(req.BudgetAmount ?? 0.0));
-                    cmd.Parameters.AddWithValue("@BudgetDescription", (object)(req.BudgetDescription ?? ""));
+                    cmd.Parameters.AddWithValue("@ResourceId", (object)(req.ResourceId ?? 0));
+                    cmd.Parameters.AddWithValue("@ResourceName", req.ResourceName.Trim());
+                    cmd.Parameters.AddWithValue("@TypeId", (object)(req.TypeId?.Trim() ?? ""));
+                    cmd.Parameters.AddWithValue("@ResourceGroupId", (object)(req.ResourceGroupId?.Trim() ?? ""));
+                    cmd.Parameters.AddWithValue("@UnitId", (object)(req.UnitId?.Trim() ?? ""));
+                    cmd.Parameters.AddWithValue("@Rate", (object)(req.Rate?.Trim() ?? "0"));
 
                     cmd.Parameters.AddWithValue("@CreatedBy", isInsert ? (object)(user.UserId ?? "User") : DBNull.Value);
                     cmd.Parameters.AddWithValue("@CreatedDate", isInsert ? (object)DateTime.Now : DBNull.Value);
@@ -181,7 +188,7 @@ namespace VGN_CRM_CORE.Controllers
                         if (await dr.ReadAsync())
                         {
                             string result = dr["Result"] != DBNull.Value ? dr["Result"].ToString() : "";
-                            int savedId = dr["BudgetAllocationId"] != DBNull.Value ? Convert.ToInt32(dr["BudgetAllocationId"]) : 0;
+                            int savedId = dr["ResourceId"] != DBNull.Value ? Convert.ToInt32(dr["ResourceId"]) : 0;
 
                             if (result.Equals("INSERTED", StringComparison.OrdinalIgnoreCase) ||
                                 result.Equals("UPDATED", StringComparison.OrdinalIgnoreCase))
@@ -189,19 +196,19 @@ namespace VGN_CRM_CORE.Controllers
                                 return Json(new
                                 {
                                     success = true,
-                                    message = isInsert ? "Project budget allocation created successfully!" : "Project budget allocation updated successfully!",
+                                    message = isInsert ? "Resource created successfully!" : "Resource updated successfully!",
                                     id = savedId
                                 });
                             }
                             else
                             {
-                                return Json(new { success = false, message = $"Operation failed: {result}" });
+                                return Json(new { success = false, message = result });
                             }
                         }
                     }
                 }
 
-                return Json(new { success = false, message = "No response received from stored procedure." });
+                return Json(new { success = false, message = "No response from stored procedure." });
             }
             catch (Exception ex)
             {
@@ -209,9 +216,9 @@ namespace VGN_CRM_CORE.Controllers
             }
         }
 
-        // POST: /ProjectBudgetAllocation/Delete
+        // POST: /Resource/Delete
         [HttpPost]
-        public async Task<IActionResult> Delete([FromBody] ProjectBudgetAllocationModel req)
+        public async Task<IActionResult> Delete([FromBody] ResourceModel req)
         {
             try
             {
@@ -219,15 +226,15 @@ namespace VGN_CRM_CORE.Controllers
                 if (user == null)
                     return Json(new { success = false, message = "Session expired." });
 
-                if (req == null || !req.BudgetAllocationId.HasValue)
-                    return Json(new { success = false, message = "Invalid allocation ID." });
+                if (req == null || !req.ResourceId.HasValue)
+                    return Json(new { success = false, message = "Invalid Resource ID." });
 
                 using (var con = new SqlConnection(_connPROJ))
-                using (var cmd = new SqlCommand(SP_NAME, con))
+                using (var cmd = new SqlCommand(SP_SAVE, con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@Flag", "DELETE");
-                    cmd.Parameters.AddWithValue("@BudgetAllocationId", req.BudgetAllocationId.Value);
+                    cmd.Parameters.AddWithValue("@ResourceId", req.ResourceId.Value);
                     cmd.Parameters.AddWithValue("@UpdatedBy", user.UserId ?? "User");
                     cmd.Parameters.AddWithValue("@UpdatedDate", DateTime.Now);
 
@@ -243,12 +250,12 @@ namespace VGN_CRM_CORE.Controllers
                             return Json(new
                             {
                                 success = isDeleted,
-                                message = isDeleted ? "Record deleted successfully." : result
+                                message = isDeleted ? "Resource deleted successfully." : result
                             });
                         }
                     }
 
-                    return Json(new { success = true, message = "Record deleted successfully." });
+                    return Json(new { success = true, message = "Resource deleted successfully." });
                 }
             }
             catch (Exception ex)
@@ -257,44 +264,70 @@ namespace VGN_CRM_CORE.Controllers
             }
         }
 
-        // GET: /ProjectBudgetAllocation/GetProjectLookups
+        // GET: /Resource/GetLookups
         [HttpGet]
-        public async Task<IActionResult> GetProjectLookups()
+        public async Task<IActionResult> GetLookups()
         {
-            var projectList = new List<object>();
+            var groups = new List<object>();
+            var units = new List<object>();
 
             try
             {
                 using (var con = new SqlConnection(_connPROJ))
-                using (var cmd = new SqlCommand(SP_NAME, con))
+                using (var cmd = new SqlCommand(SP_LOAD, con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@Flag", "LOOKUP_PROJECTS");
-                    cmd.Parameters.AddWithValue("@BudgetAllocationId", DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Flag", "LOOKUPS");
 
                     await con.OpenAsync();
 
                     using (var da = new SqlDataAdapter(cmd))
                     {
-                        var dt = new DataTable();
-                        da.Fill(dt);
+                        var ds = new DataSet();
+                        da.Fill(ds);
 
-                        foreach (DataRow row in dt.Rows)
+                        // Table 0: Resource Groups
+                        if (ds.Tables.Count > 0)
                         {
-                            projectList.Add(new
+                            foreach (DataRow row in ds.Tables[0].Rows)
                             {
-                                ProjectKickoffId = row["ProjectKickoffId"] != DBNull.Value ? Convert.ToInt32(row["ProjectKickoffId"]) : 0,
-                                ProjectName = row["ProjectName"] != DBNull.Value ? row["ProjectName"].ToString() : ""
-                            });
+                                groups.Add(new
+                                {
+                                    ResourceGroupId = row["ResourceGroupId"] != DBNull.Value ? row["ResourceGroupId"].ToString() : "",
+                                    ResourceGroupName = row["ResourceGroupName"] != DBNull.Value ? row["ResourceGroupName"].ToString() : "",
+                                    ResourceCode = row["ResourceCode"] != DBNull.Value ? row["ResourceCode"].ToString() : "",
+                                    TypeId = row["TypeId"] != DBNull.Value ? row["TypeId"].ToString() : ""
+                                });
+                            }
+                        }
+
+                        // Table 1: UOM / Units
+                        if (ds.Tables.Count > 1)
+                        {
+                            foreach (DataRow row in ds.Tables[1].Rows)
+                            {
+                                string uId = row.Table.Columns.Contains("UnitId") && row["UnitId"] != DBNull.Value ? row["UnitId"].ToString()
+                                            : (row.Table.Columns.Contains("TypeId") && row["TypeId"] != DBNull.Value ? row["TypeId"].ToString() : "");
+                                string uName = row.Table.Columns.Contains("UnitName") && row["UnitName"] != DBNull.Value ? row["UnitName"].ToString()
+                                            : (row.Table.Columns.Contains("TypeName") && row["TypeName"] != DBNull.Value ? row["TypeName"].ToString() : "");
+
+                                units.Add(new
+                                {
+                                    UnitId = uId,
+                                    UnitName = uName,
+                                    TypeId = uId,
+                                    TypeName = uName
+                                });
+                            }
                         }
                     }
                 }
 
-                return Json(new { success = true, data = projectList });
+                return Json(new { success = true, groups = groups, units = units });
             }
-            catch
+            catch (Exception ex)
             {
-                return Json(new { success = true, data = projectList });
+                return Json(new { success = false, message = ex.Message, groups = groups, units = units });
             }
         }
     }
