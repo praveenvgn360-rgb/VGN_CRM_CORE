@@ -87,15 +87,9 @@ namespace VGN_CRM_CORE.Controllers
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Fallback demo project matching reference images
-            }
-
-            if (list.Count == 0)
-            {
-                list.Add(new { ProjectKickoffId = 1, ProjectName = "Demo Project", CostCentreId = "1" });
-                list.Add(new { ProjectKickoffId = 2, ProjectName = "Demo Project 2", CostCentreId = "2" });
+                return Json(new { success = false, message = "Error loading projects: " + ex.Message, data = new List<object>() });
             }
 
             return Json(new { success = true, data = list });
@@ -149,19 +143,9 @@ namespace VGN_CRM_CORE.Controllers
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Fallback
-            }
-
-            if (list.Count == 0)
-            {
-                list.Add(new ProjectIOWWorkGroupModel { WorkGroupId = 1, SerialNo = "1", WorkGroupName = "demo", ParentId = "0", ParentName = "Root" });
-                list.Add(new ProjectIOWWorkGroupModel { WorkGroupId = 2, SerialNo = "2", WorkGroupName = "Demo Project 2", ParentId = "0", ParentName = "Root" });
-                list.Add(new ProjectIOWWorkGroupModel { WorkGroupId = 3, SerialNo = "3", WorkGroupName = "1st Floor", ParentId = "0", ParentName = "Root" });
-                list.Add(new ProjectIOWWorkGroupModel { WorkGroupId = 4, SerialNo = "3.1", WorkGroupName = "1st Floor Left Side Cabin", ParentId = "3", ParentName = "1st Floor", Level = 1 });
-                list.Add(new ProjectIOWWorkGroupModel { WorkGroupId = 5, SerialNo = "3.2", WorkGroupName = "2nd floor", ParentId = "3", ParentName = "1st Floor", Level = 1 });
-                list.Add(new ProjectIOWWorkGroupModel { WorkGroupId = 6, SerialNo = "4", WorkGroupName = "Demo4", ParentId = "0", ParentName = "Root" });
+                return Json(new { success = false, message = "Error loading workgroups: " + ex.Message, data = new List<ProjectIOWWorkGroupModel>() });
             }
 
             return Json(new { success = true, data = list });
@@ -220,60 +204,333 @@ namespace VGN_CRM_CORE.Controllers
             try
             {
                 using (var con = new SqlConnection(_connPROJ))
+                using (var cmd = new SqlCommand("Web_SearchIOWMas", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandTimeout = 60;
+                    cmd.Parameters.AddWithValue("@Flag", "SEARCH");
+                    cmd.Parameters.AddWithValue("@SearchTerm", string.IsNullOrWhiteSpace(q) ? (object)DBNull.Value : q.Trim());
+
+                    await con.OpenAsync();
+                    using (var r = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await r.ReadAsync())
+                        {
+                            list.Add(new
+                            {
+                                IOWId = r["IOWId"] != DBNull.Value ? Convert.ToInt32(r["IOWId"]) : 0,
+                                WorkGroupId = r["WorkGroupId"] != DBNull.Value ? r["WorkGroupId"].ToString() : "",
+                                SerialNo = r["SerialNo"] != DBNull.Value ? r["SerialNo"].ToString() : "",
+                                Specification = r["Specification"] != DBNull.Value ? r["Specification"].ToString() : "",
+                                UnitId = r["UnitId"] != DBNull.Value ? r["UnitId"].ToString() : "9",
+                                UnitName = r["UnitName"] != DBNull.Value ? r["UnitName"].ToString() : "LS",
+                                Rate = r["Rate"] != DBNull.Value && double.TryParse(r["Rate"].ToString(), out var parsedRate) ? parsedRate : 0.0,
+                                SourceTable = "IOWMas"
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error searching IOW: " + ex.Message, data = new List<object>() });
+            }
+
+            return Json(new { success = true, data = list });
+        }
+
+        // GET: /ProjectIOW/GetProjectWBSList?projectId=1&q=searchTerm
+        // Fetches from WBS Master (dbo.WBSMaster via Web_SaveWBSMaster) and project-specific WBS
+        [HttpGet]
+        public async Task<IActionResult> GetProjectWBSList(int? projectId, string q)
+        {
+            var list = new List<dynamic>();
+            var seenIds = new HashSet<int>();
+
+            try
+            {
+                using (var con = new SqlConnection(_connPROJ))
                 {
                     await con.OpenAsync();
 
-                    string sql = @"
-                        SELECT TOP 50
-                            i.IOWId,
-                            ISNULL(i.WorkGroupId, '') AS WorkGroupId,
-                            ISNULL(i.SerialNo, '') AS SerialNo,
-                            ISNULL(i.Specification, '') AS Specification,
-                            ISNULL(i.UnitId, '9') AS UnitId,
-                            ISNULL(u.UnitName, 'LS') AS UnitName,
-                            ISNULL(CAST(i.Rate AS FLOAT), 0.0) AS Rate,
-                            'IOWMas' AS SourceTable
-                        FROM dbo.IOWMas i
-                        LEFT JOIN dbo.UOM u ON CAST(u.UnitId AS VARCHAR(50)) = CAST(i.UnitId AS VARCHAR(50))
-                        WHERE ISNULL(i.Status, '1') = '1'
-                          AND (@SearchTerm IS NULL OR @SearchTerm = '' OR i.Specification LIKE '%' + @SearchTerm + '%' OR i.SerialNo LIKE '%' + @SearchTerm + '%')
-                        UNION ALL
-                        SELECT TOP 50
-                            p.Project_IOWId AS IOWId,
-                            ISNULL(p.WorkGroupId, '') AS WorkGroupId,
-                            ISNULL(p.SerialNo, '') AS SerialNo,
-                            ISNULL(p.Specification, '') AS Specification,
-                            ISNULL(p.UnitId, '9') AS UnitId,
-                            ISNULL(u.UnitName, 'LS') AS UnitName,
-                            ISNULL(CAST(p.Rate AS FLOAT), 0.0) AS Rate,
-                            'Project_IOWMas' AS SourceTable
-                        FROM dbo.Project_IOWMas p
-                        LEFT JOIN dbo.UOM u ON CAST(u.UnitId AS VARCHAR(50)) = CAST(p.UnitId AS VARCHAR(50))
-                        WHERE ISNULL(p.Status, '1') = '1'
-                          AND (@SearchTerm IS NULL OR @SearchTerm = '' OR p.Specification LIKE '%' + @SearchTerm + '%' OR p.SerialNo LIKE '%' + @SearchTerm + '%')
-                        ORDER BY IOWId DESC";
-
-                    using (var cmd = new SqlCommand(sql, con))
+                    // 1. Fetch from Master (dbo.Web_SaveWBSMaster / dbo.WBSMaster)
+                    try
                     {
-                        cmd.CommandTimeout = 60;
-                        cmd.Parameters.AddWithValue("@SearchTerm", string.IsNullOrWhiteSpace(q) ? (object)DBNull.Value : q.Trim());
-
-                        using (var r = await cmd.ExecuteReaderAsync())
+                        using (var cmd = new SqlCommand("dbo.Web_SaveWBSMaster", con))
                         {
-                            while (await r.ReadAsync())
+                            cmd.CommandType = CommandType.StoredProcedure;
+                            cmd.CommandTimeout = 30;
+                            cmd.Parameters.AddWithValue("@Flag", "FETCHBYALL");
+                            cmd.Parameters.AddWithValue("@WBSId", DBNull.Value);
+
+                            using (var r = await cmd.ExecuteReaderAsync())
                             {
-                                list.Add(new
+                                while (await r.ReadAsync())
                                 {
-                                    IOWId = r["IOWId"] != DBNull.Value ? Convert.ToInt32(r["IOWId"]) : 0,
-                                    WorkGroupId = r["WorkGroupId"].ToString(),
-                                    SerialNo = r["SerialNo"].ToString(),
-                                    Specification = r["Specification"].ToString(),
-                                    UnitId = r["UnitId"].ToString(),
-                                    UnitName = r["UnitName"].ToString(),
-                                    Rate = r["Rate"] != DBNull.Value && double.TryParse(r["Rate"].ToString(), out var parsedRate) ? parsedRate : 0.0,
-                                    SourceTable = r["SourceTable"].ToString()
+                                    int wId = r["WBSId"] != DBNull.Value ? Convert.ToInt32(r["WBSId"]) : 0;
+                                    string wName = r["WBSName"] != DBNull.Value ? r["WBSName"].ToString() : "";
+                                    string pId = r["ParentId"] != DBNull.Value ? r["ParentId"].ToString() : "0";
+                                    string pName = r.FieldCount > 3 && r["ParentName"] != DBNull.Value ? r["ParentName"].ToString() : "";
+                                    string full = (!string.IsNullOrEmpty(pName) && pName != "Root / Top Level") ? $"{pName}->{wName}" : wName;
+
+                                    if (wId > 0 && seenIds.Add(wId))
+                                    {
+                                        list.Add(new
+                                        {
+                                            WBSId = wId,
+                                            WBSName = wName,
+                                            ParentId = pId,
+                                            ParentName = pName,
+                                            ProjectName = "Master WBS",
+                                            FullWBSName = full
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        // Fallback to direct query or next step
+                    }
+
+                    // 2. Fetch from Web_GetProjectWBSList
+                    try
+                    {
+                        using (var cmd = new SqlCommand("Web_GetProjectWBSList", con))
+                        {
+                            cmd.CommandType = CommandType.StoredProcedure;
+                            cmd.CommandTimeout = 30;
+                            cmd.Parameters.AddWithValue("@ProjectKickoffId", projectId ?? 1);
+                            cmd.Parameters.AddWithValue("@SearchTerm", (object)q ?? DBNull.Value);
+
+                            using (var r = await cmd.ExecuteReaderAsync())
+                            {
+                                while (await r.ReadAsync())
+                                {
+                                    int wId = r["WBSId"] != DBNull.Value ? Convert.ToInt32(r["WBSId"]) : 0;
+                                    string wName = r["WBSName"] != DBNull.Value ? r["WBSName"].ToString() : "";
+                                    string pId = r["ParentId"] != DBNull.Value ? r["ParentId"].ToString() : "0";
+                                    string projName = r["ProjectName"] != DBNull.Value ? r["ProjectName"].ToString() : "Demo Project";
+                                    string full = r["FullWBSName"] != DBNull.Value ? r["FullWBSName"].ToString() : wName;
+
+                                    if (wId > 0 && seenIds.Add(wId))
+                                    {
+                                        list.Add(new
+                                        {
+                                            WBSId = wId,
+                                            WBSName = wName,
+                                            ParentId = pId,
+                                            ProjectName = projName,
+                                            FullWBSName = full
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                list = list.Where(x => {
+                    var full = x.GetType().GetProperty("FullWBSName")?.GetValue(x, null)?.ToString() ?? "";
+                    var name = x.GetType().GetProperty("WBSName")?.GetValue(x, null)?.ToString() ?? "";
+                    return full.IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                           name.IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0;
+                }).ToList();
+            }
+
+            return Json(new { success = true, data = list });
+        }
+
+        // POST: /ProjectIOW/SaveNewWBSMaster
+        // Direct save of a typed new WBS into dbo.WBSMaster
+        [HttpPost]
+        public async Task<IActionResult> SaveNewWBSMaster([FromBody] WBSMasterModel req)
+        {
+            try
+            {
+                if (req == null || string.IsNullOrWhiteSpace(req.WBSName))
+                    return Json(new { success = false, message = "WBS Name is required." });
+
+                var user = SessionHelper.GetUserSession(HttpContext.Session);
+                string userName = user?.UserName ?? user?.UserId ?? "Admin";
+                string ipAddress = SessionHelper.GetClientIPAddress(Request) ?? "127.0.0.1";
+                string hostName = SessionHelper.GetClientHostName(ipAddress) ?? Environment.MachineName;
+
+                using (var con = new SqlConnection(_connPROJ))
+                using (var cmd = new SqlCommand("dbo.Web_SaveWBSMaster", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Flag", "INSERT");
+                    cmd.Parameters.AddWithValue("@WBSId", 0);
+                    cmd.Parameters.AddWithValue("@WBSName", req.WBSName.Trim());
+                    cmd.Parameters.AddWithValue("@ParentId", string.IsNullOrWhiteSpace(req.ParentId) ? "0" : req.ParentId.Trim());
+                    cmd.Parameters.AddWithValue("@CreatedBy", userName);
+                    cmd.Parameters.AddWithValue("@CreatedDate", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@UpdatedBy", DBNull.Value);
+                    cmd.Parameters.AddWithValue("@UpdatedDate", DBNull.Value);
+                    cmd.Parameters.AddWithValue("@IPAddress", (object)ipAddress ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@HostName", (object)hostName ?? DBNull.Value);
+
+                    await con.OpenAsync();
+                    using (var dr = await cmd.ExecuteReaderAsync())
+                    {
+                        if (await dr.ReadAsync())
+                        {
+                            string result = dr["Result"] != DBNull.Value ? dr["Result"].ToString() : "";
+                            int savedId = dr["WBSId"] != DBNull.Value ? Convert.ToInt32(dr["WBSId"]) : 0;
+                            if (result.Equals("INSERTED", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return Json(new
+                                {
+                                    success = true,
+                                    message = "WBS created in Master successfully!",
+                                    data = new
+                                    {
+                                        WBSId = savedId,
+                                        WBSName = req.WBSName.Trim(),
+                                        ParentId = req.ParentId ?? "0",
+                                        FullWBSName = req.WBSName.Trim()
+                                    }
                                 });
                             }
+                            return Json(new { success = false, message = result });
+                        }
+                    }
+                }
+                return Json(new { success = false, message = "No response from database." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // POST: /ProjectIOW/SaveNewResourceMaster
+        // Direct save of a typed new resource into dbo.ResourceMas
+        [HttpPost]
+        public async Task<IActionResult> SaveNewResourceMaster([FromBody] ResourceModel req)
+        {
+            try
+            {
+                if (req == null || string.IsNullOrWhiteSpace(req.ResourceName))
+                    return Json(new { success = false, message = "Resource Name is required." });
+
+                var user = SessionHelper.GetUserSession(HttpContext.Session);
+                string userName = user?.UserName ?? user?.UserId ?? "Admin";
+                string ipAddress = SessionHelper.GetClientIPAddress(Request) ?? "127.0.0.1";
+                string hostName = SessionHelper.GetClientHostName(ipAddress) ?? Environment.MachineName;
+
+                using (var con = new SqlConnection(_connPROJ))
+                using (var cmd = new SqlCommand("Web_SaveResourceMas", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Flag", "INSERT");
+                    cmd.Parameters.AddWithValue("@ResourceId", 0);
+                    cmd.Parameters.AddWithValue("@ResourceName", req.ResourceName.Trim());
+                    cmd.Parameters.AddWithValue("@TypeId", (object)(req.TypeId?.Trim() ?? "Activity"));
+                    cmd.Parameters.AddWithValue("@ResourceGroupId", (object)(req.ResourceGroupId?.Trim() ?? ""));
+                    cmd.Parameters.AddWithValue("@UnitId", (object)(req.UnitId?.Trim() ?? ""));
+                    cmd.Parameters.AddWithValue("@Rate", (object)(req.Rate?.Trim() ?? "0"));
+                    cmd.Parameters.AddWithValue("@CreatedBy", userName);
+                    cmd.Parameters.AddWithValue("@CreatedDate", DateTime.Now);
+                    cmd.Parameters.AddWithValue("@IPAddress", (object)ipAddress ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@HostName", (object)hostName ?? DBNull.Value);
+
+                    await con.OpenAsync();
+                    using (var dr = await cmd.ExecuteReaderAsync())
+                    {
+                        if (await dr.ReadAsync())
+                        {
+                            string result = dr["Result"] != DBNull.Value ? dr["Result"].ToString() : "";
+                            int savedId = dr["ResourceId"] != DBNull.Value ? Convert.ToInt32(dr["ResourceId"]) : 0;
+                            if (result.Equals("INSERTED", StringComparison.OrdinalIgnoreCase))
+                            {
+                                string code = "W" + savedId.ToString("D4");
+                                string groupName = req.ResourceGroupName;
+
+                                return Json(new
+                                {
+                                    success = true,
+                                    message = "Resource created in Master successfully!",
+                                    data = new
+                                    {
+                                        ResourceId = savedId,
+                                        Code = code,
+                                        ResourceName = req.ResourceName.Trim(),
+                                        FullName = code + " " + req.ResourceName.Trim(),
+                                        Type = req.TypeId ?? "Activity",
+                                        Unit = req.UnitName ?? req.UnitId ?? "LS",
+                                        Rate = double.TryParse(req.Rate, out var rVal) ? rVal : 0.0,
+                                        ResourceGroupId = req.ResourceGroupId ?? "",
+                                        ResourceGroup = !string.IsNullOrWhiteSpace(groupName) ? groupName : "Civil"
+                                    }
+                                });
+                            }
+                            return Json(new { success = false, message = result });
+                        }
+                    }
+                }
+                return Json(new { success = false, message = "No response from database." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // GET: /ProjectIOW/GetResourceGroups
+        // Loads active resource groups from dbo.ResourceGroupMas using Web_LoadResourceGroupMas with @Flag = 'FETCHALL'
+        [HttpGet]
+        public async Task<IActionResult> GetResourceGroups()
+        {
+            var list = new List<object>();
+
+            try
+            {
+                using (var con = new SqlConnection(_connPROJ))
+                using (var cmd = new SqlCommand("Web_LoadResourceGroupMas", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandTimeout = 60;
+                    cmd.Parameters.AddWithValue("@Flag", "FETCHALL");
+
+                    await con.OpenAsync();
+                    using (var da = new SqlDataAdapter(cmd))
+                    {
+                        var dt = new DataTable();
+                        da.Fill(dt);
+
+                        foreach (DataRow row in dt.Rows)
+                        {
+                            string rawType = row["TypeId"] != DBNull.Value ? row["TypeId"].ToString().Trim() : "";
+                            string cleanType = rawType;
+                            if (rawType == "1") cleanType = "Activity";
+                            else if (rawType == "2") cleanType = "Material";
+                            else if (rawType == "3") cleanType = "Equipment";
+                            else if (rawType == "4") cleanType = "Labour";
+
+                            list.Add(new
+                            {
+                                ResourceGroupId = row["ResourceGroupId"] != DBNull.Value ? Convert.ToInt32(row["ResourceGroupId"]) : 0,
+                                ResourceCode = row["ResourceCode"] != DBNull.Value ? row["ResourceCode"].ToString() : "",
+                                ResourceGroupName = row["ResourceGroupName"] != DBNull.Value ? row["ResourceGroupName"].ToString() : "",
+                                TypeId = cleanType,
+                                RawTypeId = rawType,
+                                ParentId = row["ParentId"] != DBNull.Value ? row["ParentId"].ToString() : "0",
+                                ParentGroupName = row.Table.Columns.Contains("ParentGroupName") && row["ParentGroupName"] != DBNull.Value ? row["ParentGroupName"].ToString() : "Top Level (Root)"
+                            });
                         }
                     }
                 }
@@ -283,63 +540,12 @@ namespace VGN_CRM_CORE.Controllers
                 // Fallback
             }
 
-            return Json(new { success = true, data = list });
-        }
-
-        // GET: /ProjectIOW/GetProjectWBSList?projectId=1&q=searchTerm
-        // Calls Stored Procedure: Web_GetProjectWBSList
-        [HttpGet]
-        public async Task<IActionResult> GetProjectWBSList(int? projectId, string q)
-        {
-            var list = new List<object>();
-
-            try
-            {
-                using (var con = new SqlConnection(_connPROJ))
-                using (var cmd = new SqlCommand("Web_GetProjectWBSList", con))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.CommandTimeout = 60;
-                    cmd.Parameters.AddWithValue("@ProjectKickoffId", projectId ?? 1);
-                    cmd.Parameters.AddWithValue("@SearchTerm", (object)q ?? DBNull.Value);
-
-                    await con.OpenAsync();
-                    using (var r = await cmd.ExecuteReaderAsync())
-                    {
-                        while (await r.ReadAsync())
-                        {
-                            list.Add(new
-                            {
-                                WBSId = r["WBSId"] != DBNull.Value ? Convert.ToInt32(r["WBSId"]) : 0,
-                                WBSName = r["WBSName"] != DBNull.Value ? r["WBSName"].ToString() : "",
-                                ParentId = r["ParentId"] != DBNull.Value ? r["ParentId"].ToString() : "0",
-                                ProjectName = r["ProjectName"] != DBNull.Value ? r["ProjectName"].ToString() : "Demo Project",
-                                FullWBSName = r["FullWBSName"] != DBNull.Value ? r["FullWBSName"].ToString() : ""
-                            });
-                        }
-                    }
-                }
-            }
-            catch (Exception)
-            {
-            }
-
             if (list.Count == 0)
             {
-                list.Add(new { WBSId = 2, WBSName = "Demo WBS2", ParentId = "0", ProjectName = "Demo Project", FullWBSName = "Demo Project->Demo WBS2" });
-                list.Add(new { WBSId = 4, WBSName = "Demo WBS4", ParentId = "0", ProjectName = "Demo Project", FullWBSName = "Demo Project->Demo WBS4" });
-                list.Add(new { WBSId = 5, WBSName = "Demo WBS5", ParentId = "0", ProjectName = "Demo Project", FullWBSName = "Demo Project->Demo WBS5" });
-                list.Add(new { WBSId = 6, WBSName = "Demo WBS6", ParentId = "0", ProjectName = "Demo Project", FullWBSName = "Demo Project->Demo WBS6" });
-                list.Add(new { WBSId = 7, WBSName = "Retaining Wall", ParentId = "0", ProjectName = "Demo Project", FullWBSName = "Demo Project->Retaining Wall" });
-                list.Add(new { WBSId = 8, WBSName = "test", ParentId = "0", ProjectName = "Demo Project", FullWBSName = "Demo Project->test" });
-            }
-
-            if (!string.IsNullOrWhiteSpace(q))
-            {
-                list = list.Where(x => {
-                    var name = x.GetType().GetProperty("FullWBSName")?.GetValue(x, null)?.ToString() ?? "";
-                    return name.IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0;
-                }).ToList();
+                list.Add(new { ResourceGroupId = 1, ResourceCode = "MAT-CIV", ResourceGroupName = "Civil Construction Materials", TypeId = "Material", ParentId = "0", ParentGroupName = "Top Level (Root)" });
+                list.Add(new { ResourceGroupId = 2, ResourceCode = "RG0001", ResourceGroupName = "Civil", TypeId = "Activity", ParentId = "0", ParentGroupName = "Top Level (Root)" });
+                list.Add(new { ResourceGroupId = 3, ResourceCode = "RG0002", ResourceGroupName = "Granite Laying", TypeId = "Activity", ParentId = "0", ParentGroupName = "Top Level (Root)" });
+                list.Add(new { ResourceGroupId = 4, ResourceCode = "RG0003", ResourceGroupName = "Electrical Materials", TypeId = "Material", ParentId = "0", ParentGroupName = "Top Level (Root)" });
             }
 
             return Json(new { success = true, data = list });
@@ -444,78 +650,43 @@ namespace VGN_CRM_CORE.Controllers
             try
             {
                 using (var con = new SqlConnection(_connPROJ))
+                using (var cmd = new SqlCommand("Web_SearchIOWMas", con))
                 {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandTimeout = 60;
+                    cmd.Parameters.AddWithValue("@Flag", "FETCHALL");
+
                     await con.OpenAsync();
-
-                    string sql = @"
-                        SELECT TOP 300
-                            i.IOWId,
-                            ISNULL(i.SerialNo, '') AS SerialNo,
-                            ISNULL(i.Specification, '') AS Specification,
-                            ISNULL(i.UnitId, '9') AS UnitId,
-                            ISNULL(u.UnitName, 'LS') AS UnitName,
-                            ISNULL(CAST(i.Rate AS FLOAT), 0.0) AS Rate,
-                            'IOWMas' AS SourceTable
-                        FROM dbo.IOWMas i
-                        LEFT JOIN dbo.UOM u ON CAST(u.UnitId AS VARCHAR(50)) = CAST(i.UnitId AS VARCHAR(50))
-                        WHERE ISNULL(i.Status, '1') = '1'
-                        UNION ALL
-                        SELECT TOP 100
-                            p.Project_IOWId AS IOWId,
-                            ISNULL(p.SerialNo, '') AS SerialNo,
-                            ISNULL(p.Specification, '') AS Specification,
-                            ISNULL(p.UnitId, '9') AS UnitId,
-                            ISNULL(u.UnitName, 'LS') AS UnitName,
-                            ISNULL(CAST(p.Rate AS FLOAT), 0.0) AS Rate,
-                            'Project_IOWMas' AS SourceTable
-                        FROM dbo.Project_IOWMas p
-                        LEFT JOIN dbo.UOM u ON CAST(u.UnitId AS VARCHAR(50)) = CAST(p.UnitId AS VARCHAR(50))
-                        WHERE ISNULL(p.Status, '1') = '1'
-                        ORDER BY IOWId DESC";
-
-                    using (var cmd = new SqlCommand(sql, con))
+                    using (var r = await cmd.ExecuteReaderAsync())
                     {
-                        cmd.CommandTimeout = 60;
-                        using (var r = await cmd.ExecuteReaderAsync())
+                        while (await r.ReadAsync())
                         {
-                            while (await r.ReadAsync())
+                            list.Add(new LibraryIOWItemModel
                             {
-                                list.Add(new LibraryIOWItemModel
-                                {
-                                    IOWId = r["IOWId"] != DBNull.Value ? Convert.ToInt32(r["IOWId"]) : 0,
-                                    Code = r["SerialNo"].ToString(),
-                                    SerialNo = r["SerialNo"].ToString(),
-                                    WorkGroupName = "CIVIL WORKS",
-                                    Specification = r["Specification"].ToString(),
-                                    UnitId = r["UnitId"].ToString(),
-                                    Unit = !string.IsNullOrEmpty(r["UnitName"].ToString()) ? r["UnitName"].ToString() : "LS",
-                                    DefaultRate = r["Rate"] != DBNull.Value && double.TryParse(r["Rate"].ToString(), out var rateVal) ? rateVal : 0.0,
-                                    SourceTable = r["SourceTable"].ToString()
-                                });
-                            }
+                                IOWId = r["IOWId"] != DBNull.Value ? Convert.ToInt32(r["IOWId"]) : 0,
+                                Code = r["SerialNo"] != DBNull.Value ? r["SerialNo"].ToString() : "",
+                                SerialNo = r["SerialNo"] != DBNull.Value ? r["SerialNo"].ToString() : "",
+                                WorkGroupName = "CIVIL WORKS",
+                                Specification = r["Specification"] != DBNull.Value ? r["Specification"].ToString() : "",
+                                UnitId = r["UnitId"] != DBNull.Value ? r["UnitId"].ToString() : "",
+                                Unit = r["UnitName"] != DBNull.Value ? r["UnitName"].ToString() : "",
+                                DefaultRate = r["Rate"] != DBNull.Value && double.TryParse(r["Rate"].ToString(), out var rateVal) ? rateVal : 0.0,
+                                SourceTable = "IOWMas"
+                            });
                         }
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Fallback
-            }
-
-            if (list.Count == 0)
-            {
-                list.Add(new LibraryIOWItemModel { IOWId = 1, Code = "123", SerialNo = "123", WorkGroupName = "CIVIL WORKS", Specification = "Inner side civil touch up works", UnitId = "9", Unit = "L.S", DefaultRate = 53400.00 });
-                list.Add(new LibraryIOWItemModel { IOWId = 2, Code = "011.1.28", SerialNo = "011.1.28", WorkGroupName = "CIVIL WORKS", Specification = "Inner side cold touch up works.", UnitId = "9", Unit = "LS", DefaultRate = 32450.00 });
-                list.Add(new LibraryIOWItemModel { IOWId = 3, Code = "0118", SerialNo = "0118", WorkGroupName = "CIVIL WORKS", Specification = "Drive way area Dust filling and Paver block relaid work", UnitId = "10", Unit = "Sft", DefaultRate = 85.00 });
-                list.Add(new LibraryIOWItemModel { IOWId = 4, Code = "011.1.02", SerialNo = "011.1.02", WorkGroupName = "CIVIL WORKS", Specification = "Dust open plastering and finishing work", UnitId = "10", Unit = "Sft", DefaultRate = 42.00 });
-                list.Add(new LibraryIOWItemModel { IOWId = 5, Code = "011.1.16", SerialNo = "011.1.16", WorkGroupName = "CIVIL WORKS", Specification = "A/c platform making work", UnitId = "4", Unit = "Nos", DefaultRate = 3500.00 });
+                return Json(new { success = false, message = "Error loading library items: " + ex.Message, data = new List<LibraryIOWItemModel>() });
             }
 
             return Json(new { success = true, data = list });
         }
 
         // POST: /ProjectIOW/SaveNewSpecification
-        // Direct save of a typed new specification to dbo.Project_IOWMas
+        // Direct save of a typed new specification to dbo.IOWMas (master) and dbo.Project_IOWMas
         [HttpPost]
         public async Task<IActionResult> SaveNewSpecification([FromBody] NewSpecificationSaveModel model)
         {
@@ -535,176 +706,751 @@ namespace VGN_CRM_CORE.Controllers
                 {
                     await con.OpenAsync();
 
-                    int newProjectIOWId = 0;
-                    using (var cmd = new SqlCommand("Web_SaveProject_IOWMas", con))
+                    int newIOWId = 0;
+                    // 1. Insert into Master table dbo.IOWMas using Web_SaveIOWMas
+                    using (var cmdMaster = new SqlCommand("Web_SaveIOWMas", con))
                     {
-                        cmd.CommandType = CommandType.StoredProcedure;
-                        cmd.Parameters.AddWithValue("@CostcenterId", (object)model.CostcenterId ?? "1");
-                        cmd.Parameters.AddWithValue("@ProectKickOfId", (object)model.ProectKickOfId ?? "1");
-                        cmd.Parameters.AddWithValue("@WorkGroupId", (object)model.WorkGroupId ?? DBNull.Value);
-                        cmd.Parameters.AddWithValue("@WorkGroupParentId", (object)model.WorkGroupParentId ?? "0");
-                        cmd.Parameters.AddWithValue("@IOWId", "0");
-                        cmd.Parameters.AddWithValue("@RefNo", double.TryParse(model.RefNo, out var rNo) ? rNo : (object)DBNull.Value);
-                        cmd.Parameters.AddWithValue("@SerialNo", (object)model.SerialNo ?? DBNull.Value);
-                        cmd.Parameters.AddWithValue("@Specification", model.Specification.Trim());
-                        cmd.Parameters.AddWithValue("@UnitId", (object)model.UnitId ?? "9");
-                        cmd.Parameters.AddWithValue("@Qty", model.Qty);
-                        cmd.Parameters.AddWithValue("@Rate", model.Rate);
-                        cmd.Parameters.AddWithValue("@CreatedBy", userName);
-                        cmd.Parameters.AddWithValue("@IPAddress", ipAddress);
-                        cmd.Parameters.AddWithValue("@HostName", hostName);
+                        cmdMaster.CommandType = CommandType.StoredProcedure;
+                        cmdMaster.Parameters.AddWithValue("@WorkGroupId", (object)model.WorkGroupId ?? DBNull.Value);
+                        cmdMaster.Parameters.AddWithValue("@WorkGroupParentId", (object)model.WorkGroupParentId ?? "0");
+                        cmdMaster.Parameters.AddWithValue("@RefNo", double.TryParse(model.RefNo, out var rNo) ? rNo : 0.0);
+                        cmdMaster.Parameters.AddWithValue("@SerialNo", (object)model.SerialNo ?? DBNull.Value);
+                        cmdMaster.Parameters.AddWithValue("@Specification", model.Specification.Trim());
+                        cmdMaster.Parameters.AddWithValue("@UnitId", string.IsNullOrWhiteSpace(model.UnitId) ? (object)DBNull.Value : model.UnitId);
+                        cmdMaster.Parameters.AddWithValue("@Rate", model.Rate.ToString());
+                        cmdMaster.Parameters.AddWithValue("@CreatedBy", userName);
 
-                        var res = await cmd.ExecuteScalarAsync();
-                        if (res != null && int.TryParse(res.ToString(), out var parsedId))
+                        var resMaster = await cmdMaster.ExecuteScalarAsync();
+                        if (resMaster != null && int.TryParse(resMaster.ToString(), out var masterId))
                         {
-                            newProjectIOWId = parsedId;
+                            newIOWId = masterId;
                         }
+                    }
+
+                    // 2. Also map into dbo.Project_IOWMas using Web_SaveProject_IOWMas
+                    int newProjectIOWId = newIOWId;
+                    try
+                    {
+                        using (var cmdProj = new SqlCommand("Web_SaveProject_IOWMas", con))
+                        {
+                            cmdProj.CommandType = CommandType.StoredProcedure;
+                            cmdProj.Parameters.AddWithValue("@CostcenterId", (object)model.CostcenterId ?? "1");
+                            cmdProj.Parameters.AddWithValue("@ProectKickOfId", (object)model.ProectKickOfId ?? "1");
+                            cmdProj.Parameters.AddWithValue("@WorkGroupId", (object)model.WorkGroupId ?? DBNull.Value);
+                            cmdProj.Parameters.AddWithValue("@WorkGroupParentId", (object)model.WorkGroupParentId ?? "0");
+                            cmdProj.Parameters.AddWithValue("@IOWId", newIOWId.ToString());
+                            cmdProj.Parameters.AddWithValue("@RefNo", double.TryParse(model.RefNo, out var rNum) ? rNum : (object)DBNull.Value);
+                            cmdProj.Parameters.AddWithValue("@SerialNo", (object)model.SerialNo ?? DBNull.Value);
+                            cmdProj.Parameters.AddWithValue("@Specification", model.Specification.Trim());
+                            cmdProj.Parameters.AddWithValue("@UnitId", string.IsNullOrWhiteSpace(model.UnitId) ? (object)DBNull.Value : model.UnitId);
+                            cmdProj.Parameters.AddWithValue("@Qty", model.Qty);
+                            cmdProj.Parameters.AddWithValue("@Rate", model.Rate);
+                            cmdProj.Parameters.AddWithValue("@CreatedBy", userName);
+                            cmdProj.Parameters.AddWithValue("@IPAddress", ipAddress);
+                            cmdProj.Parameters.AddWithValue("@HostName", hostName);
+
+                            var resProj = await cmdProj.ExecuteScalarAsync();
+                            if (resProj != null && int.TryParse(resProj.ToString(), out var parsedProjId))
+                            {
+                                newProjectIOWId = parsedProjId;
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // Project link fallback
                     }
 
                     return Json(new
                     {
                         success = true,
-                        message = "New specification saved to Project_IOWMas successfully.",
+                        message = "New specification saved to IOWMas successfully.",
                         data = new
                         {
-                            IOWId = newProjectIOWId,
+                            IOWId = newIOWId,
                             Project_IOWId = newProjectIOWId,
                             Specification = model.Specification.Trim(),
                             SerialNo = model.SerialNo ?? model.RefNo ?? "",
                             RefNo = model.RefNo ?? "",
-                            UnitId = model.UnitId ?? "9",
-                            Unit = model.Unit ?? "LS",
+                            UnitId = model.UnitId ?? "",
+                            Unit = model.Unit ?? "",
                             DefaultRate = model.Rate,
-                            SourceTable = "Project_IOWMas"
+                            SourceTable = "IOWMas"
                         }
                     });
                 }
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error saving specification to Project_IOWMas: " + ex.Message });
+                return Json(new { success = false, message = "Error saving specification to IOWMas: " + ex.Message });
             }
         }
 
-        // POST: /ProjectIOW/Save
-        // Saves records to dbo.Project_IOWMas using Stored Procedure: Web_SaveProject_IOWMas
-        [HttpPost]
-        public async Task<IActionResult> Save([FromBody] ProjectIOWSaveModel payload)
+        // GET: /ProjectIOW/GetBOQList
+        // Single Stored Procedure: dbo.Web_SaveProject_BOQ_Mas with @Flag = 'FETCHALL'
+        [HttpGet]
+        public async Task<IActionResult> GetBOQList()
         {
-            if (payload == null)
-            {
-                return Json(new { success = false, message = "Invalid or empty payload received." });
-            }
-
-            var user = SessionHelper.GetUserSession(HttpContext.Session);
-            var userName = user?.UserName ?? "Admin";
-            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
-            var hostName = Environment.MachineName;
-
-            if (payload.Header != null)
-            {
-                payload.Header.CreatedBy = userName;
-                payload.Header.CreatedDate = DateTime.Now;
-            }
-
-            var savedIds = new List<int>();
-            int savedCount = 0;
+            var list = new List<object>();
 
             try
             {
                 using (var con = new SqlConnection(_connPROJ))
+                using (var cmd = new SqlCommand("dbo.Web_SaveProject_BOQ_Mas", con))
                 {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandTimeout = 60;
+                    cmd.Parameters.AddWithValue("@Flag", "FETCHALL");
+
                     await con.OpenAsync();
-
-                    var costCenterId = payload.Header?.CostCentreId?.ToString() ?? "1";
-                    var kickoffId = payload.Header?.ProjectKickoffId?.ToString() ?? "1";
-
-                    foreach (var item in payload.Items ?? Enumerable.Empty<ProjectIOWItemModel>())
+                    using (var r = await cmd.ExecuteReaderAsync())
                     {
-                        if (string.IsNullOrWhiteSpace(item.Specification))
-                            continue;
-
-                        // If user marked as new specification, save into IOWMas library as well
-                        int libraryIOWId = item.IOWId ?? 0;
-                        if (item.IsNewSpec && libraryIOWId == 0)
+                        while (await r.ReadAsync())
                         {
-                            try
+                            list.Add(new
                             {
-                                using (var cmdLib = new SqlCommand("Web_SaveIOWMas", con))
-                                {
-                                    cmdLib.CommandType = CommandType.StoredProcedure;
-                                    cmdLib.Parameters.AddWithValue("@WorkGroupId", (object)item.WorkGroupId?.ToString() ?? DBNull.Value);
-                                    cmdLib.Parameters.AddWithValue("@WorkGroupParentId", "0");
-                                    cmdLib.Parameters.AddWithValue("@RefNo", double.TryParse(item.RefNo, out var rNum) ? rNum : 0);
-                                    cmdLib.Parameters.AddWithValue("@SerialNo", (object)item.SerialNo ?? DBNull.Value);
-                                    cmdLib.Parameters.AddWithValue("@Specification", item.Specification);
-                                    cmdLib.Parameters.AddWithValue("@UnitId", (object)item.UnitId ?? DBNull.Value);
-                                    cmdLib.Parameters.AddWithValue("@Rate", item.Rate.ToString());
-                                    cmdLib.Parameters.AddWithValue("@CreatedBy", userName);
-
-                                    var newLibId = await cmdLib.ExecuteScalarAsync();
-                                    if (newLibId != null && int.TryParse(newLibId.ToString(), out var parsedLibId))
-                                    {
-                                        libraryIOWId = parsedLibId;
-                                    }
-                                }
-                            }
-                            catch
-                            {
-                                // Non-fatal for library save
-                            }
-                        }
-
-                        // Call Web_SaveProject_IOWMas
-                        using (var cmd = new SqlCommand("Web_SaveProject_IOWMas", con))
-                        {
-                            cmd.CommandType = CommandType.StoredProcedure;
-                            cmd.Parameters.AddWithValue("@CostcenterId", costCenterId);
-                            cmd.Parameters.AddWithValue("@ProectKickOfId", kickoffId);
-                            cmd.Parameters.AddWithValue("@WorkGroupId", (object)item.WorkGroupId?.ToString() ?? DBNull.Value);
-                            cmd.Parameters.AddWithValue("@WorkGroupParentId", "0");
-                            cmd.Parameters.AddWithValue("@IOWId", libraryIOWId.ToString());
-                            cmd.Parameters.AddWithValue("@RefNo", double.TryParse(item.RefNo, out var rNo) ? rNo : (object)DBNull.Value);
-                            cmd.Parameters.AddWithValue("@SerialNo", (object)item.SerialNo ?? DBNull.Value);
-                            cmd.Parameters.AddWithValue("@Specification", (object)item.Specification ?? DBNull.Value);
-                            cmd.Parameters.AddWithValue("@UnitId", (object)item.UnitId ?? DBNull.Value);
-                            cmd.Parameters.AddWithValue("@Qty", item.Qty);
-                            cmd.Parameters.AddWithValue("@Rate", item.Rate);
-                            cmd.Parameters.AddWithValue("@CreatedBy", userName);
-                            cmd.Parameters.AddWithValue("@IPAddress", ipAddress);
-                            cmd.Parameters.AddWithValue("@HostName", hostName);
-
-                            var result = await cmd.ExecuteScalarAsync();
-                            if (result != null && int.TryParse(result.ToString(), out var genId))
-                            {
-                                savedIds.Add(genId);
-                                savedCount++;
-                            }
+                                boqId = r["BOQId"] != DBNull.Value ? Convert.ToInt32(r["BOQId"]) : 0,
+                                referenceNo = r["ReferenceNo"] != DBNull.Value ? r["ReferenceNo"].ToString() : "",
+                                projectKickoffId = r["ProectKickOffId"] != DBNull.Value ? r["ProectKickOffId"].ToString() : "1",
+                                projectName = r["ProjectName"] != DBNull.Value ? r["ProjectName"].ToString() : "",
+                                costcenterId = r["CostcenterId"] != DBNull.Value ? r["CostcenterId"].ToString() : "1",
+                                referenceDate = r["ReferenceDate"] != DBNull.Value ? r["ReferenceDate"].ToString() : "",
+                                rawReferenceDate = r["RawReferenceDate"] != DBNull.Value ? Convert.ToDateTime(r["RawReferenceDate"]).ToString("yyyy-MM-dd") : "",
+                                type = r["Type"] != DBNull.Value ? r["Type"].ToString() : "Budget",
+                                totalAmount = r["TotalAmount"] != DBNull.Value ? Convert.ToDouble(r["TotalAmount"]) : 0.0,
+                                revision = r["Revision"] != DBNull.Value ? r["Revision"].ToString() : "No",
+                                readyForApproval = r["ReadyForApproval"] != DBNull.Value ? r["ReadyForApproval"].ToString() : "1",
+                                remarks = r["Remarks"] != DBNull.Value ? r["Remarks"].ToString() : "",
+                                createdBy = r["CreatedBy"] != DBNull.Value ? r["CreatedBy"].ToString() : "",
+                                createdDate = r["CreatedDate"] != DBNull.Value ? r["CreatedDate"].ToString() : "",
+                                status = r["Status"] != DBNull.Value ? r["Status"].ToString() : "1",
+                                totalItems = r["TotalItems"] != DBNull.Value ? Convert.ToInt32(r["TotalItems"]) : 0
+                            });
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
+                return Json(new { success = false, message = "Error loading BOQ list: " + ex.Message });
+            }
+
+            return Json(new { success = true, data = list });
+        }
+
+        // GET: /ProjectIOW/GetBOQById?id=123
+        // Single Stored Procedure: dbo.Web_SaveProject_BOQ_Mas with @Flag = 'FETCHBYID'
+        [HttpGet]
+        public async Task<IActionResult> GetBOQById(int id)
+        {
+            if (id <= 0) return Json(new { success = false, message = "Invalid BOQ ID." });
+
+            try
+            {
+                using (var con = new SqlConnection(_connPROJ))
+                using (var cmd = new SqlCommand("dbo.Web_SaveProject_BOQ_Mas", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandTimeout = 60;
+                    cmd.Parameters.AddWithValue("@Flag", "FETCHBYID");
+                    cmd.Parameters.AddWithValue("@BOQId", id);
+
+                    await con.OpenAsync();
+                    using (var da = new SqlDataAdapter(cmd))
+                    {
+                        var ds = new DataSet();
+                        da.Fill(ds);
+
+                        if (ds.Tables.Count == 0 || ds.Tables[0].Rows.Count == 0)
+                        {
+                            return Json(new { success = false, message = $"Bill of Quantity #{id} not found." });
+                        }
+
+                        // Table 1: IOW items
+                        var dtItems = ds.Tables.Count > 1 ? ds.Tables[1] : new DataTable();
+                        // Table 2: WBS items
+                        var dtWBS = ds.Tables.Count > 2 ? ds.Tables[2] : new DataTable();
+                        // Table 3: Resources
+                        var dtResources = ds.Tables.Count > 3 ? ds.Tables[3] : new DataTable();
+
+                        var rHeader = ds.Tables[0].Rows[0];
+                        double headerTotal = rHeader["TotalAmount"] != DBNull.Value ? Convert.ToDouble(rHeader["TotalAmount"]) : 0.0;
+                        if (headerTotal <= 0 && dtItems.Rows.Count > 0)
+                        {
+                            foreach (DataRow dr in dtItems.Rows)
+                            {
+                                double amt = dr["Amount"] != DBNull.Value ? Convert.ToDouble(dr["Amount"]) : 0.0;
+                                if (amt <= 0)
+                                {
+                                    double q = dr["Qty"] != DBNull.Value ? Convert.ToDouble(dr["Qty"]) : 0.0;
+                                    double rt = dr["Rate"] != DBNull.Value ? Convert.ToDouble(dr["Rate"]) : 0.0;
+                                    amt = q * rt;
+                                }
+                                headerTotal += amt;
+                            }
+                        }
+
+                        var headerObj = new
+                        {
+                            boqId = Convert.ToInt32(rHeader["BOQId"]),
+                            referenceNo = rHeader["ReferenceNo"]?.ToString() ?? "",
+                            projectKickoffId = rHeader["ProectKickOffId"]?.ToString() ?? "1",
+                            projectName = rHeader["ProjectName"]?.ToString() ?? "",
+                            costcenterId = rHeader["CostcenterId"]?.ToString() ?? "1",
+                            referenceDate = rHeader["ReferenceDate"]?.ToString() ?? "",
+                            rawReferenceDate = rHeader["RawReferenceDate"] != DBNull.Value ? Convert.ToDateTime(rHeader["RawReferenceDate"]).ToString("yyyy-MM-dd") : "",
+                            type = rHeader["Type"]?.ToString() ?? "Budget",
+                            totalAmount = headerTotal,
+                            revision = rHeader["Revision"]?.ToString() ?? "No",
+                            readyForApproval = (rHeader["ReadyForApproval"]?.ToString() == "1" || rHeader["ReadyForApproval"]?.ToString().ToLower() == "true"),
+                            remarks = rHeader["Remarks"]?.ToString() ?? "",
+                            createdBy = rHeader["CreatedBy"]?.ToString() ?? "",
+                            createdDate = rHeader["CreatedDate"]?.ToString() ?? "",
+                            status = rHeader["Status"]?.ToString() ?? "1"
+                        };
+
+                        var itemsList = new List<object>();
+                        var workgroupsMap = new Dictionary<string, object>();
+
+                        foreach (DataRow rItem in dtItems.Rows)
+                        {
+                            var projIowId = rItem["Project_IOWId"]?.ToString() ?? "";
+                            var wgId = rItem["WorkGroupId"]?.ToString() ?? "";
+                            var wgParentId = rItem["WorkGroupParentId"]?.ToString() ?? "0";
+                            var wgName = rItem["WorkGroupName"]?.ToString() ?? "";
+
+                            if (!string.IsNullOrEmpty(wgId) && !workgroupsMap.ContainsKey(wgId))
+                            {
+                                workgroupsMap[wgId] = new
+                                {
+                                    workGroupId = wgId,
+                                    parentId = wgParentId,
+                                    workGroupName = string.IsNullOrEmpty(wgName) ? ("WorkGroup " + wgId) : wgName,
+                                    serialNo = wgId
+                                };
+                            }
+
+                            // Matching WBS items for this IOW
+                            var wbsList = new List<object>();
+                            foreach (DataRow rWbs in dtWBS.Rows)
+                            {
+                                if (rWbs["Project_IOWId"]?.ToString() == projIowId)
+                                {
+                                    wbsList.Add(new
+                                    {
+                                        wbsId = rWbs["WBSId"]?.ToString() ?? "0",
+                                        wbsName = rWbs["WBSName"]?.ToString() ?? "",
+                                        fullWBSName = rWbs["FullWBSName"]?.ToString() ?? "",
+                                        unitId = rWbs["UnitId"]?.ToString() ?? "",
+                                        qty = rWbs["Qty"] != DBNull.Value ? Convert.ToDouble(rWbs["Qty"]) : 0.0
+                                    });
+                                }
+                            }
+
+                            // Matching Resources for this IOW
+                            var resList = new List<object>();
+                            object calcsObj = null;
+
+                            foreach (DataRow rRes in dtResources.Rows)
+                            {
+                                if (rRes["Project_IOWId"]?.ToString() == projIowId)
+                                {
+                                    resList.Add(new
+                                    {
+                                        resourceDetailId = rRes["Project_ResourceId"]?.ToString() ?? "",
+                                        iowId = projIowId,
+                                        resourceCode = rRes["ResourceCode"]?.ToString() ?? "",
+                                        resourceName = rRes["ResourceName"]?.ToString() ?? "",
+                                        resourceId = rRes["ResourceId"]?.ToString() ?? "",
+                                        incExc = (rRes["IncExc"]?.ToString() == "1" || rRes["IncExc"]?.ToString().ToLower() == "true"),
+                                        coefficient = rRes["Coefficient"] != DBNull.Value && double.TryParse(rRes["Coefficient"].ToString(), out var coeff) ? coeff : 1.0,
+                                        unitId = rRes["UnitId"]?.ToString() ?? "",
+                                        unit = rRes["UnitName"]?.ToString() ?? "",
+                                        rate = rRes["Rate"] != DBNull.Value ? Convert.ToDouble(rRes["Rate"]) : 0.0,
+                                        amount = rRes["Amount"] != DBNull.Value ? Convert.ToDouble(rRes["Amount"]) : 0.0,
+                                        weightagePct = rRes["WeightagePct"] != DBNull.Value ? Convert.ToDouble(rRes["WeightagePct"]) : 0.0,
+                                        wastagePct = rRes["WastagePct"] != DBNull.Value ? Convert.ToDouble(rRes["WastagePct"]) : 0.0
+                                    });
+
+                                    if (calcsObj == null)
+                                    {
+                                        calcsObj = new
+                                        {
+                                            totalWeightagePct = rRes["TotalWeightagePct"] != DBNull.Value ? Convert.ToDouble(rRes["TotalWeightagePct"]) : 0.0,
+                                            wastageAmount = rRes["WastageAmount"] != DBNull.Value ? Convert.ToDouble(rRes["WastageAmount"]) : 0.0,
+                                            loadingUnloading = rRes["LoadingUnloading"] != DBNull.Value ? Convert.ToDouble(rRes["LoadingUnloading"]) : 0.0,
+                                            handlingCharges = rRes["HandlingCharges"] != DBNull.Value ? Convert.ToDouble(rRes["HandlingCharges"]) : 0.0,
+                                            baseTotal = rRes["BaseTotal"] != DBNull.Value ? Convert.ToDouble(rRes["BaseTotal"]) : 0.0,
+                                            qualifierValue = rRes["QualifierValue"] != DBNull.Value ? Convert.ToDouble(rRes["QualifierValue"]) : 0.0,
+                                            grandTotal = rRes["GrandTotal"] != DBNull.Value ? Convert.ToDouble(rRes["GrandTotal"]) : 0.0,
+                                            roundingOff = rRes["RoundingOff"] != DBNull.Value ? Convert.ToDouble(rRes["RoundingOff"]) : 0.0,
+                                            netRate = rRes["NetRate"] != DBNull.Value ? Convert.ToDouble(rRes["NetRate"]) : 0.0
+                                        };
+                                    }
+                                }
+                            }
+
+                            itemsList.Add(new
+                            {
+                                projectIOWId = projIowId,
+                                iowId = rItem["IOWId"]?.ToString() ?? "0",
+                                workGroupId = wgId,
+                                workGroupName = wgName,
+                                refNo = rItem["RefNo"]?.ToString() ?? "",
+                                serialNo = rItem["SerialNo"]?.ToString() ?? "",
+                                specification = rItem["Specification"]?.ToString() ?? "",
+                                unitId = rItem["UnitId"]?.ToString() ?? "",
+                                unitName = rItem["UnitName"]?.ToString() ?? "",
+                                qty = rItem["Qty"] != DBNull.Value ? Convert.ToDouble(rItem["Qty"]) : 0.0,
+                                rate = rItem["Rate"] != DBNull.Value ? Convert.ToDouble(rItem["Rate"]) : 0.0,
+                                amount = rItem["Amount"] != DBNull.Value ? Convert.ToDouble(rItem["Amount"]) : 0.0,
+                                wbsBreakdown = wbsList,
+                                resources = resList,
+                                calculations = calcsObj ?? new { }
+                            });
+                        }
+
+                        return Json(new
+                        {
+                            success = true,
+                            header = headerObj,
+                            items = itemsList,
+                            workgroups = workgroupsMap.Values.ToList()
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error loading BOQ details: " + ex.Message });
+            }
+        }
+
+        // POST: /ProjectIOW/DeleteBOQ?id=123
+        // Single Stored Procedure: dbo.Web_SaveProject_BOQ_Mas with @Flag = 'DELETE'
+        [HttpPost]
+        public async Task<IActionResult> DeleteBOQ(int id)
+        {
+            if (id <= 0) return Json(new { success = false, message = "Invalid BOQ ID." });
+
+            try
+            {
+                using (var con = new SqlConnection(_connPROJ))
+                using (var cmd = new SqlCommand("dbo.Web_SaveProject_BOQ_Mas", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandTimeout = 60;
+                    cmd.Parameters.AddWithValue("@Flag", "DELETE");
+                    cmd.Parameters.AddWithValue("@BOQId", id);
+
+                    await con.OpenAsync();
+                    using (var r = await cmd.ExecuteReaderAsync())
+                    {
+                        if (await r.ReadAsync())
+                        {
+                            var res = r["Result"]?.ToString() ?? "";
+                            if (res.Equals("DELETED", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return Json(new { success = true, message = $"Bill of Quantity #{id} deleted successfully." });
+                            }
+                        }
+                    }
+                }
+                return Json(new { success = true, message = $"Bill of Quantity #{id} deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error deleting BOQ: " + ex.Message });
+            }
+        }
+
+        // POST: /ProjectIOW/Save
+        // Single Stored Procedure dbo.Web_SaveProject_BOQ_Mas handles both INSERT and UPDATE!
+        // Also transactionally saves known values to:
+        // 1. dbo.Project_BOQ_Mas
+        // 2. dbo.Project_BOQ_IOWMas
+        // 3. dbo.Project_BOQ_WBSMas
+        // 4. dbo.Project_BOQ_ResourceMas
+        [HttpPost]
+        public async Task<IActionResult> Save()
+        {
+            string rawJson = string.Empty;
+            try
+            {
+                using (var reader = new System.IO.StreamReader(Request.Body, System.Text.Encoding.UTF8))
+                {
+                    rawJson = await reader.ReadToEndAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error reading request body: " + ex.Message });
+            }
+
+            if (string.IsNullOrWhiteSpace(rawJson))
+            {
+                return Json(new { success = false, message = "Invalid or empty payload received." });
+            }
+
+            ProjectIOWSaveModel payload = null;
+            try
+            {
+                payload = JsonConvert.DeserializeObject<ProjectIOWSaveModel>(rawJson);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Payload deserialization error: " + ex.Message });
+            }
+
+            if (payload == null)
+            {
+                return Json(new { success = false, message = "Invalid or empty payload received." });
+            }
+
+            var user = SessionHelper.GetUserSession(HttpContext.Session);
+            var userName = user?.UserName ?? user?.UserId ?? "Admin";
+            var ipAddress = SessionHelper.GetClientIPAddress(Request) ?? HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
+            var hostName = SessionHelper.GetClientHostName(ipAddress) ?? Environment.MachineName;
+
+            int existingBOQId = payload.Header != null ? payload.Header.BOQId : 0;
+            bool isUpdate = existingBOQId > 0;
+
+            var costCenterId = payload.Header?.CostCentreId?.ToString() ?? "1";
+            var kickoffId = payload.Header?.ProjectKickoffId?.ToString() ?? "1";
+            var refNo = payload.Header?.ReferenceNo ?? "51070";
+            var typeVal = payload.Header?.Type ?? "Budget";
+            var revisionVal = payload.Header?.Revision ?? "No";
+            var readyForApproval = payload.Header?.ReadyForApproval == true ? "1" : "0";
+            var remarksVal = payload.Header?.Remarks ?? "";
+
+            DateTime refDate = DateTime.Now;
+            if (!string.IsNullOrWhiteSpace(payload.Header?.ReferenceDate))
+            {
+                if (DateTime.TryParseExact(payload.Header.ReferenceDate, new[] { "dd-MM-yyyy", "yyyy-MM-dd", "d-M-yyyy", "dd/MM/yyyy" }, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var pDate))
+                {
+                    refDate = pDate;
+                }
+                else if (DateTime.TryParse(payload.Header.ReferenceDate, out var dtFallback))
+                {
+                    refDate = dtFallback;
+                }
+            }
+
+            double headerTotalAmount = payload.Header != null ? (payload.Header.TotalAmount ?? 0.0) : 0.0;
+            if (headerTotalAmount <= 0 && payload.Items != null && payload.Items.Count > 0)
+            {
+                headerTotalAmount = payload.Items.Sum(i => (i.Amount ?? 0.0) > 0 ? (i.Amount ?? 0.0) : ((i.Qty ?? 0.0) * (i.Rate ?? 0.0)));
+            }
+
+            int savedBOQId = existingBOQId;
+            int totalIOWCount = 0;
+            int totalWBSCount = 0;
+            int totalResCount = 0;
+            double finalTotalAmount = headerTotalAmount;
+
+            try
+            {
+                using (var con = new SqlConnection(_connPROJ))
+                {
+                    await con.OpenAsync();
+                    using (var tran = con.BeginTransaction())
+                    {
+                        try
+                        {
+                            // ═══════════════════════════════════════════════════════════════════════
+                            // 1. dbo.Web_SaveProject_BOQ_Mas (Header) - INSERT or UPDATE
+                            // ═══════════════════════════════════════════════════════════════════════
+                            using (var cmdBOQ = new SqlCommand("dbo.Web_SaveProject_BOQ_Mas", con, tran))
+                            {
+                                cmdBOQ.CommandType = CommandType.StoredProcedure;
+                                cmdBOQ.Parameters.AddWithValue("@Flag", isUpdate ? "UPDATE" : "INSERT");
+                                cmdBOQ.Parameters.AddWithValue("@BOQId", isUpdate ? savedBOQId : 0);
+                                cmdBOQ.Parameters.AddWithValue("@CostcenterId", costCenterId);
+                                cmdBOQ.Parameters.AddWithValue("@ProectKickOffId", kickoffId);
+                                cmdBOQ.Parameters.AddWithValue("@ReferenceDate", refDate);
+                                cmdBOQ.Parameters.AddWithValue("@ReferenceNo", refNo);
+                                cmdBOQ.Parameters.AddWithValue("@Type", typeVal);
+                                cmdBOQ.Parameters.AddWithValue("@Remarks", remarksVal);
+                                cmdBOQ.Parameters.AddWithValue("@TotalAmount", headerTotalAmount.ToString("F2"));
+                                cmdBOQ.Parameters.AddWithValue("@Revision", revisionVal);
+                                cmdBOQ.Parameters.AddWithValue("@ReadyForApproval", readyForApproval);
+                                cmdBOQ.Parameters.AddWithValue("@ApprovalLogId", "");
+                                cmdBOQ.Parameters.AddWithValue("@CreatedBy", userName);
+                                cmdBOQ.Parameters.AddWithValue("@CreatedDate", DateTime.Now);
+                                cmdBOQ.Parameters.AddWithValue("@IPAddress", ipAddress);
+                                cmdBOQ.Parameters.AddWithValue("@HostName", hostName);
+
+                                using (var r = await cmdBOQ.ExecuteReaderAsync())
+                                {
+                                    if (await r.ReadAsync())
+                                    {
+                                        int returnedId = r["BOQId"] != DBNull.Value ? Convert.ToInt32(r["BOQId"]) : 0;
+                                        if (returnedId > 0) savedBOQId = returnedId;
+                                    }
+                                }
+
+                                if (savedBOQId <= 0)
+                                {
+                                    throw new Exception("Stored procedure Web_SaveProject_BOQ_Mas failed to return valid BOQId.");
+                                }
+                            }
+
+                            // If UPDATE: clean old child records via stored procedure Web_DeleteProject_BOQ_Details
+                            if (isUpdate)
+                            {
+                                using (var cmdClean = new SqlCommand("dbo.Web_DeleteProject_BOQ_Details", con, tran))
+                                {
+                                    cmdClean.CommandType = CommandType.StoredProcedure;
+                                    cmdClean.Parameters.AddWithValue("@BOQId", savedBOQId);
+                                    await cmdClean.ExecuteNonQueryAsync();
+                                }
+                            }
+
+                            // ═══════════════════════════════════════════════════════════════════════
+                            // 2. dbo.Web_SaveProject_BOQ_IOWMas (Items)
+                            // ═══════════════════════════════════════════════════════════════════════
+                            var workgroupList = payload.WorkGroups ?? new List<ProjectIOWWorkGroupModel>();
+
+                            foreach (var item in payload.Items ?? Enumerable.Empty<ProjectIOWItemModel>())
+                            {
+                                if (string.IsNullOrWhiteSpace(item.Specification))
+                                    continue;
+
+                                // Clean serial / ref no (never use "NEW" keyword)
+                                string itemSerial = (item.SerialNo ?? item.RefNo ?? "").Trim();
+                                if (itemSerial.Equals("NEW", StringComparison.OrdinalIgnoreCase)) itemSerial = "";
+
+                                string itemRef = (item.RefNo ?? itemSerial).Trim();
+                                if (itemRef.Equals("NEW", StringComparison.OrdinalIgnoreCase)) itemRef = "";
+
+                                // Resolve WorkGroup Parent Id
+                                string wgParentId = "0";
+                                var itemWgIdStr = item.WorkGroupId?.ToString() ?? "";
+                                var matchedWg = workgroupList.FirstOrDefault(w => (w.WorkGroupId?.ToString() ?? "") == itemWgIdStr);
+                                if (matchedWg != null && !string.IsNullOrWhiteSpace(matchedWg.ParentId))
+                                {
+                                    wgParentId = matchedWg.ParentId;
+                                }
+
+                                // If new specification, register into dbo.IOWMas master library
+                                string libraryIOWId = item.IOWId?.ToString() ?? "0";
+                                if (item.IsNewSpec)
+                                {
+                                    try
+                                    {
+                                        using (var cmdLib = new SqlCommand("Web_SaveIOWMas", con, tran))
+                                        {
+                                            cmdLib.CommandType = CommandType.StoredProcedure;
+                                            cmdLib.Parameters.AddWithValue("@WorkGroupId", !string.IsNullOrEmpty(itemWgIdStr) ? (object)itemWgIdStr : DBNull.Value);
+                                            cmdLib.Parameters.AddWithValue("@WorkGroupParentId", wgParentId);
+                                            cmdLib.Parameters.AddWithValue("@RefNo", double.TryParse(itemRef, out var rNum) ? rNum : 0);
+                                            cmdLib.Parameters.AddWithValue("@SerialNo", string.IsNullOrEmpty(itemSerial) ? (object)DBNull.Value : itemSerial);
+                                            cmdLib.Parameters.AddWithValue("@Specification", item.Specification.Trim());
+                                            cmdLib.Parameters.AddWithValue("@UnitId", string.IsNullOrEmpty(item.UnitId) ? (object)DBNull.Value : item.UnitId);
+                                            cmdLib.Parameters.AddWithValue("@Rate", (item.Rate ?? 0.0).ToString());
+                                            cmdLib.Parameters.AddWithValue("@CreatedBy", userName);
+
+                                            var newLibId = await cmdLib.ExecuteScalarAsync();
+                                            if (newLibId != null)
+                                            {
+                                                libraryIOWId = newLibId.ToString();
+                                            }
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        // Non-fatal library registration
+                                    }
+                                }
+
+                                int savedProjectIOWId = 0;
+                                double itemAmount = (item.Amount ?? 0.0) > 0 ? (item.Amount ?? 0.0) : ((item.Qty ?? 0.0) * (item.Rate ?? 0.0));
+
+                                using (var cmdIOW = new SqlCommand("dbo.Web_SaveProject_BOQ_IOWMas", con, tran))
+                                {
+                                    cmdIOW.CommandType = CommandType.StoredProcedure;
+                                    cmdIOW.Parameters.AddWithValue("@Flag", "INSERT");
+                                    cmdIOW.Parameters.AddWithValue("@CostcenterId", costCenterId);
+                                    cmdIOW.Parameters.AddWithValue("@ProectKickOfId", kickoffId);
+                                    cmdIOW.Parameters.AddWithValue("@BOQId", savedBOQId.ToString());
+                                    cmdIOW.Parameters.AddWithValue("@WorkGroupId", itemWgIdStr);
+                                    cmdIOW.Parameters.AddWithValue("@WorkGroupParentId", wgParentId);
+                                    cmdIOW.Parameters.AddWithValue("@IOWId", libraryIOWId);
+                                    cmdIOW.Parameters.AddWithValue("@RefNo", double.TryParse(itemRef, out var refFloat) ? (object)refFloat : DBNull.Value);
+                                    cmdIOW.Parameters.AddWithValue("@SerialNo", itemSerial);
+                                    cmdIOW.Parameters.AddWithValue("@Specification", item.Specification.Trim());
+                                    cmdIOW.Parameters.AddWithValue("@UnitId", item.UnitId ?? item.UnitName ?? "");
+                                    cmdIOW.Parameters.AddWithValue("@Qty", item.Qty ?? 0.0);
+                                    cmdIOW.Parameters.AddWithValue("@Rate", item.Rate ?? 0.0);
+                                    cmdIOW.Parameters.AddWithValue("@Amount", itemAmount);
+                                    cmdIOW.Parameters.AddWithValue("@CreatedBy", userName);
+                                    cmdIOW.Parameters.AddWithValue("@CreatedDate", DateTime.Now);
+                                    cmdIOW.Parameters.AddWithValue("@IPAddress", ipAddress);
+                                    cmdIOW.Parameters.AddWithValue("@HostName", hostName);
+
+                                    using (var r = await cmdIOW.ExecuteReaderAsync())
+                                    {
+                                        if (await r.ReadAsync())
+                                        {
+                                            savedProjectIOWId = r["Project_IOWId"] != DBNull.Value ? Convert.ToInt32(r["Project_IOWId"]) : 0;
+                                            totalIOWCount++;
+                                        }
+                                    }
+                                }
+
+                                // ═══════════════════════════════════════════════════════════════════
+                                // 3. dbo.Web_SaveProject_BOQ_WBSMas (WBS Breakdown)
+                                // ═══════════════════════════════════════════════════════════════════
+                                int firstWBSId = 0;
+                                foreach (var wbs in item.WBSBreakdown ?? Enumerable.Empty<ProjectIOWWBSItemModel>())
+                                {
+                                    if ((wbs.Qty ?? 0.0) <= 0 && string.IsNullOrWhiteSpace(wbs.WBSName))
+                                        continue;
+
+                                    using (var cmdWBS = new SqlCommand("dbo.Web_SaveProject_BOQ_WBSMas", con, tran))
+                                    {
+                                        cmdWBS.CommandType = CommandType.StoredProcedure;
+                                        cmdWBS.Parameters.AddWithValue("@Flag", "INSERT");
+                                        cmdWBS.Parameters.AddWithValue("@CostcenterId", costCenterId);
+                                        cmdWBS.Parameters.AddWithValue("@ProectKickOfId", kickoffId);
+                                        cmdWBS.Parameters.AddWithValue("@BOQId", savedBOQId.ToString());
+                                        cmdWBS.Parameters.AddWithValue("@WorkGroupId", itemWgIdStr);
+                                        cmdWBS.Parameters.AddWithValue("@WorkGroupParentId", wgParentId);
+                                        cmdWBS.Parameters.AddWithValue("@Project_IOWId", savedProjectIOWId.ToString());
+                                        cmdWBS.Parameters.AddWithValue("@WBSId", wbs.WBSId?.ToString() ?? "0");
+                                        cmdWBS.Parameters.AddWithValue("@WBSName", wbs.WBSName ?? "");
+                                        cmdWBS.Parameters.AddWithValue("@FullWBSName", wbs.FullWBSName ?? wbs.WBSName ?? "");
+                                        cmdWBS.Parameters.AddWithValue("@UnitId", item.UnitId ?? item.UnitName ?? "");
+                                        cmdWBS.Parameters.AddWithValue("@Qty", wbs.Qty ?? 0.0);
+                                        cmdWBS.Parameters.AddWithValue("@CreatedBy", userName);
+                                        cmdWBS.Parameters.AddWithValue("@CreatedDate", DateTime.Now);
+                                        cmdWBS.Parameters.AddWithValue("@IPAddress", ipAddress);
+                                        cmdWBS.Parameters.AddWithValue("@HostName", hostName);
+
+                                        using (var r = await cmdWBS.ExecuteReaderAsync())
+                                        {
+                                            if (await r.ReadAsync())
+                                            {
+                                                int pWbsId = r["Project_WBSId"] != DBNull.Value ? Convert.ToInt32(r["Project_WBSId"]) : 0;
+                                                if (firstWBSId == 0) firstWBSId = pWbsId;
+                                                totalWBSCount++;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // ═══════════════════════════════════════════════════════════════════
+                                // 4. dbo.Web_SaveProject_BOQ_ResourceMas (Resources & Calculations)
+                                // ═══════════════════════════════════════════════════════════════════
+                                var calcs = item.Calculations ?? new ProjectIOWCalculationModel();
+                                double totalWeightage = (calcs.TotalWeightagePct ?? 0.0) > 0 ? (calcs.TotalWeightagePct ?? 0.0) : (item.TotalWeightagePct ?? 0.0);
+                                double wastageAmt = (calcs.WastageAmount ?? 0.0) > 0 ? (calcs.WastageAmount ?? 0.0) : (item.WastageAmount ?? 0.0);
+                                double loadUnload = (calcs.LoadingUnloading ?? 0.0) > 0 ? (calcs.LoadingUnloading ?? 0.0) : (item.LoadingUnloading ?? 0.0);
+                                double handling = (calcs.HandlingCharges ?? 0.0) > 0 ? (calcs.HandlingCharges ?? 0.0) : (item.HandlingCharges ?? 0.0);
+                                double baseTot = (calcs.BaseTotal ?? 0.0) > 0 ? (calcs.BaseTotal ?? 0.0) : ((item.BaseTotal ?? 0.0) > 0 ? (item.BaseTotal ?? 0.0) : (item.Rate ?? 0.0));
+                                double qualVal = (calcs.QualifierValue ?? 0.0) > 0 ? (calcs.QualifierValue ?? 0.0) : (item.QualifierValue ?? 0.0);
+                                double grandTot = (calcs.GrandTotal ?? 0.0) > 0 ? (calcs.GrandTotal ?? 0.0) : ((item.GrandTotal ?? 0.0) > 0 ? (item.GrandTotal ?? 0.0) : (item.Rate ?? 0.0));
+                                double roundOff = (calcs.RoundingOff ?? 0.0) != 0 ? (calcs.RoundingOff ?? 0.0) : (item.RoundingOff ?? 0.0);
+                                double netRateVal = (calcs.NetRate ?? 0.0) > 0 ? (calcs.NetRate ?? 0.0) : ((item.NetRate ?? 0.0) > 0 ? (item.NetRate ?? 0.0) : (item.Rate ?? 0.0));
+
+                                foreach (var res in item.Resources ?? Enumerable.Empty<ProjectIOWResourceModel>())
+                                {
+                                    string resName = res.ResourceName ?? "";
+                                    if (resName.Length > 50) resName = resName.Substring(0, 50);
+
+                                    string resUnit = !string.IsNullOrWhiteSpace(res.UnitId) ? res.UnitId : (!string.IsNullOrWhiteSpace(res.Unit) ? res.Unit : "");
+
+                                    using (var cmdRes = new SqlCommand("dbo.Web_SaveProject_BOQ_ResourceMas", con, tran))
+                                    {
+                                        cmdRes.CommandType = CommandType.StoredProcedure;
+                                        cmdRes.Parameters.AddWithValue("@Flag", "INSERT");
+                                        cmdRes.Parameters.AddWithValue("@CostcenterId", costCenterId);
+                                        cmdRes.Parameters.AddWithValue("@ProectKickOfId", kickoffId);
+                                        cmdRes.Parameters.AddWithValue("@BOQId", savedBOQId.ToString());
+                                        cmdRes.Parameters.AddWithValue("@WorkGroupId", itemWgIdStr);
+                                        cmdRes.Parameters.AddWithValue("@WorkGroupParentId", wgParentId);
+                                        cmdRes.Parameters.AddWithValue("@Project_IOWId", savedProjectIOWId.ToString());
+                                        cmdRes.Parameters.AddWithValue("@Project_WBSId", firstWBSId.ToString());
+                                        cmdRes.Parameters.AddWithValue("@ResourceCode", res.ResourceCode ?? "");
+                                        cmdRes.Parameters.AddWithValue("@ResourceName", resName);
+                                        cmdRes.Parameters.AddWithValue("@ResourceId", res.ResourceId?.ToString() ?? "");
+                                        cmdRes.Parameters.AddWithValue("@IncExc", res.IncExc ? "1" : "0");
+                                        cmdRes.Parameters.AddWithValue("@Coefficient", (res.Coefficient ?? 1.0).ToString());
+                                        cmdRes.Parameters.AddWithValue("@UnitId", resUnit);
+                                        cmdRes.Parameters.AddWithValue("@Rate", res.Rate ?? 0.0);
+                                        cmdRes.Parameters.AddWithValue("@Amount", res.Amount ?? 0.0);
+                                        cmdRes.Parameters.AddWithValue("@WeightagePct", res.WeightagePct ?? 0.0);
+                                        cmdRes.Parameters.AddWithValue("@WastagePct", res.WastagePct ?? 0.0);
+                                        cmdRes.Parameters.AddWithValue("@TotalWeightagePct", totalWeightage);
+                                        cmdRes.Parameters.AddWithValue("@WastageAmount", wastageAmt);
+                                        cmdRes.Parameters.AddWithValue("@LoadingUnloading", loadUnload);
+                                        cmdRes.Parameters.AddWithValue("@HandlingCharges", handling);
+                                        cmdRes.Parameters.AddWithValue("@BaseTotal", baseTot);
+                                        cmdRes.Parameters.AddWithValue("@QualifierValue", qualVal);
+                                        cmdRes.Parameters.AddWithValue("@GrandTotal", grandTot);
+                                        cmdRes.Parameters.AddWithValue("@RoundingOff", roundOff);
+                                        cmdRes.Parameters.AddWithValue("@NetRate", netRateVal);
+                                        cmdRes.Parameters.AddWithValue("@CreatedBy", userName);
+                                        cmdRes.Parameters.AddWithValue("@CreatedDate", DateTime.Now);
+                                        cmdRes.Parameters.AddWithValue("@IPAddress", ipAddress);
+                                        cmdRes.Parameters.AddWithValue("@HostName", hostName);
+
+                                        using (var r = await cmdRes.ExecuteReaderAsync())
+                                        {
+                                            if (await r.ReadAsync())
+                                            {
+                                                totalResCount++;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // ═══════════════════════════════════════════════════════════════════
+                            // 5. Synchronize Project_BOQ_Mas.TotalAmount with child items
+                            // ═══════════════════════════════════════════════════════════════════
+                            finalTotalAmount = headerTotalAmount;
+                            using (var cmdSync = new SqlCommand("dbo.Web_SyncProject_BOQ_TotalAmount", con, tran))
+                            {
+                                cmdSync.CommandType = CommandType.StoredProcedure;
+                                cmdSync.Parameters.AddWithValue("@BOQId", savedBOQId);
+                                var objTot = await cmdSync.ExecuteScalarAsync();
+                                if (objTot != null && objTot != DBNull.Value)
+                                {
+                                    finalTotalAmount = Convert.ToDouble(objTot);
+                                }
+                            }
+
+                            tran.Commit();
+                        }
+                        catch
+                        {
+                            tran.Rollback();
+                            throw;
+                        }
+                    }
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Bill of Quantity #{savedBOQId} saved successfully!",
+                    boqId = savedBOQId,
+                    itemCount = totalIOWCount,
+                    wbsCount = totalWBSCount,
+                    resourceCount = totalResCount,
+                    totalAmount = finalTotalAmount > 0 ? finalTotalAmount : headerTotalAmount,
+                    timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                });
+            }
+            catch (Exception ex)
+            {
                 return Json(new
                 {
                     success = false,
-                    message = "Error saving Bill of quantity to database: " + ex.Message,
-                    data = payload
+                    message = "Error saving Bill of Quantity across database tables: " + ex.Message
                 });
             }
-
-            var itemCount = payload.Items?.Count ?? 0;
-            var totalResources = payload.Items?.Sum(i => i.Resources?.Count ?? 0) ?? 0;
-
-            return Json(new
-            {
-                success = true,
-                message = $"Successfully saved Bill of quantity ({savedCount} items committed to Project_IOWMas, {totalResources} resources nested).",
-                savedIds = savedIds,
-                data = payload,
-                timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
-            });
         }
     }
 }
