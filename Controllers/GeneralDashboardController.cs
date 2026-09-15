@@ -125,6 +125,17 @@ namespace VGN_CRM_CORE.Controllers
 
             if (menuList.Count > 0)
             {
+                if (!menuList.Exists(m => m.ControllerName == "MeasurementTemplateMaster"))
+                {
+                    menuList.Add(new Models.MenuModel
+                    {
+                        Department = "PROJECTS",
+                        ModuleType = "MASTER",
+                        ModuleCaptionName = "Measurement Template Master",
+                        ControllerName = "MeasurementTemplateMaster",
+                        ActionName = "Index"
+                    });
+                }
                 SessionHelper.SetMenuList(HttpContext.Session, menuList);
             }
         }

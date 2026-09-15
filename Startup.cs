@@ -89,6 +89,11 @@ namespace VGN_CRM_CORE
                     NoStore  = true,
                     Location = ResponseCacheLocation.None
                 });
+            })
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                options.JsonSerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString;
             });
         }
 

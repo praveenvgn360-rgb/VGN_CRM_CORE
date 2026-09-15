@@ -1,0 +1,1004 @@
+@{
+    ViewBag.Title = "Measurement Template Master — VGN ERP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Handsontable CSS -->
+<link rel="stylesheet" href="~/lib/handsontable/css/handsontable.full.min.css" />
+
+<style>
+    /* Styling matching BuildSmart Legacy Reference Screens */
+    .master-card {
+        background: #ffffff;
+        border: 1px solid #dbeafe;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    .header-bar-blue {
+        background-color: #f0f7fc;
+        border-bottom: 1px solid #d0e3f0;
+    }
+    #hotSpreadsheetWrapper {
+        width: 100%;
+        min-height: 420px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        background: #fff;
+        overflow: hidden;
+    }
+    .handsontable th {
+        background-color: #f1f5f9 !important;
+        color: #1e293b !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
+    }
+    .handsontable td {
+        font-size: 13px !important;
+        color: #0f172a !important;
+    }
+    /* Row 1 (Header row) in Handsontable */
+    .handsontable .row-header-name {
+        font-weight: 700 !important;
+        background-color: #f8fafc !important;
+        color: #0f172a !important;
+        text-align: center !important;
+    }
+    /* Qty result column highlight */
+    .handsontable .qty-calculated-cell {
+        font-weight: 700 !important;
+        color: #0284c7 !important;
+        text-align: right !important;
+        background-color: #f0f9ff !important;
+    }
+
+    /* Select2 custom styling matching BuildSmart Panel 7 */
+    .select2-container--default .select2-selection--single {
+        border-color: #cbd5e1 !important;
+        border-radius: 6px !important;
+        height: 38px !important;
+        display: flex !important;
+        align-items: center !important;
+        padding-left: 8px !important;
+        background-color: #ffffff !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #0284c7 !important;
+        font-weight: 700 !important;
+        font-size: 13px !important;
+        line-height: normal !important;
+        padding-left: 0 !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px !important;
+        right: 8px !important;
+    }
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #0284c7 !important;
+        color: #ffffff !important;
+    }
+    .select2-dropdown {
+        border: 1px solid #0284c7 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        border-radius: 6px !important;
+    }
+    .select2-results__option {
+        font-size: 13px !important;
+        padding: 6px 12px !important;
+    }
+</style>
+
+<div class="p-4 sm:p-6 space-y-4">
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- ── 1. MASTER LIST VIEW (Matching Panel 1 in Merged Image) ── -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <div id="MainWrapper" class="master-card overflow-hidden">
+        <!-- Panel 1 Header: Title + Add Template Button -->
+        <div class="header-bar-blue p-3.5 sm:p-4 flex items-center justify-between">
+            <h1 class="text-base sm:text-lg font-bold text-[#0284c7] tracking-tight">Measurement Template Master</h1>
+            <button type="button" onclick="openAddTemplate()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md font-bold text-xs text-white bg-[#0284c7] hover:bg-[#0369a1] shadow-xs transition cursor-pointer">
+                <i class="fas fa-plus text-[11px]"></i> Add Template
+            </button>
+        </div>
+
+        <!-- DevExtreme DataGrid: Name & Action Columns -->
+        <div class="p-3 sm:p-4">
+            <div id="dxGridTemplates"></div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- ── 2. EDIT / ADD TEMPLATE VIEW (Matching Panels 2 - 10) ── -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <div id="HandsonWrapper" class="master-card overflow-hidden" style="display: none;">
+        
+        <!-- Editor Header Bar -->
+        <div class="header-bar-blue p-3.5 sm:p-4 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <button type="button" onclick="hideTemplateEditor()" class="w-8 h-8 rounded-md bg-white hover:bg-slate-100 border border-slate-300 text-slate-600 flex items-center justify-center transition cursor-pointer" title="Back to List">
+                    <i class="fas fa-arrow-left text-xs"></i>
+                </button>
+                <h2 class="text-base sm:text-lg font-bold text-[#0284c7] tracking-tight" id="editorTitle">Edit Template</h2>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="hideTemplateEditor()" class="px-3.5 py-1.5 rounded-md text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition cursor-pointer">
+                    Cancel
+                </button>
+                <button type="button" id="btnSaveTemplate" onclick="saveTemplate()" class="px-4 py-1.5 rounded-md text-xs font-bold text-white bg-[#0284c7] hover:bg-[#0369a1] shadow-xs transition flex items-center gap-1.5 cursor-pointer">
+                    <i class="fas fa-check text-[11px]"></i>
+                    <span id="btnSaveText">Save</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Inputs Card (Name & Choose Column(s) & Default Notice) -->
+        <div class="p-4 sm:p-5 space-y-4 bg-white">
+            <input type="hidden" id="editTemplateId" value="" />
+            <input type="hidden" id="editTypeId" value="0" />
+
+            <div class="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 w-full">
+                    <!-- Name Input -->
+                    <div>
+                        <label for="txtTemplateName" class="block text-xs font-bold text-slate-700 mb-1">
+                            Name <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="txtTemplateName" maxlength="200" placeholder="e.g. Area Measurement (LB)" class="w-full h-9 px-3 text-xs rounded-md border border-slate-300 bg-white text-slate-800 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 transition outline-none" />
+                    </div>
+
+                    <!-- Choose Column(s) Dropdown -->
+                    <div>
+                        <label for="selColumns" class="block text-xs font-bold text-slate-700 mb-1">
+                            Choose Column(s) <span class="text-red-500">*</span>
+                        </label>
+                        <select id="selColumns" class="w-full text-xs font-bold" style="width: 100%;">
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Default Template Notice (Matches Panels 2, 3, 5, 10) -->
+                <div class="text-right pb-1">
+                    <span id="lblDefaultNotice" class="text-xs font-bold text-[#0284c7] hidden whitespace-nowrap">
+                        (Default Measurement Sheet, Do not Change)
+                    </span>
+                </div>
+            </div>
+
+            <!-- Spreadsheet Grid -->
+            <div>
+                <div id="hotSpreadsheetWrapper">
+                    <div id="hotSpreadsheet"></div>
+                </div>
+                <div class="mt-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs text-slate-600">
+                    <div class="flex items-center gap-1.5 text-[11px] text-slate-500">
+                        <i class="fas fa-info-circle text-[#0284c7]"></i>
+                        <span>Row 1 defines Column Headers. Numbers entered in any row auto-calculate into <strong id="lblActiveTargetColName" class="text-[#0284c7]">Qty</strong> while typing.</span>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <div class="px-2.5 py-1 rounded-md bg-sky-50 border border-sky-200 text-xs font-bold text-sky-800 flex items-center gap-1.5">
+                            <span>Total <span id="lblTotalColName">Qty</span>:</span>
+                            <span id="lblMasterTotalQty" class="font-mono text-sm text-[#0284c7]">0.00</span>
+                        </div>
+                        <div class="inline-flex rounded-md shadow-2xs">
+                            <button type="button" onclick="addBlankSpreadsheetRow()" class="px-2.5 py-1 rounded-l-md border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition cursor-pointer flex items-center gap-1">
+                                <i class="fas fa-plus text-[10px] text-sky-600"></i> Add Row
+                            </button>
+                            <button type="button" onclick="removeSpreadsheetRow()" class="px-2.5 py-1 rounded-r-md border-t border-b border-r border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition cursor-pointer flex items-center gap-1" title="Remove last row or selected row">
+                                <i class="fas fa-minus text-[10px] text-rose-500"></i> Del Row
+                            </button>
+                        </div>
+                        <div class="inline-flex rounded-md shadow-2xs">
+                            <button type="button" onclick="addBlankSpreadsheetColumn()" class="px-2.5 py-1 rounded-l-md border border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition cursor-pointer flex items-center gap-1">
+                                <i class="fas fa-columns text-[10px] text-sky-600"></i> Add Col
+                            </button>
+                            <button type="button" onclick="removeSpreadsheetColumn()" class="px-2.5 py-1 rounded-r-md border-t border-b border-r border-slate-300 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition cursor-pointer flex items-center gap-1" title="Remove last column or selected column">
+                                <i class="fas fa-times text-[10px] text-rose-500"></i> Del Col
+                            </button>
+                        </div>
+                        <button type="button" onclick="clearSpreadsheetData()" class="px-2.5 py-1 rounded border border-slate-200 bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-600 transition cursor-pointer flex items-center gap-1" title="Clear all row data">
+                            <i class="fas fa-eraser text-[10px] text-slate-500"></i> Clear Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Handsontable Core JS -->
+<script src="~/lib/handsontable/js/handsontable.full.js"></script>
+
+<script>
+    // ── Global Master State ──
+    var templatesList = [];
+    var hotInstance = null;
+    var hotData = [[]];
+    var activeTargetColumn = 'Qty';
+    var isRecalculating = false;
+
+    // Default template configurations matching legacy BuildSmart images (All data rows 100% empty)
+    var standardTemplatesData = {
+        1: {
+            name: "Area Measurement (LB)",
+            targetCol: "Qty",
+            data: [
+                ["Description", "Nos1", "Nos2", "Length", "Breadth", "Qty"],
+                ["", "", "", "", "", ""],
+                ["", "", "", "", "", ""],
+                ["", "", "", "", "", ""],
+                ["", "", "", "", "", ""],
+                ["", "", "", "", "", ""]
+            ]
+        },
+        2: {
+            name: "Volume Measurement (LBD)",
+            targetCol: "Qty",
+            data: [
+                ["Description", "Nos1", "Nos2", "Length", "Breadth", "Depth", "Qty"],
+                ["", "", "", "", "", "", ""],
+                ["", "", "", "", "", "", ""],
+                ["", "", "", "", "", "", ""],
+                ["", "", "", "", "", "", ""]
+            ]
+        },
+        3: {
+            name: "Length Measurement (L)",
+            targetCol: "Qty",
+            data: [
+                ["Description", "Nos1", "Nos2", "Length", "Qty"],
+                ["", "", "", "", ""],
+                ["", "", "", "", ""],
+                ["", "", "", "", ""],
+                ["", "", "", "", ""]
+            ]
+        },
+        4: {
+            name: "Steel Measurement (L)",
+            targetCol: "Qty",
+            data: [
+                ["Description", "Steel", "Factor", "Nos1", "Nos2", "Length", "Qty"],
+                ["", "", "", "", "", "", ""],
+                ["", "", "", "", "", "", ""],
+                ["", "", "", "", "", "", ""],
+                ["", "", "", "", "", "", ""]
+            ]
+        },
+        5: {
+            name: "Structural Steel Measurement (LB)",
+            targetCol: "Qty",
+            data: [
+                ["Description", "Steel", "Factor", "Nos1", "Nos2", "Length", "Breadth", "Qty"],
+                ["", "", "", "", "", "", "", ""],
+                ["", "", "", "", "", "", "", ""],
+                ["", "", "", "", "", "", "", ""],
+                ["", "", "", "", "", "", "", ""]
+            ]
+        }
+    };
+
+    $(document).ready(function () {
+        initSelect2();
+        initHandsontable();
+        loadTemplatesGrid();
+    });
+
+    // ── 1. SELECT2 INITIALIZATION (Matches Panel 7 in Merged Screenshot) ──
+    function initSelect2(selectedVal) {
+        var target = selectedVal || activeTargetColumn || 'Qty';
+        var $sel = $('#selColumns');
+
+        if ($sel.data('select2')) {
+            $sel.select2('destroy');
+        }
+
+        $sel.select2({
+            placeholder: "Select or type calculation column...",
+            allowClear: false,
+            tags: true, // Enables typing custom column text directly!
+            width: '100%',
+            dropdownParent: $('#HandsonWrapper'),
+            createTag: function (params) {
+                var term = $.trim(params.term);
+                if (term === '') return null;
+                return {
+                    id: term,
+                    text: term,
+                    newTag: true
+                };
+            }
+        }).off('select2:select change').on('select2:select change', function () {
+            var val = $(this).val();
+            if (Array.isArray(val)) val = val[0];
+            val = $.trim(val || '');
+            if (val) {
+                activeTargetColumn = val;
+                $('#lblTotalColName').text(val);
+                $('#lblActiveTargetColName').text(val);
+
+                // If user typed a new column name not in the spreadsheet, sync Handsontable header
+                if (hotInstance) {
+                    var row0 = hotInstance.getDataAtRow(0) || [];
+                    var colFound = false;
+                    for (var c = 0; c < row0.length; c++) {
+                        if ($.trim(row0[c] || '').toLowerCase() === val.toLowerCase()) {
+                            colFound = true;
+                            break;
+                        }
+                    }
+                    if (!colFound && row0.length > 0) {
+                        var lastColIdx = row0.length - 1;
+                        hotInstance.setDataAtCell(0, lastColIdx, val);
+                    }
+                    recalculateMeasurementGrid(hotInstance);
+                    hotInstance.render();
+                }
+            }
+        });
+
+        // Ensure target option exists in select element
+        if (target) {
+            var optionFound = false;
+            $sel.find('option').each(function () {
+                if ($.trim($(this).val()).toLowerCase() === $.trim(target).toLowerCase()) {
+                    optionFound = true;
+                    target = $(this).val();
+                }
+            });
+            if (!optionFound) {
+                $sel.append(new Option(target, target, true, true));
+            }
+            $sel.val(target).trigger('change');
+        }
+
+        $('#lblTotalColName').text(target);
+        $('#lblActiveTargetColName').text(target);
+    }
+
+    // ── 2. DEVOPS / DEVIEXTREME GRID LIST VIEW (Matching Panel 1) ──
+    function loadTemplatesGrid() {
+        $.ajax({
+            url: '/MeasurementTemplateMaster/GetAll',
+            type: 'GET',
+            dataType: 'json',
+            success: function (res) {
+                if (res && res.success) {
+                    templatesList = res.data || [];
+                    renderDxGrid();
+                } else {
+                    Swal.fire('Error', res.message || 'Failed to load templates.', 'error');
+                }
+            },
+            error: function () {
+                Swal.fire('Error', 'Server connection failed while loading templates.', 'error');
+            }
+        });
+    }
+
+    function renderDxGrid() {
+        $("#dxGridTemplates").dxDataGrid({
+            dataSource: templatesList,
+            keyExpr: "templateId",
+            showBorders: true,
+            showRowLines: true,
+            rowAlternationEnabled: false,
+            hoverStateEnabled: true,
+            paging: { pageSize: 10 },
+            pager: {
+                visible: true,
+                showPageSizeSelector: true,
+                allowedPageSizes: [10, 20, 50],
+                showInfo: true,
+                showNavigationButtons: true
+            },
+            columns: [
+                {
+                    dataField: "templateName",
+                    caption: "Name",
+                    minWidth: 320,
+                    cellTemplate: function (container, options) {
+                        var html = '<div class="py-1 text-sm font-semibold text-slate-800">' +
+                                   (options.value || '') +
+                                   '</div>';
+                        container.html(html);
+                    }
+                },
+                {
+                    caption: "Action",
+                    width: 110,
+                    alignment: "center",
+                    cellTemplate: function (container, options) {
+                        var row = options.data;
+                        var $wrapper = $('<div class="flex items-center justify-center gap-1.5"></div>');
+
+                        // Edit Button (Pencil icon)
+                        var $editBtn = $('<button type="button" class="w-8 h-8 rounded text-sky-600 hover:text-sky-800 hover:bg-sky-50 flex items-center justify-center transition cursor-pointer" title="Edit Template"><i class="fas fa-pencil-alt text-sm"></i></button>');
+                        $editBtn.on('click', function () {
+                            openEditTemplate(row.templateId);
+                        });
+                        $wrapper.append($editBtn);
+
+                        // Delete Button (Trash icon)
+                        var $delBtn = $('<button type="button" class="w-8 h-8 rounded text-rose-500 hover:text-rose-700 hover:bg-rose-50 flex items-center justify-center transition cursor-pointer" title="Delete Template"><i class="fas fa-trash-alt text-sm"></i></button>');
+                        $delBtn.on('click', function () {
+                            deleteTemplate(row.templateId, row.templateName, row.typeId);
+                        });
+                        $wrapper.append($delBtn);
+
+                        container.append($wrapper);
+                    }
+                }
+            ]
+        });
+    }
+
+    function deleteTemplate(templateId, templateName, typeId) {
+        if (typeId > 0) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Default System Template',
+                text: 'Default template "' + templateName + '" is protected and cannot be deleted.',
+                confirmButtonColor: '#0284c7'
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Delete Template?',
+            html: '<p class="text-xs text-slate-600">Are you sure you want to delete template <strong>"' + templateName + '"</strong>?</p><p class="text-[11px] text-rose-500 mt-1">This action cannot be undone.</p>',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e11d48',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="fas fa-trash-alt mr-1"></i> Yes, Delete',
+            cancelButtonText: 'Cancel'
+        }).then(function (result) {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Deleting...',
+                    allowOutsideClick: false,
+                    didOpen: function () { Swal.showLoading(); }
+                });
+
+                $.ajax({
+                    url: '/MeasurementTemplateMaster/Delete',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ TemplateId: templateId }),
+                    success: function (res) {
+                        if (res && res.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: res.message || 'Template deleted successfully.',
+                                timer: 1400,
+                                showConfirmButton: false
+                            }).then(function () {
+                                loadTemplatesGrid();
+                            });
+                        } else {
+                            Swal.fire('Delete Failed', res.message || 'Unable to delete template.', 'error');
+                        }
+                    },
+                    error: function () {
+                        Swal.fire('Error', 'Server error while deleting template.', 'error');
+                    }
+                });
+            }
+        });
+    }
+
+    // ── 3. HANDSONTABLE INITIALIZATION & AUTO-CALCULATION WHILE TYPING ──
+    function initHandsontable() {
+        var container = document.getElementById('hotSpreadsheet');
+        hotData = [[]];
+
+        hotInstance = new Handsontable(container, {
+            data: hotData,
+            colHeaders: true,
+            rowHeaders: true,
+            contextMenu: true,
+            minRows: 12,
+            minCols: 10,
+            colWidths: 125,
+            stretchH: 'all',
+            manualColumnResize: true,
+            manualRowResize: true,
+            cells: function (row, col) {
+                var cellProperties = {};
+                if (row === 0) {
+                    // Row 1 (Header Names)
+                    cellProperties.renderer = function (instance, td, r, c, prop, value) {
+                        Handsontable.renderers.TextRenderer.apply(this, arguments);
+                        td.className = 'row-header-name';
+                    };
+                } else {
+                    // Data Rows
+                    cellProperties.renderer = function (instance, td, r, c, prop, value) {
+                        Handsontable.renderers.TextRenderer.apply(this, arguments);
+                        var headers = instance.getDataAtRow(0) || [];
+                        var colName = $.trim(headers[c] || '').toLowerCase();
+                        var targetName = (activeTargetColumn || 'Qty').toLowerCase();
+
+                        if (colName === targetName) {
+                            td.className = 'qty-calculated-cell';
+                        } else {
+                            var num = parseFloat(value);
+                            if (!isNaN(num) && $.trim(String(value)) !== '' && !isNaN(Number(value))) {
+                                td.style.textAlign = 'right';
+                            } else {
+                                td.style.textAlign = 'left';
+                            }
+                        }
+                    };
+                }
+                return cellProperties;
+            },
+            afterChange: function (changes, source) {
+                if (changes) {
+                    var affectedRow0 = changes.some(function (c) { return c[0] === 0; });
+                    if (affectedRow0) {
+                        syncColumnsFromRow0();
+                    }
+
+                    if (source !== 'autoCalc') {
+                        recalculateMeasurementGrid(hotInstance);
+                    }
+                }
+            }
+        });
+    }
+
+    // ── 4. AUTO-CALCULATION ENGINE (Exact Multiplicative Logic Matching Panels 2 - 10) ──
+    function recalculateMeasurementGrid(instance) {
+        if (!instance || isRecalculating) return;
+        isRecalculating = true;
+
+        var headers = instance.getDataAtRow(0) || [];
+        var rowCount = instance.countRows();
+        var colCount = instance.countCols();
+
+        // 1. Find the target calculation column index
+        var chosenVal = $('#selColumns').val();
+        var targetColName = (chosenVal && chosenVal.length > 0) ? chosenVal[0] : (activeTargetColumn || 'Qty');
+
+        var targetColIdx = -1;
+        for (var c = 0; c < headers.length; c++) {
+            var h = $.trim(headers[c] || '');
+            if (h.toLowerCase() === targetColName.toLowerCase()) {
+                targetColIdx = c;
+                break;
+            }
+        }
+
+        // Fallback search for Qty / Quantity
+        if (targetColIdx === -1) {
+            for (var c = 0; c < headers.length; c++) {
+                var h = $.trim(headers[c] || '').toLowerCase();
+                if (h === 'qty' || h === 'quantity' || h === 'total wt' || h === 'totalwt' || h === 'total') {
+                    targetColIdx = c;
+                    targetColName = headers[c];
+                    break;
+                }
+            }
+        }
+
+        if (targetColIdx === -1) {
+            isRecalculating = false;
+            return;
+        }
+
+        var changes = [];
+        var grandTotal = 0;
+
+        // 2. Compute Qty for every data row (row 1 to N-1)
+        for (var r = 1; r < rowCount; r++) {
+            var product = 1;
+            var hasNumericFactor = false;
+
+            for (var c = 0; c < colCount; c++) {
+                if (c === targetColIdx) continue; // Skip target column
+
+                var cellVal = instance.getDataAtCell(r, c);
+                if (cellVal === null || cellVal === undefined) continue;
+
+                var strVal = $.trim(String(cellVal));
+                if (strVal === '') continue; // Skip empty cells (treated as 1)
+
+                var num = parseFloat(strVal);
+                // Must be pure number (non-numeric text like "TEST" or descriptions are ignored)
+                if (!isNaN(num) && isFinite(num) && !isNaN(Number(strVal))) {
+                    product *= num;
+                    hasNumericFactor = true;
+                }
+            }
+
+            var currentQtyVal = instance.getDataAtCell(r, targetColIdx);
+            if (hasNumericFactor) {
+                var formatted = Math.round(product * 1000) / 1000;
+                // Format matches screenshots: whole numbers shown without trailing zeros ("400", "8000"), decimals with 2 places ("450.00", "13824.00")
+                var displayStr = (Math.floor(formatted) === formatted) ? String(formatted) : formatted.toFixed(2);
+
+                if (String(currentQtyVal) !== displayStr) {
+                    changes.push([r, targetColIdx, displayStr]);
+                }
+                grandTotal += formatted;
+            } else {
+                // If numbers were cleared in this row, clear Qty
+                if (currentQtyVal !== null && currentQtyVal !== undefined && $.trim(String(currentQtyVal)) !== '') {
+                    changes.push([r, targetColIdx, '']);
+                }
+            }
+        }
+
+        if (changes.length > 0) {
+            instance.setDataAtCell(changes, 'autoCalc');
+        }
+
+        grandTotal = Math.round(grandTotal * 1000) / 1000;
+        var displayGrand = (Math.floor(grandTotal) === grandTotal) ? String(grandTotal) : grandTotal.toFixed(2);
+        $('#lblMasterTotalQty').text(displayGrand);
+        $('#lblTotalColName').text(targetColName);
+        $('#lblActiveTargetColName').text(targetColName);
+
+        isRecalculating = false;
+    }
+
+    // ── 5. SYNC ROW 1 HEADERS INTO CHOOSE COLUMN(S) DROPDOWN (Panel 7) ──
+    function syncColumnsFromRow0(preferredTarget) {
+        if (!hotInstance) return;
+
+        var row0 = hotInstance.getDataAtRow(0) || [];
+        var targetToSelect = preferredTarget || activeTargetColumn || 'Qty';
+
+        var validHeaders = [];
+        var qtyDetected = null;
+
+        row0.forEach(function (val) {
+            var colTitle = $.trim(val || '');
+            if (colTitle && colTitle !== '' && validHeaders.indexOf(colTitle) === -1) {
+                validHeaders.push(colTitle);
+                if (colTitle.toLowerCase() === 'qty' || colTitle.toLowerCase() === 'quantity') {
+                    qtyDetected = colTitle;
+                }
+            }
+        });
+
+        // If no headers typed yet, provide default fallback list
+        if (validHeaders.length === 0) {
+            validHeaders = ["Description", "Nos1", "Nos2", "Length", "Breadth", "Qty"];
+            qtyDetected = "Qty";
+        }
+
+        // If user already typed or saved a custom column, ALWAYS keep it in validHeaders so it NEVER disappears!
+        if (targetToSelect && validHeaders.indexOf(targetToSelect) === -1) {
+            validHeaders.push(targetToSelect);
+        }
+
+        if (!targetToSelect || validHeaders.indexOf(targetToSelect) === -1) {
+            targetToSelect = qtyDetected ? qtyDetected : validHeaders[validHeaders.length - 1];
+        }
+
+        activeTargetColumn = targetToSelect;
+
+        var optionsHtml = '';
+        validHeaders.forEach(function (header) {
+            var isSel = (header.toLowerCase() === targetToSelect.toLowerCase());
+            optionsHtml += '<option value="' + header + '" ' + (isSel ? 'selected="selected"' : '') + '>' + header + '</option>';
+        });
+
+        $('#selColumns').html(optionsHtml);
+        initSelect2(targetToSelect);
+    }
+
+    // ── 6. ADD & EDIT TEMPLATE ACTIONS ──
+    function openAddTemplate() {
+        $('#editorTitle').text('Add Template');
+        $('#btnSaveText').text('Add');
+        $('#lblDefaultNotice').addClass('hidden');
+        $('#txtTemplateName').val('').prop('readonly', false);
+        $('#editTemplateId').val('');
+        $('#editTypeId').val('0');
+
+        activeTargetColumn = 'Qty';
+        $('#lblMasterTotalQty').text('0.00');
+
+        // Initialize empty spreadsheet with standard starting headers
+        hotData = [
+            ["Description", "Nos1", "Nos2", "Length", "Breadth", "Qty"],
+            ["", "", "", "", "", ""],
+            ["", "", "", "", "", ""],
+            ["", "", "", "", "", ""],
+            ["", "", "", "", "", ""],
+            ["", "", "", "", "", ""]
+        ];
+
+        $('#MainWrapper').slideUp(180, function () {
+            $('#HandsonWrapper').slideDown(180, function () {
+                if (hotInstance) {
+                    hotInstance.loadData(hotData);
+                    syncColumnsFromRow0('Qty');
+                    setTimeout(function () {
+                        hotInstance.render();
+                    }, 80);
+                }
+            });
+        });
+    }
+
+    function openEditTemplate(id) {
+        $.ajax({
+            url: '/MeasurementTemplateMaster/GetById?id=' + id,
+            type: 'GET',
+            dataType: 'json',
+            success: function (res) {
+                if (res && res.success && res.data) {
+                    var model = res.data;
+                    var isDefault = model.typeId > 0;
+
+                    $('#editorTitle').text(isDefault ? 'Edit Template' : 'Edit Template');
+                    $('#btnSaveText').text('Save');
+                    $('#lblDefaultNotice').toggleClass('hidden', !isDefault);
+
+                    $('#editTemplateId').val(model.templateId);
+                    $('#editTypeId').val(model.typeId);
+                    $('#txtTemplateName').val(model.templateName);
+
+                    // Determine saved column: check selectedColumns first, then cellName
+                    var savedCol = $.trim(model.selectedColumns || '');
+                    if (!savedCol || savedCol === '' || savedCol === 'Q') {
+                        savedCol = (model.cellName && model.cellName.length > 1) ? model.cellName : 'Qty';
+                    }
+                    activeTargetColumn = savedCol;
+                    $('#lblMasterTotalQty').text('0.00');
+
+                    // Extract Row 1 headers from DB or standard fallback
+                    var rawDesc = model.description;
+                    var loadedHeaders = null;
+                    if (rawDesc && $.trim(rawDesc) !== '') {
+                        try {
+                            var parsed = JSON.parse(rawDesc);
+                            if (Array.isArray(parsed) && parsed.length > 0 && Array.isArray(parsed[0])) {
+                                loadedHeaders = parsed[0];
+                            }
+                        } catch (e) { }
+                    }
+
+                    if (!loadedHeaders && isDefault && standardTemplatesData[model.typeId]) {
+                        loadedHeaders = standardTemplatesData[model.typeId].data[0];
+                    }
+
+                    if (!loadedHeaders || loadedHeaders.length === 0) {
+                        loadedHeaders = ["Description", "Nos1", "Nos2", "Length", "Breadth", (savedCol || "Qty")];
+                    }
+
+                    // Filter out trailing empty/null headers
+                    var validCols = loadedHeaders.length;
+                    for (var i = loadedHeaders.length - 1; i >= 0; i--) {
+                        if (loadedHeaders[i] !== null && loadedHeaders[i] !== undefined && $.trim(String(loadedHeaders[i])) !== '') {
+                            validCols = i + 1;
+                            break;
+                        }
+                    }
+                    var cleanHeaders = loadedHeaders.slice(0, validCols);
+                    if (cleanHeaders.length < 2) {
+                        cleanHeaders = ["Description", "Nos1", "Nos2", "Length", "Breadth", (savedCol || "Qty")];
+                    }
+                    if (savedCol && !cleanHeaders.some(function (h) { return $.trim(String(h)).toLowerCase() === savedCol.toLowerCase(); })) {
+                        cleanHeaders.push(savedCol);
+                    }
+
+                    // ALWAYS FRESH & CLEAN: Exact format from reference image with 100% empty data rows
+                    var cleanSheet = [cleanHeaders];
+                    for (var r = 0; r < 6; r++) {
+                        cleanSheet.push(new Array(cleanHeaders.length).fill(''));
+                    }
+                    hotData = cleanSheet;
+
+                    $('#MainWrapper').slideUp(180, function () {
+                        $('#HandsonWrapper').slideDown(180, function () {
+                            if (hotInstance) {
+                                hotInstance.loadData(hotData);
+                                syncColumnsFromRow0(activeTargetColumn);
+                                setTimeout(function () {
+                                    hotInstance.render();
+                                    recalculateMeasurementGrid(hotInstance);
+                                }, 80);
+                            }
+                        });
+                    });
+                } else {
+                    Swal.fire('Error', res.message || 'Unable to load template.', 'error');
+                }
+            },
+            error: function () {
+                Swal.fire('Error', 'Server connection error.', 'error');
+            }
+        });
+    }
+
+    function hideTemplateEditor() {
+        $('#HandsonWrapper').slideUp(180, function () {
+            $('#MainWrapper').slideDown(180, function () {
+                loadTemplatesGrid();
+            });
+        });
+    }
+
+    function addBlankSpreadsheetRow() {
+        if (!hotInstance) return;
+        var cols = hotInstance.countCols();
+        var emptyRow = new Array(cols).fill('');
+        var curData = hotInstance.getData();
+        curData.push(emptyRow);
+        hotInstance.loadData(curData);
+        setTimeout(function () { hotInstance.render(); }, 40);
+    }
+
+    function removeSpreadsheetRow() {
+        if (!hotInstance) return;
+        var rowCount = hotInstance.countRows();
+        if (rowCount <= 2) {
+            Swal.fire('Notice', 'At least one data row must be maintained below the header.', 'info');
+            return;
+        }
+        var selected = hotInstance.getSelected();
+        var rowToRemove = (selected && selected.length > 0 && selected[0][0] > 0) ? selected[0][0] : rowCount - 1;
+        hotInstance.alter('remove_row', rowToRemove, 1);
+        recalculateMeasurementGrid(hotInstance);
+    }
+
+    function addBlankSpreadsheetColumn() {
+        if (!hotInstance) return;
+        var curData = hotInstance.getData();
+        var currentCols = hotInstance.countCols();
+        var newColName = "Factor" + (currentCols);
+        if (curData.length > 0) {
+            var lastIdx = curData[0].length - 1;
+            curData[0].splice(lastIdx, 0, newColName);
+            for (var r = 1; r < curData.length; r++) {
+                curData[r].splice(lastIdx, 0, '');
+            }
+        }
+        hotInstance.loadData(curData);
+        syncColumnsFromRow0();
+        setTimeout(function () { hotInstance.render(); recalculateMeasurementGrid(hotInstance); }, 40);
+    }
+
+    function removeSpreadsheetColumn() {
+        if (!hotInstance) return;
+        var colCount = hotInstance.countCols();
+        if (colCount <= 2) {
+            Swal.fire('Notice', 'Minimum columns reached.', 'info');
+            return;
+        }
+        var selected = hotInstance.getSelected();
+        var colToRemove = (selected && selected.length > 0) ? selected[0][1] : colCount - 1;
+        var headers = hotInstance.getDataAtRow(0) || [];
+        var targetCol = activeTargetColumn || 'Qty';
+        if (headers[colToRemove] && headers[colToRemove].toLowerCase() === targetCol.toLowerCase() && colToRemove > 0) {
+            colToRemove--;
+        }
+        hotInstance.alter('remove_col', colToRemove, 1);
+        syncColumnsFromRow0();
+        recalculateMeasurementGrid(hotInstance);
+    }
+
+    function clearSpreadsheetData() {
+        if (!hotInstance) return;
+        var headers = hotInstance.getDataAtRow(0);
+        var blankSheet = [headers];
+        for (var i = 0; i < 6; i++) {
+            blankSheet.push(new Array(headers.length).fill(''));
+        }
+        hotInstance.loadData(blankSheet);
+        recalculateMeasurementGrid(hotInstance);
+    }
+
+    // ── 7. SAVE TEMPLATE ACTION (Always Fresh Save) ──
+    function saveTemplate() {
+        var templateName = $.trim($('#txtTemplateName').val());
+        if (!templateName) {
+            Swal.fire('Validation', 'Please enter a Template Name.', 'warning');
+            $('#txtTemplateName').focus();
+            return;
+        }
+
+        var chosen = $('#selColumns').val();
+        var targetCol = (Array.isArray(chosen) && chosen.length > 0) ? chosen[0] : (typeof chosen === 'string' && $.trim(chosen) !== '' ? $.trim(chosen) : (activeTargetColumn || 'Qty'));
+
+        // Extract Row 1 headers only
+        var rawData = hotInstance.getData();
+        var headers = (rawData && rawData.length > 0) ? rawData[0] : ["Description", "Nos1", "Nos2", "Length", "Breadth", "Qty"];
+        
+        var validCols = headers.length;
+        for (var i = headers.length - 1; i >= 0; i--) {
+            if (headers[i] !== null && headers[i] !== undefined && $.trim(String(headers[i])) !== '') {
+                validCols = i + 1;
+                break;
+            }
+        }
+        var cleanHeaders = headers.slice(0, validCols);
+        if (cleanHeaders.length < 2) {
+            cleanHeaders = ["Description", "Nos1", "Nos2", "Length", "Breadth", targetCol];
+        }
+
+        // If user typed a custom column name in Choose Column, ensure it is in the saved headers!
+        var exists = cleanHeaders.some(function (h) { return $.trim(String(h)).toLowerCase() === targetCol.toLowerCase(); });
+        if (!exists && targetCol) {
+            cleanHeaders.push(targetCol);
+        }
+
+        // ALWAYS FRESH SAVE: Save template definition with headers and empty data rows
+        var freshTemplateData = [cleanHeaders];
+        for (var r = 0; r < 5; r++) {
+            freshTemplateData.push(new Array(cleanHeaders.length).fill(''));
+        }
+        var jsonDesc = JSON.stringify(freshTemplateData);
+
+        var templateId = parseInt($('#editTemplateId').val()) || 0;
+        var typeId = parseInt($('#editTypeId').val()) || 0;
+
+        var req = {
+            TemplateId: templateId,
+            TemplateName: templateName,
+            Description: jsonDesc,
+            CellName: targetCol,
+            SelectedColumns: targetCol,
+            TypeId: typeId,
+            Remarks: ''
+        };
+
+        Swal.fire({
+            title: 'Saving Template...',
+            allowOutsideClick: false,
+            didOpen: function () { Swal.showLoading(); }
+        });
+
+        $.ajax({
+            url: '/MeasurementTemplateMaster/Save',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(req),
+            success: function (res) {
+                if (res && res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Saved!',
+                        text: res.message || 'Template saved successfully.',
+                        timer: 1400,
+                        showConfirmButton: false
+                    }).then(function () {
+                        hideTemplateEditor();
+                    });
+                } else {
+                    Swal.fire('Save Failed', res.message || 'Could not save template.', 'error');
+                }
+            },
+            error: function () {
+                Swal.fire('Error', 'Server error while saving.', 'error');
+            }
+        });
+    }
+
+    function filterEmptyTrailingRows(arr) {
+        if (!arr || arr.length === 0) return [[]];
+        var reversed = arr.slice().reverse();
+        var foundData = false;
+        var filtered = [];
+
+        reversed.forEach(function (row) {
+            if (foundData) {
+                filtered.push(row);
+                return;
+            }
+            var hasVal = row.some(function (v) { return v !== null && v !== undefined && $.trim(String(v)) !== ''; });
+            if (hasVal) {
+                foundData = true;
+                filtered.push(row);
+            }
+        });
+
+        return filtered.length > 0 ? filtered.reverse() : [arr[0] || []];
+    }
+</script>
