@@ -125,8 +125,13 @@ namespace VGN_CRM_CORE
                 endpoints.MapHub<VGN_CRM_CORE.Hubs.ChatHub>("/chatHub");
 
                 endpoints.MapControllerRoute(
+                    name:    "root",
+                    pattern: "",
+                    defaults: new { controller = "Account", action = "Login" });
+
+                endpoints.MapControllerRoute(
                     name:    "default",
-                    pattern: "{controller=Account}/{action=Login}/{id?}");
+                    pattern: "{controller=Account}/{action=Index}/{id?}");
             });
         }
     }

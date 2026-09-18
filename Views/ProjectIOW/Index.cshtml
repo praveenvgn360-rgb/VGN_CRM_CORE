@@ -31,7 +31,15 @@
             </div>
 
             <!-- Top Action Buttons: Refresh & + New IOW Button -->
-            <div class="flex items-center gap-2.5 w-full md:w-auto justify-end">
+            <div class="flex items-center gap-2.5 w-full md:w-auto justify-end flex-wrap">
+                <a href="@Url.Action("Index", "OtherCostAllocation")" class="px-3.5 py-2 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-600 bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer flex items-center gap-1.5 shadow-2xs" title="Manage Overhead Allocations">
+                    <i class="fas fa-hand-holding-usd text-teal-600"></i>
+                    <span>Cost Allocations</span>
+                </a>
+                <a href="@Url.Action("Index", "OtherCostBreakup")" class="px-3.5 py-2 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-600 bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer flex items-center gap-1.5 shadow-2xs" title="Manage Itemized Breakups">
+                    <i class="fas fa-layer-group text-teal-600"></i>
+                    <span>Cost Breakup</span>
+                </a>
                 <button type="button" onclick="loadBOQGrid()" class="btn-clear !text-xs !py-2 !px-3.5 cursor-pointer" title="Refresh List">
                     <i class="fas fa-sync-alt mr-1.5 text-slate-500"></i> Refresh
                 </button>
@@ -100,8 +108,12 @@
                 </span>
             </div>
 
-            <!-- Top Right Action Buttons: Manage Master -->
+            <!-- Top Right Action Buttons: Compact View Toggle & Manage Master -->
             <div class="flex items-center gap-2 flex-wrap">
+                <button type="button" id="btnToggleHeaderCollapse" onclick="toggleFormHeaderCollapse()" class="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition cursor-pointer flex items-center gap-1.5 shadow-2xs" title="Toggle compact header for more grid space">
+                    <i class="fas fa-compress-alt text-xs" id="iconToggleHeaderCollapse"></i>
+                    <span id="lblToggleHeaderCollapse">Compact View</span>
+                </button>
                 <button type="button" onclick="openMasterSelectionModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#6366f1] hover:bg-[#4f46e5] text-white transition cursor-pointer shadow-xs inline-flex items-center gap-1.5" title="Manage Masters (WBS, Resource, WorkGroup)">
                     <i class="fas fa-database text-[11px]"></i>
                     <span>Manage Master</span>
@@ -109,73 +121,127 @@
             </div>
         </div>
 
-        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xs p-3.5 sm:p-4 space-y-3">
+        <!-- Full Form Inputs Panel (Collapsible for maximum workspace) -->
+        <div id="formHeaderFullPanel" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xs p-3.5 sm:p-4 space-y-3 transition-all">
+            <!-- Form Inputs Strip: Reference Date, Ref No, Project Name (Dropdown), Type, Revision -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <!-- Reference Date: Locked to current date only (no calendar picker, no past/future dates) -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                        Reference Date <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input type="text" id="txtReferenceDate" readonly value="@ViewBag.CurrentDate" class="w-full text-xs font-bold px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 cursor-not-allowed select-none focus:outline-none" title="Reference Date is locked to today's date" />
+                        <i class="fas fa-lock absolute right-3 top-3 text-slate-400 text-xs pointer-events-none"></i>
+                    </div>
+                </div>
 
-        <!-- Form Inputs Strip: Reference Date, Ref No, Project Name (Dropdown), Type, Revision -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-            <!-- Reference Date: Date Picker (read-only, no manual keyboard typing allowed) -->
-            <div>
-                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                    Reference Date <span class="text-rose-500">*</span>
-                </label>
-                <div class="relative">
-                    <input type="text" id="txtReferenceDate" readonly value="@ViewBag.CurrentDate" class="w-full text-xs font-semibold px-3 py-1.5 rounded-lg bg-[#f8fafc] dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 cursor-pointer focus:ring-1 focus:ring-sky-500 focus:outline-none" placeholder="Select Date" />
-                    <i class="fas fa-calendar-alt absolute right-3 top-2.5 text-slate-400 text-xs pointer-events-none"></i>
+                <!-- Reference No: auto-increment ID starting from 1 -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Reference No</label>
+                    <input type="text" id="txtReferenceNo" value="1" readonly class="w-full text-xs font-bold px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-600 text-sky-700 dark:text-sky-400 cursor-not-allowed select-none focus:outline-none" placeholder="1" />
+                </div>
+
+                <!-- Project Name: Searchable + Selectable Dropdown -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
+                        Project Name <span class="text-rose-500">*</span>
+                    </label>
+                    <select id="ddlProject" class="w-full text-xs font-bold px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer">
+                        <option value="">-- Select Project --</option>
+                    </select>
+                    <input type="hidden" id="txtProjectName" value="" />
+                </div>
+
+                <!-- Type: Default value must always be "Plan" -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Type</label>
+                    <select id="ddlType" class="w-full text-xs font-semibold px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 focus:ring-1 focus:ring-sky-500 focus:outline-none cursor-pointer">
+                        <option value="Plan" selected>Plan</option>
+                        <option value="Budget">Budget</option>
+                    </select>
+                </div>
+
+                <!-- Revision: default value = "No", user can switch to Yes/No -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Revision</label>
+                    <select id="ddlRevision" class="w-full text-xs font-medium px-3 py-1.5 rounded-lg bg-[#f8fafc] dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 focus:ring-1 focus:ring-sky-500 focus:outline-none cursor-pointer">
+                        <option value="No" selected>No</option>
+                        <option value="Yes">Yes</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sleek Compact Header Summary Bar (Visible when header is collapsed) -->
+        <div id="formHeaderCompactBar" style="display: none;" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 shadow-2xs flex items-center justify-between flex-wrap gap-2 text-xs">
+            <div class="flex items-center gap-4 flex-wrap">
+                <div class="flex items-center gap-1.5">
+                    <span class="font-bold text-slate-400 uppercase text-[10px]">Project:</span>
+                    <span class="font-bold text-sky-700 dark:text-sky-300" id="summaryProjectName">—</span>
+                </div>
+                <div class="h-3.5 w-[1px] bg-slate-300 dark:bg-slate-600"></div>
+                <div class="flex items-center gap-1.5">
+                    <span class="font-bold text-slate-400 uppercase text-[10px]">Ref No:</span>
+                    <span class="font-mono font-bold text-slate-800 dark:text-slate-100" id="summaryRefNo">1</span>
+                </div>
+                <div class="h-3.5 w-[1px] bg-slate-300 dark:bg-slate-600"></div>
+                <div class="flex items-center gap-1.5">
+                    <span class="font-bold text-slate-400 uppercase text-[10px]">Date:</span>
+                    <span class="font-medium text-slate-700 dark:text-slate-300" id="summaryRefDate">—</span>
+                </div>
+                <div class="h-3.5 w-[1px] bg-slate-300 dark:bg-slate-600"></div>
+                <div class="flex items-center gap-1.5">
+                    <span class="font-bold text-slate-400 uppercase text-[10px]">Type:</span>
+                    <span class="px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold text-[10px]" id="summaryType">Plan</span>
+                </div>
+                <div class="h-3.5 w-[1px] bg-slate-300 dark:bg-slate-600"></div>
+                <div class="flex items-center gap-1.5">
+                    <span class="font-bold text-slate-400 uppercase text-[10px]">Revision:</span>
+                    <span class="font-medium text-slate-700 dark:text-slate-300" id="summaryRevision">No</span>
+                </div>
+            </div>
+            <button type="button" onclick="toggleFormHeaderCollapse()" class="text-sky-600 dark:text-sky-400 hover:underline font-bold text-xs flex items-center gap-1 cursor-pointer">
+                <i class="fas fa-expand-alt text-[11px]"></i>
+                <span>Expand Header</span>
+            </button>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════════
+             STEP 2 — MAIN DATA GRID CARD & WORKSPACE (Spacious, Clean, Collapsible)
+             ═══════════════════════════════════════════════════════════════════════ -->
+        <div class="space-y-0">
+            <!-- Grid Action Toolbar: WorkGroup Picker, Expand/Collapse All WorkGroups & Drawers -->
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xs p-2.5 mb-2 flex items-center justify-between flex-wrap gap-2.5">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button type="button" onclick="openWorkgroupPickListModal()" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-600 hover:bg-cyan-700 text-white shadow-2xs transition cursor-pointer flex items-center gap-1.5">
+                        <i class="fas fa-folder-open text-xs"></i>
+                        <span>Choose WorkGroup</span>
+                    </button>
+                    <button type="button" onclick="toggleExpandAllGridWorkgroups()" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 text-slate-700 dark:text-slate-200 transition cursor-pointer flex items-center gap-1.5 shadow-2xs">
+                        <i class="fas fa-layer-group text-xs text-sky-600"></i>
+                        <span id="lblToggleAllWg">Collapse All WorkGroups</span>
+                    </button>
+                    <button type="button" onclick="toggleExpandAllDrawers()" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 hover:bg-slate-100 text-slate-700 dark:text-slate-200 transition cursor-pointer flex items-center gap-1.5 shadow-2xs">
+                        <i class="fas fa-sliders-h text-xs text-purple-600"></i>
+                        <span id="lblToggleAllDrawers">Expand All Details</span>
+                    </button>
+                </div>
+                <div class="flex items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    <span class="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 font-bold text-slate-700 dark:text-slate-200" id="badgeGridItemCount">0 Items</span>
                 </div>
             </div>
 
-            <!-- Reference No: auto-generated ID, not editable -->
-            <div>
-                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Reference No</label>
-                <input type="text" id="txtReferenceNo" value="51070" readonly class="w-full text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 cursor-not-allowed select-none focus:outline-none" placeholder="51070" />
-            </div>
-
-            <!-- Project Name: comes from dropdown (User specified) -->
-            <div>
-                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                    Project Name <span class="text-rose-500">*</span>
-                </label>
-                <select id="ddlProject" onchange="onProjectChange(this.value)" class="w-full text-xs font-bold px-3 py-1.5 rounded-lg bg-[#f8fafc] dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 focus:ring-1 focus:ring-sky-500 focus:outline-none cursor-pointer">
-                    <option value="">-- Select Project --</option>
-                </select>
-                <input type="hidden" id="txtProjectName" value="" />
-            </div>
-
-            <!-- Type: Budget / Plan (restricted per user request) -->
-            <div>
-                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Type</label>
-                <select id="ddlType" class="w-full text-xs font-medium px-3 py-1.5 rounded-lg bg-[#f8fafc] dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 focus:ring-1 focus:ring-sky-500 focus:outline-none cursor-pointer">
-                    <option value="Budget" selected>Budget</option>
-                    <option value="Plan">Plan</option>
-                </select>
-            </div>
-
-            <!-- Revision: default value = "No", user can switch to Yes/No -->
-            <div>
-                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Revision</label>
-                <select id="ddlRevision" class="w-full text-xs font-medium px-3 py-1.5 rounded-lg bg-[#f8fafc] dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 focus:ring-1 focus:ring-sky-500 focus:outline-none cursor-pointer">
-                    <option value="No" selected>No</option>
-                    <option value="Yes">Yes</option>
-                </select>
-            </div>
-        </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════════════════════════════════
-         STEP 2 — DX GRID CARD, GREEN RIBBON & ACTION BAR (img-1, img-2)
-         Exact Match: No unwanted buttons, Exact Column Widths, Smooth Scroll
-         ═══════════════════════════════════════════════════════════════════════ -->
-    <div class="space-y-0">
-        <!-- Native HTML Table Container with Exact Column Widths, Sticky Header & Smooth Scrolling -->
-        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xs overflow-hidden p-2.5 relative">
-            <div class="overflow-x-auto overflow-y-auto custom-scrollbar rounded border border-[#bce1f4] dark:border-slate-700" style="max-height: calc(100vh - 290px);">
-                <table id="tblProjectIOW" class="w-full border-collapse text-xs table-fixed">
-                    <thead class="sticky top-0 z-20 bg-[#ebf5fa] dark:bg-slate-800 text-[#004085] dark:text-sky-200 font-bold border-b-2 border-[#bce1f4] dark:border-slate-700 shadow-xs">
+            <!-- Native HTML Table Container with Exact Column Widths, Sticky Header & Smooth Scrolling -->
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xs overflow-hidden p-2.5 relative">
+                <div class="overflow-x-auto overflow-y-auto custom-scrollbar rounded border border-[#bce1f4] dark:border-slate-700" id="gridTableScrollContainer" style="max-height: calc(100vh - 310px);">
+                    <table id="tblProjectIOW" class="w-full border-collapse text-xs table-fixed">
+                        <thead class="sticky top-0 z-20 bg-[#ebf5fa] dark:bg-slate-800 text-[#004085] dark:text-sky-200 font-bold border-b-2 border-[#bce1f4] dark:border-slate-700 shadow-xs">
                         <tr>
                             <th class="w-[40px] px-1 py-2 text-center">#</th>
                             <th class="w-[105px] px-2 py-2 text-left">RefNo</th>
                             <th class="min-w-[480px] px-2 py-2 text-left">Specification</th>
-                            <th class="w-[85px] px-2 py-2 text-left">Unit</th>
+                            <th class="w-[105px] min-w-[95px] px-2 py-2 text-left">Unit</th>
                             <th class="w-[130px] px-2 py-2 text-right">Qty</th>
                             <th class="w-[140px] px-2 py-2 text-right">Rate</th>
                             <th class="w-[140px] px-2 py-2 text-right">Amount</th>
@@ -838,84 +904,134 @@
      MODAL 7: REAL-TIME MEASUREMENT SHEET AUTO-CALCULATOR MODAL
      Connected to Measurement Template Master (dbo.Proj_MeasurementTemplate)
      ═══════════════════════════════════════════════════════════════════════ -->
-<div id="modalBOQMeasurementOverlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[1070] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto" style="display: none;">
-    <div class="relative w-full max-w-5xl bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[92vh] my-auto overflow-hidden z-[1075]">
+<div id="modalBOQMeasurementOverlay" class="fixed inset-0 bg-slate-900/70 backdrop-blur-xs z-[1070] hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto" style="display: none;">
+    <div id="modalBOQMeasurementContainer" class="relative w-[96vw] max-w-7xl bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col h-[90vh] my-auto overflow-hidden z-[1075] transition-all duration-200">
         
-        <!-- Header Bar Matching MeasurementTemplateMaster Edit View -->
-        <div class="px-5 py-3.5 border-b border-sky-100 dark:border-slate-700 flex items-center justify-between bg-[#f0f9ff] dark:bg-slate-800/80 flex-shrink-0">
+        <!-- Header Bar Matching MeasurementTemplateMaster Edit View with Re-edit badge and Fullscreen toggle -->
+        <div class="px-5 py-3 border-b border-sky-100 dark:border-slate-700 flex items-center justify-between bg-[#f0f9ff] dark:bg-slate-800/80 flex-shrink-0">
             <div class="flex items-center gap-2.5">
-                <button type="button" onclick="closeBoqMeasurementModal()" class="w-8 h-8 rounded-md bg-white hover:bg-slate-100 border border-slate-300 text-slate-600 flex items-center justify-center transition cursor-pointer" title="Close">
+                <button type="button" onclick="closeBoqMeasurementModal()" class="w-8 h-8 rounded-md bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 flex items-center justify-center transition cursor-pointer" title="Close">
                     <i class="fas fa-arrow-left text-xs"></i>
                 </button>
                 <div>
-                    <h2 class="text-base font-bold text-[#0284c7] tracking-tight">Measurement Sheet</h2>
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-base font-bold text-[#0284c7] tracking-tight">Measurement Sheet</h2>
+                        <span id="badgeBoqEditingExistingSheet" class="hidden px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 border border-amber-300 dark:border-amber-700 flex items-center gap-1">
+                            <i class="fas fa-edit text-[9px]"></i> Re-editing Sheet
+                        </span>
+                    </div>
                     <p class="text-[11px] text-slate-500 dark:text-slate-400" id="lblBoqMeasurementTargetInfo">Enter dimensions below — total quantity calculates automatically.</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-2">
-                <button type="button" onclick="closeBoqMeasurementModal()" class="px-3.5 py-1.5 rounded-md text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition cursor-pointer">
+                <!-- Maximize / Restore Fullscreen Toggle -->
+                <button type="button" id="btnToggleBoqMeasurementFullscreen" onclick="toggleBoqMeasurementFullscreen()" class="px-2.5 py-1.5 rounded-md text-xs font-semibold bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 transition flex items-center gap-1.5 cursor-pointer" title="Toggle Fullscreen Width & Height">
+                    <i class="fas fa-expand text-xs" id="iconBoqMeasurementFullscreen"></i>
+                    <span id="lblBoqMeasurementFullscreen">Fullscreen</span>
+                </button>
+
+                <!-- Detach / Unlock Button (for re-editing or direct manual entry) -->
+                <button type="button" id="btnDetachBoqMeasurement" onclick="detachBoqMeasurementSheet()" class="hidden px-3 py-1.5 rounded-md text-xs font-semibold bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-300 transition flex items-center gap-1 cursor-pointer" title="Remove sheet calculations and allow typing manually">
+                    <i class="fas fa-unlock text-[10px]"></i>
+                    <span>Detach & Type Manually</span>
+                </button>
+
+                <button type="button" onclick="closeBoqMeasurementModal()" class="px-3.5 py-1.5 rounded-md text-xs font-semibold bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 transition cursor-pointer">
                     Cancel
                 </button>
                 <button type="button" onclick="applyBoqMeasurementQty()" class="px-4 py-1.5 rounded-md text-xs font-bold text-white bg-[#0284c7] hover:bg-[#0369a1] shadow-xs transition flex items-center gap-1.5 cursor-pointer">
                     <i class="fas fa-check text-[11px]"></i>
-                    <span>Save</span>
+                    <span>Save & Apply</span>
                 </button>
             </div>
         </div>
 
-        <!-- Inputs Bar Matching MeasurementTemplateMaster (Panel 7) -->
-        <div class="p-4 bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1 w-full">
-                <!-- Template Selection -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                        Template
-                    </label>
-                    <select id="ddlBoqMeasurementTemplate" onchange="onBoqMeasurementTemplateChange(this.value)" class="w-full h-9 px-3 text-xs font-bold rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-[#0284c7] focus:ring-1 focus:ring-sky-500 outline-none cursor-pointer">
-                    </select>
+        <!-- Collapsible Settings / Inputs Bar (Expands or collapses to maximize grid space) -->
+        <div id="boqMeasurementSettingsContainer" class="border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex-shrink-0 transition-all duration-200">
+            <!-- Toggle header for Settings -->
+            <div class="px-5 py-1.5 bg-slate-50 dark:bg-slate-800/90 flex items-center justify-between border-b border-slate-100 dark:border-slate-700">
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300">
+                    <i class="fas fa-sliders-h text-sky-600"></i>
+                    <span>Template & Column Configuration</span>
+                    <span id="lblBoqCompactSettingsSummary" class="text-[11px] font-normal text-slate-500 dark:text-slate-400 ml-2 hidden"></span>
                 </div>
-
-                <!-- Choose Column(s) Dropdown -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                        Choose Column(s)
-                    </label>
-                    <select id="selBoqMeasurementColumns" onchange="onBoqMeasurementColumnChange(this.value)" class="w-full h-9 px-3 text-xs font-bold rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-[#0284c7] focus:ring-1 focus:ring-sky-500 outline-none cursor-pointer">
-                    </select>
-                </div>
+                <button type="button" id="btnToggleBoqMeasurementConfig" onclick="toggleBoqMeasurementConfig()" class="text-xs text-sky-600 dark:text-sky-400 hover:text-sky-700 font-semibold flex items-center gap-1 cursor-pointer">
+                    <span id="lblToggleBoqMeasurementConfig">Hide Settings</span>
+                    <i class="fas fa-chevron-up text-[10px]" id="iconToggleBoqMeasurementConfig"></i>
+                </button>
             </div>
 
-            <!-- Default Notice -->
-            <div class="text-right pb-0.5">
-                <span id="lblBoqDefaultNotice" class="text-xs font-bold text-[#0284c7] hidden whitespace-nowrap">
-                    (Default Measurement Sheet)
-                </span>
+            <!-- Full Settings Body -->
+            <div id="boqMeasurementConfigPanel" class="p-3.5 bg-white dark:bg-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1 w-full">
+                    <!-- Template Selection -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
+                            Template
+                        </label>
+                        <select id="ddlBoqMeasurementTemplate" onchange="onBoqMeasurementTemplateChange(this.value)" class="w-full h-8 px-3 text-xs font-bold rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-[#0284c7] focus:ring-1 focus:ring-sky-500 outline-none cursor-pointer">
+                        </select>
+                    </div>
+
+                    <!-- Choose Column(s) Dropdown -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
+                            Target Calculated Column
+                        </label>
+                        <select id="selBoqMeasurementColumns" onchange="onBoqMeasurementColumnChange(this.value)" class="w-full h-8 px-3 text-xs font-bold rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-[#0284c7] focus:ring-1 focus:ring-sky-500 outline-none cursor-pointer">
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Default Notice -->
+                <div class="text-right pb-0.5">
+                    <span id="lblBoqDefaultNotice" class="text-xs font-bold text-[#0284c7] hidden whitespace-nowrap">
+                        (Default Measurement Sheet)
+                    </span>
+                </div>
             </div>
         </div>
 
-        <!-- Spreadsheet Grid Container -->
-        <div class="p-4 flex-1 bg-slate-50/40 dark:bg-slate-900/50 overflow-hidden">
-            <div id="boqMeasurementSpreadsheetWrapper">
-                <div id="boqMeasurementSpreadsheet"></div>
+        <!-- Spreadsheet Action Toolbar for Easy Typing -->
+        <div class="px-5 py-2 bg-slate-100/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-2 flex-wrap flex-shrink-0">
+            <div class="flex items-center gap-1.5">
+                <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400 mr-1"><i class="fas fa-plus-circle text-sky-600 mr-1"></i>Add Rows:</span>
+                <button type="button" onclick="boqAddSpreadsheetRows(5)" class="px-2.5 py-1 rounded bg-white dark:bg-slate-700 hover:bg-sky-50 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs transition cursor-pointer" title="Add 5 blank rows to sheet">+ 5 Rows</button>
+                <button type="button" onclick="boqAddSpreadsheetRows(10)" class="px-2.5 py-1 rounded bg-white dark:bg-slate-700 hover:bg-sky-50 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-2xs transition cursor-pointer" title="Add 10 blank rows to sheet">+ 10 Rows</button>
+                <button type="button" onclick="boqClearEmptySpreadsheetRows()" class="px-2.5 py-1 rounded bg-white dark:bg-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 text-xs font-semibold shadow-2xs transition cursor-pointer ml-1" title="Clean up trailing empty rows"><i class="fas fa-broom mr-1 text-slate-400"></i>Remove Empty</button>
+            </div>
+            <div class="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+                <span class="hidden sm:inline"><kbd class="px-1 py-0.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded text-[10px] font-mono">Tab</kbd> Next Col</span>
+                <span class="hidden sm:inline"><kbd class="px-1 py-0.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded text-[10px] font-mono">Enter</kbd> Next Row (auto-creates)</span>
+                <span><kbd class="px-1 py-0.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded text-[10px] font-mono">Ctrl+V</kbd> Paste from Excel</span>
+            </div>
+        </div>
+
+        <!-- Spreadsheet Grid Container (Flex-1 expands to fill entire height) -->
+        <div class="p-3 flex-1 bg-slate-50/40 dark:bg-slate-900/50 overflow-hidden flex flex-col min-h-0">
+            <div id="boqMeasurementSpreadsheetWrapper" class="w-full flex-1 min-h-[300px] border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-900 overflow-hidden">
+                <div id="boqMeasurementSpreadsheet" class="w-full h-full"></div>
             </div>
         </div>
 
         <!-- Bottom info bar matching MeasurementTemplateMaster (always visible) -->
-        <div class="px-5 py-3 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs text-slate-600 dark:text-slate-300 flex-shrink-0">
+        <div class="px-5 py-2.5 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs text-slate-600 dark:text-slate-300 flex-shrink-0">
             <div class="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
                 <i class="fas fa-info-circle text-[#0284c7]"></i>
                 <span>Row 1 defines Column Headers. Numbers entered in any row auto-calculate into <strong id="lblBoqActiveTargetColName" class="text-[#0284c7]">Qty</strong> while typing.</span>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-                <div class="px-3.5 py-1.5 rounded-md bg-sky-50 dark:bg-slate-700 border border-sky-200 dark:border-slate-600 text-xs font-bold text-sky-800 dark:text-sky-300 flex items-center gap-1.5">
+                <div class="px-3.5 py-1.5 rounded-md bg-sky-50 dark:bg-slate-700 border border-sky-200 dark:border-slate-600 text-xs font-bold text-sky-800 dark:text-sky-300 flex items-center gap-2">
                     <span>Total <span id="lblBoqTotalColName">Qty</span>:</span>
-                    <span id="lblBoqMeasurementGrandTotal" class="font-mono text-base font-bold text-[#0284c7] dark:text-sky-400">0.00</span>
+                    <span id="lblBoqMeasurementGrandTotal" class="font-mono text-lg font-black text-[#0284c7] dark:text-sky-400">0.00</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<!-- Floating Autocomplete Menu Container (Requirement 7) -->
+<div id="specAutocompleteDropdown" class="autocomplete-floating-menu hidden" style="display: none; position: absolute; z-index: 999999; max-height: 280px; width: 450px;"></div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
      CUSTOM STYLES: EXACT MATCH WITH MEASUREMENT TEMPLATE MASTER
@@ -923,11 +1039,16 @@
 <style>
     #boqMeasurementSpreadsheetWrapper {
         width: 100%;
-        height: 380px;
+        height: 100%;
+        min-height: 320px;
         border: 1px solid #cbd5e1;
         border-radius: 6px;
         background: #fff;
         overflow: hidden;
+    }
+    [data-theme="dark"] #boqMeasurementSpreadsheetWrapper {
+        border-color: #475569;
+        background: #0f172a;
     }
     .handsontable th {
         background-color: #f1f5f9 !important;
@@ -1152,6 +1273,202 @@
         background-color: rgba(30, 41, 59, 0.8) !important;
     }
 
+    /* Requirement 5: Work Group Checkboxes with Visible Borders */
+    .wg-checkbox {
+        border: 2px solid #475569 !important;
+        border-radius: 4px !important;
+        width: 16px !important;
+        height: 16px !important;
+        cursor: pointer !important;
+        accent-color: #0284c7 !important;
+    }
+    [data-theme="dark"] .wg-checkbox {
+        border: 2px solid #94a3b8 !important;
+        background-color: #1e293b !important;
+    }
+
+    /* Requirement 8: Input Field Height 36-40px & Expandability */
+    #txtReferenceDate,
+    #txtReferenceNo,
+    #ddlProject,
+    #ddlType,
+    #ddlRevision,
+    .grid-cell-box,
+    .select2-container--default .select2-selection--single {
+        min-height: 38px !important;
+        height: 38px !important;
+    }
+    .grid-cell-box input,
+    .grid-cell-box select {
+        height: 100% !important;
+        font-size: 12.5px !important;
+    }
+
+    /* Expandable text input on focus */
+    .expandable-field {
+        transition: min-width 0.2s ease, width 0.2s ease, box-shadow 0.2s ease;
+    }
+    .expandable-field:focus {
+        min-width: 260px !important;
+        position: relative;
+        z-index: 10;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
+    }
+
+    /* Select2 custom styling for Project Dropdown */
+    .select2-container--default .select2-selection--single {
+        border: 1.5px solid #334155 !important;
+        border-radius: 8px !important;
+        background-color: #ffffff !important;
+        display: flex !important;
+        align-items: center !important;
+        padding: 0 10px !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #0f172a !important;
+        font-weight: 700 !important;
+        font-size: 12.5px !important;
+        line-height: normal !important;
+        padding-left: 0 !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px !important;
+        right: 8px !important;
+    }
+    [data-theme="dark"] .select2-container--default .select2-selection--single {
+        background-color: #0f172a !important;
+        border: 1.5px solid #64748b !important;
+    }
+    [data-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #f8fafc !important;
+    }
+    [data-theme="dark"] .select2-dropdown {
+        background-color: #1e293b !important;
+        border: 1.5px solid #64748b !important;
+        color: #f8fafc !important;
+    }
+    [data-theme="dark"] .select2-results__option {
+        color: #f8fafc !important;
+    }
+    [data-theme="dark"] .select2-results__option--highlighted[aria-selected] {
+        background-color: #0284c7 !important;
+        color: #ffffff !important;
+    }
+    [data-theme="dark"] .select2-search__field {
+        background-color: #0f172a !important;
+        color: #f8fafc !important;
+        border: 1px solid #64748b !important;
+    }
+
+    /* Unit column Select2 styling */
+    .select2-unit-box .select2-container--default .select2-selection--single {
+        height: 26px !important;
+        min-height: 26px !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 4px !important;
+        background-color: transparent !important;
+        padding: 0 4px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    .select2-unit-box .select2-container--default .select2-selection--single .select2-selection__rendered {
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        line-height: 24px !important;
+        padding-left: 2px !important;
+        padding-right: 14px !important;
+        color: #1e293b !important;
+    }
+    .select2-unit-box .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 24px !important;
+        right: 2px !important;
+        width: 14px !important;
+    }
+    [data-theme="dark"] .select2-unit-box .select2-container--default .select2-selection--single {
+        background-color: transparent !important;
+        border-color: #475569 !important;
+    }
+    [data-theme="dark"] .select2-unit-box .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #f1f5f9 !important;
+    }
+
+    /* Requirement 9: Distinct Colors for WBS (Soft Sky) vs Resource (Soft Indigo) */
+    .section-wbs-container {
+        background-color: #f0f9ff !important; /* Soft Sky */
+        border: 2px solid #7dd3fc !important;
+    }
+    [data-theme="dark"] .section-wbs-container {
+        background-color: #0c2033 !important;
+        border: 2px solid #0369a1 !important;
+    }
+    .section-wbs-header {
+        background: linear-gradient(135deg, #e0f2fe, #bae6fd) !important;
+        border-bottom: 1px solid #7dd3fc !important;
+        color: #0369a1 !important;
+    }
+    [data-theme="dark"] .section-wbs-header {
+        background: linear-gradient(135deg, #082f49, #0c4a6e) !important;
+        border-bottom: 1px solid #0369a1 !important;
+        color: #bae6fd !important;
+    }
+
+    .section-resource-container {
+        background-color: #f5f3ff !important; /* Soft Indigo */
+        border: 2px solid #c4b5fd !important;
+    }
+    [data-theme="dark"] .section-resource-container {
+        background-color: #1e1b4b !important;
+        border: 2px solid #4338ca !important;
+    }
+    .section-resource-header {
+        background: linear-gradient(135deg, #ede9fe, #ddd6fe) !important;
+        border-bottom: 1px solid #c4b5fd !important;
+        color: #4338ca !important;
+    }
+    [data-theme="dark"] .section-resource-header {
+        background: linear-gradient(135deg, #1e1b4b, #312e81) !important;
+        border-bottom: 1px solid #4338ca !important;
+        color: #ddd6fe !important;
+    }
+
+    /* Autocomplete dropdown styling */
+    .autocomplete-floating-menu {
+        position: absolute;
+        z-index: 1000;
+        background: #ffffff;
+        border: 1.5px solid #0284c7;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+        max-height: 240px;
+        overflow-y: auto;
+        min-width: 320px;
+    }
+    [data-theme="dark"] .autocomplete-floating-menu {
+        background: #1e293b;
+        border-color: #38bdf8;
+        color: #f8fafc;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+    .autocomplete-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 12px;
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.12s;
+    }
+    [data-theme="dark"] .autocomplete-item {
+        border-bottom: 1px solid #334155;
+    }
+    .autocomplete-item:hover, .autocomplete-item.active {
+        background-color: #e0f2fe;
+        color: #0369a1;
+        font-weight: 600;
+    }
+    [data-theme="dark"] .autocomplete-item:hover, [data-theme="dark"] .autocomplete-item.active {
+        background-color: #0c4a6e;
+        color: #bae6fd;
+    }
+
     /* Native Table Styling matching ERP Image 1, 2, 5, 8 & Theme */
     #tblProjectIOW th {
         font-size: 11.5px;
@@ -1290,29 +1607,87 @@
     var entryRowState = {};     // Input state for active entry row
     var itemActiveSection = {}; // Tracks active drawer ('wbs' or 'rate') per item
 
-    // ── NORMAL DROPDOWN HTML BUILDERS (Stay inside table cells, never go out of box) ──
+    // ── SPECIFICATION SELECT2 SEARCHABLE DROPDOWN BUILDER (Requirement 1) ──
     function getSpecificationOptionsHtml(selectedVal) {
-        var list = state.libraryIOWs || [];
-        var html = '<option value="">-- Select Specification --</option>';
-        html += '<option value="__new__" class="font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 dark:text-emerald-300">+ Add New Specification...</option>';
-        
-        var hasMatch = false;
-        var sVal = (selectedVal || '').trim().toLowerCase();
-        list.forEach(lib => {
-            var spec = (lib.specification || '').trim();
-            if (!spec) return;
-            var code = (lib.serialNo || lib.code || '').trim();
-            if (code.toUpperCase() === 'NEW') code = '';
-            var isSel = (sVal && sVal === spec.toLowerCase());
-            if (isSel) hasMatch = true;
-            var display = code ? `[${code}] ${spec}` : spec;
-            html += `<option value="${escapeHtml(spec)}" ${isSel ? 'selected' : ''}>${escapeHtml(display)}</option>`;
+        var sVal = (selectedVal || '').trim();
+        if (sVal) {
+            return `<option value="${escapeHtml(sVal)}" selected>${escapeHtml(sVal)}</option>`;
+        }
+        return '<option value="">-- Select or Search Specification --</option>';
+    }
+
+    function initSpecificationSelect2($el, idVal, isEntry, initialVal) {
+        if (!$el || !$el.length) return;
+        if ($el.data('select2')) {
+            $el.select2('destroy');
+        }
+
+        $el.select2({
+            dropdownAutoWidth: true,
+            width: '100%',
+            placeholder: '-- Select or Search Specification --',
+            tags: true,
+            ajax: {
+                transport: function (params, success, failure) {
+                    var term = (params.data.q || '').trim().toLowerCase();
+                    var page = params.data.page || 1;
+                    var pageSize = 40;
+                    var all = state.libraryIOWs || [];
+                    var filtered = term ? all.filter(function (x) {
+                        var spec = (x.specification || '').toLowerCase();
+                        var code = (x.serialNo || x.code || '').toLowerCase();
+                        return spec.indexOf(term) !== -1 || code.indexOf(term) !== -1;
+                    }) : all;
+                    var start = (page - 1) * pageSize;
+                    var paged = filtered.slice(start, start + pageSize);
+                    var items = paged.map(function (x) {
+                        var code = (x.serialNo || x.code || '').trim();
+                        var spec = (x.specification || '').trim();
+                        var label = (code && code.toUpperCase() !== 'NEW') ? ('[' + code + '] ' + spec) : spec;
+                        return {
+                            id: spec,
+                            text: label
+                        };
+                    });
+                    if (page === 1) {
+                        items.unshift({ id: '__new__', text: '+ Add New Specification...' });
+                    }
+                    success({
+                        results: items,
+                        pagination: { more: (start + pageSize) < filtered.length }
+                    });
+                },
+                delay: 150
+            },
+            createTag: function (params) {
+                var term = $.trim(params.term);
+                if (term === '') return null;
+                return {
+                    id: term,
+                    text: term + ' (New Specification)',
+                    newTag: true
+                };
+            }
+        }).off('select2:select').on('select2:select', function (e) {
+            var selectedVal = e.target.value;
+            handleSpecDropdownChange(idVal, selectedVal, isEntry);
         });
 
-        if (selectedVal && !hasMatch && selectedVal !== '__new__') {
-            html += `<option value="${escapeHtml(selectedVal)}" selected>${escapeHtml(selectedVal)}</option>`;
+        if (initialVal && initialVal.trim()) {
+            var hasOpt = $el.find('option').filter(function () { return $(this).val() === initialVal; }).length > 0;
+            if (!hasOpt) {
+                $el.empty().append(new Option(initialVal, initialVal, true, true)).val(initialVal);
+            } else {
+                $el.val(initialVal);
+            }
         }
-        return html;
+    }
+
+    function initUnitSelect2($el, idVal, isEntry, initialVal) {
+        if (!$el || !$el.length) return;
+        if (initialVal && String(initialVal).trim()) {
+            $el.val(String(initialVal).trim());
+        }
     }
 
     function handleSpecDropdownChange(id, val, isEntryRow) {
@@ -1350,8 +1725,14 @@
             }
 
             // Directly update input elements without losing UI state
-            var unitSel = document.getElementById("unitSelect_" + wgId);
-            if (unitSel && unit) unitSel.value = unit;
+            var unitSel = document.getElementById('unitSelect_' + wgId);
+            if (unitSel && unit) {
+                var hasOpt = $(unitSel).find('option').filter(function () { return $(this).val() === unit; }).length > 0;
+                if (!hasOpt) {
+                    $(unitSel).append(new Option(unit, unit, true, true));
+                }
+                unitSel.value = unit;
+            }
 
             var rateInp = document.getElementById("rateInput_" + wgId);
             if (rateInp && rate) rateInp.value = cleanNum(rate);
@@ -1372,7 +1753,18 @@
                 );
                 it.specification = val;
                 if (match) {
-                    if (match.unit && match.unit !== 'LS') it.unitId = match.unit;
+                    if (match.unit && match.unit !== 'LS') {
+                        it.unitId = match.unit;
+                        it.unitName = match.unit;
+                        var itemUnitSel = document.getElementById('itemUnitSelect_' + iowId);
+                        if (itemUnitSel) {
+                            var hasOpt = $(itemUnitSel).find('option').filter(function () { return $(this).val() === match.unit; }).length > 0;
+                            if (!hasOpt) {
+                                $(itemUnitSel).append(new Option(match.unit, match.unit, true, true));
+                            }
+                            itemUnitSel.value = match.unit;
+                        }
+                    }
                     if (match.defaultRate || match.rate) it.rate = Number(match.defaultRate || match.rate);
                     it.isNewSpec = (match.sourceTable === 'Project_IOWMas');
                 } else {
@@ -1683,11 +2075,12 @@
             }
         }
     }
-
-    // Safe stubs for any previous autocomplete callers
-    function hideSpecAutocomplete() {}
-    function hideWBSAutocomplete() {}
-    function hideResourceAutocomplete() {}
+    // Global click listener to close floating autocomplete menu
+    $(document).on('mousedown', function (e) {
+        if (!$(e.target).closest('#specAutocompleteDropdown, .spec-search-input').length) {
+            hideSpecAutocomplete();
+        }
+    });
 
     // ═══════════════════════════════════════════════════════════════════════
     // BOQ MASTER LOAD GRID (DEVTREXTREME) & VIEW SWITCHING LOGIC
@@ -1727,6 +2120,32 @@
                 showInfo: true
             },
             columns: [
+                {
+                    caption: "Action",
+                    alignment: "center",
+                    width: 125,
+                    allowFiltering: false,
+                    allowSorting: false,
+                    cellTemplate: function (container, options) {
+                        var data = options.data;
+                        var $wrapper = $('<div class="flex items-center justify-center gap-1.5"></div>');
+
+                        // Edit button
+                        var $btnEdit = $('<button type="button" class="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-slate-700 dark:text-blue-400 transition-colors cursor-pointer" title="Edit BOQ"><i class="fas fa-edit text-xs"></i></button>');
+                        $btnEdit.on('click', function () { editBOQ(data.boqId); });
+
+                        // View details button
+                        var $btnView = $('<button type="button" class="w-7 h-7 flex items-center justify-center rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-slate-700 dark:text-emerald-400 transition-colors cursor-pointer" title="Quick View"><i class="fas fa-eye text-xs"></i></button>');
+                        $btnView.on('click', function () { quickViewBOQ(data.boqId); });
+
+                        // Delete button
+                        var $btnDel = $('<button type="button" class="w-7 h-7 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-600 dark:bg-slate-700 dark:text-red-400 transition-colors cursor-pointer" title="Delete BOQ"><i class="fas fa-trash-alt text-xs"></i></button>');
+                        $btnDel.on('click', function () { deleteBOQItem(data.boqId, data.referenceNo); });
+
+                        $wrapper.append($btnEdit).append($btnView).append($btnDel);
+                        container.append($wrapper);
+                    }
+                },
                 {
                     caption: "S.No",
                     width: 60,
@@ -1835,32 +2254,6 @@
                             .text(text)
                             .appendTo(container);
                     }
-                },
-                {
-                    caption: "Action",
-                    alignment: "center",
-                    width: 125,
-                    allowFiltering: false,
-                    allowSorting: false,
-                    cellTemplate: function (container, options) {
-                        var data = options.data;
-                        var $wrapper = $('<div class="flex items-center justify-center gap-1.5"></div>');
-
-                        // Edit button
-                        var $btnEdit = $('<button type="button" class="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-slate-700 dark:text-blue-400 transition-colors cursor-pointer" title="Edit BOQ"><i class="fas fa-edit text-xs"></i></button>');
-                        $btnEdit.on('click', function () { editBOQ(data.boqId); });
-
-                        // View details button
-                        var $btnView = $('<button type="button" class="w-7 h-7 flex items-center justify-center rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-slate-700 dark:text-emerald-400 transition-colors cursor-pointer" title="Quick View"><i class="fas fa-eye text-xs"></i></button>');
-                        $btnView.on('click', function () { quickViewBOQ(data.boqId); });
-
-                        // Delete button
-                        var $btnDel = $('<button type="button" class="w-7 h-7 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-600 dark:bg-slate-700 dark:text-red-400 transition-colors cursor-pointer" title="Delete BOQ"><i class="fas fa-trash-alt text-xs"></i></button>');
-                        $btnDel.on('click', function () { deleteBOQItem(data.boqId, data.referenceNo); });
-
-                        $wrapper.append($btnEdit).append($btnView).append($btnDel);
-                        container.append($wrapper);
-                    }
                 }
             ],
             summary: {
@@ -1937,6 +2330,19 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    function fetchNextRefNo() {
+        $.get('@Url.Action("GetNextRefNo", "ProjectIOW")', function (res) {
+            if (res && res.success) {
+                var nextNo = res.nextRefNo || 1;
+                $('#txtReferenceNo').val(nextNo);
+                state.header.referenceNo = String(nextNo);
+            }
+        }).fail(function () {
+            $('#txtReferenceNo').val(1);
+            state.header.referenceNo = '1';
+        });
+    }
+
     function openNewBOQForm() {
         state.editingBOQId = 0;
         $('#lblBOQFormTitle').text("Request for Creation - Project IOW Add");
@@ -1947,11 +2353,21 @@
         state.items = [];
         entryRowState = {};
         state.collapsedWorkgroups = {};
-        $('#txtReferenceNo').val('51070');
-        $('#ddlType').val('Budget');
+
+        // Requirements 1, 2, 4
+        $('#txtReferenceDate').val('@ViewBag.CurrentDate');
+        state.header.referenceDate = '@ViewBag.CurrentDate';
+        fetchNextRefNo();
+        $('#ddlType').val('Plan');
         $('#ddlRevision').val('No');
         $('#chkReadyForApproval').prop('checked', true);
         $('#txtMainRemarks').val('');
+
+        var firstProjVal = $('#ddlProject option:first').val();
+        if (firstProjVal) {
+            $('#ddlProject').val(firstProjVal).trigger('change.select2');
+        }
+
         recalculateOverallProject();
         renderMainDataGrid();
 
@@ -1987,7 +2403,7 @@
                         $('#txtReferenceDate').val(h.referenceDate);
                     }
                     if (h.projectKickoffId) {
-                        $('#ddlProject').val(h.projectKickoffId);
+                        $('#ddlProject').val(h.projectKickoffId).trigger('change.select2');
                     }
                     if (h.projectName) {
                         $('#txtProjectName').val(h.projectName);
@@ -2009,7 +2425,7 @@
                         projectKickoffId: h.projectKickoffId || 1,
                         projectName: h.projectName || '',
                         costCentreId: h.costcenterId || '1',
-                        type: h.type || 'Budget',
+                        type: h.type || 'Plan',
                         revision: h.revision || 'No',
                         readyForApproval: h.readyForApproval,
                         remarks: h.remarks || '',
@@ -2034,10 +2450,11 @@
                         });
                     }
 
-                    // Items
+                    // Items with Measurement Sheets and child IDs mapped
                     state.items = (res.items || []).map(function (it, idx) {
                         var wbs = (it.wbsBreakdown || []).map(function (wb) {
                             return {
+                                project_WBSId: wb.projectWBSId || 0,
                                 wbsId: wb.wbsId,
                                 wbsName: wb.wbsName,
                                 fullWBSName: wb.fullWBSName || wb.wbsName,
@@ -2047,6 +2464,7 @@
 
                         var resources = (it.resources || []).map(function (r) {
                             return {
+                                project_ResourceId: r.projectResourceId || r.resourceDetailId || 0,
                                 resourceDetailId: r.resourceDetailId,
                                 iowId: it.projectIOWId || it.iowId,
                                 resourceCode: r.resourceCode || '',
@@ -2065,12 +2483,20 @@
 
                         var calcs = it.calculations || {};
 
+                        var rawRef = (it.refNo != null) ? String(it.refNo).trim() : '';
+                        var rawSerial = (it.serialNo != null) ? String(it.serialNo).trim() : '';
+                        var wgObj = (res.workgroups || []).find(w => String(w.workGroupId) === String(it.workGroupId));
+                        var wgPrefix = wgObj ? (wgObj.serialNo || wgObj.workGroupId || '1') : (it.workGroupId || '1');
+                        var autoRef = wgPrefix + '.' + (idx + 1);
+                        var finalRef = rawRef || rawSerial || autoRef;
+
                         return {
                             iowId: it.projectIOWId || it.iowId || (Date.now() + idx),
+                            project_IOWId: it.projectIOWId || 0,
                             workGroupId: it.workGroupId || '1',
                             workGroupName: it.workGroupName || '',
-                            refNo: it.refNo || '',
-                            serialNo: it.serialNo || '',
+                            refNo: finalRef,
+                            serialNo: rawSerial || finalRef,
                             specification: it.specification || '',
                             shortSpec: it.specification ? (it.specification.length > 40 ? it.specification.substring(0, 40) + '...' : it.specification) : '',
                             unitId: it.unitId || '',
@@ -2079,6 +2505,9 @@
                             rate: Number(it.rate || 0.0),
                             amount: Number(it.amount || 0.0),
                             isNewSpec: false,
+                            hasMeasurementSheet: it.hasMeasurementSheet === true,
+                            isQtyLocked: it.isQtyLocked === true,
+                            measurementSheet: it.measurementSheet || null,
                             wbsBreakdown: wbs,
                             resources: resources,
                             calculations: {
@@ -2092,6 +2521,21 @@
                                 roundingOff: Number(calcs.roundingOff || 0),
                                 netRate: Number(calcs.netRate || it.rate || 0)
                             }
+                        };
+                    });
+
+                    // Pre-populate entry rows for each workgroup with empty Ref No so user types it
+                    entryRowState = {};
+                    (state.selectedWorkgroups || []).forEach(function (sw) {
+                        entryRowState[sw.workGroupId] = {
+                            workGroupId: sw.workGroupId,
+                            refNo: '', // Typeable, not automatic!
+                            specification: '',
+                            unitId: '',
+                            unitName: '',
+                            qty: '0',
+                            rate: '',
+                            amount: '0'
                         };
                     });
 
@@ -2174,19 +2618,12 @@
 
     // ── INITIALIZATION ──
     document.addEventListener("DOMContentLoaded", function () {
-        // STEP 1 — Reference Date -> Date Picker (read-only, no manual typing allowed; future dates blocked)
-        if (typeof flatpickr !== 'undefined') {
-            flatpickr("#txtReferenceDate", {
-                dateFormat: "d-m-Y",
-                allowInput: false,
-                clickOpens: true,
-                maxDate: "today",
-                defaultDate: "@ViewBag.CurrentDate" || new Date(),
-                onChange: function (selectedDates, dateStr) {
-                    state.header.referenceDate = dateStr;
-                }
-            });
-        }
+        // Requirement 1: Reference Date is locked to today only. Calendar picker removed.
+        $('#txtReferenceDate').val('@ViewBag.CurrentDate');
+        state.header.referenceDate = '@ViewBag.CurrentDate';
+
+        // Requirement 2: Fetch Next RefNo
+        fetchNextRefNo();
 
         initDataLoad();
         initBOQGrid();
@@ -2196,7 +2633,7 @@
     // ── STEP 1: INITIAL DATA LOADING ──
     async function initDataLoad() {
         try {
-            // 1. Projects Dropdown
+            // 1. Projects Dropdown (Requirement 3: Searchable dropdown via Select2)
             fetch('@Url.Action("GetProjects", "ProjectIOW")')
                 .then(r => r.json())
                 .then(res => {
@@ -2216,6 +2653,14 @@
                             state.header.projectName = ddl.options[ddl.selectedIndex].text;
                             var txtP = document.getElementById("txtProjectName");
                             if (txtP) txtP.value = state.header.projectName;
+
+                            // Initialize Select2 on ddlProject
+                            $('#ddlProject').select2({
+                                placeholder: '-- Select Project --',
+                                width: '100%'
+                            }).off('change select2:select').on('change select2:select', function () {
+                                onProjectChange(this.value);
+                            });
                         }
                     }
                 });
@@ -2357,6 +2802,40 @@
         return Number(n.toFixed(3)).toLocaleString('en-IN', { maximumFractionDigits: 3 });
     }
 
+    function getNextRefNoForWorkGroup(wgId) {
+        var wg = (state.selectedWorkgroups || []).find(w => String(w.workGroupId) === String(wgId));
+        var prefix = (wg && wg.serialNo) ? String(wg.serialNo).trim() : (wg ? String(wg.workGroupId) : String(wgId || '1'));
+        var existingItems = (state.items || []).filter(i => String(i.workGroupId) === String(wgId));
+        var nextIdx = existingItems.length + 1;
+        return prefix + '.' + nextIdx;
+    }
+
+    function ensureItemHasRefNo(item) {
+        if (!item) return '';
+        var r = (item.refNo != null) ? String(item.refNo).trim() : '';
+        if (!r) {
+            var s = (item.serialNo != null) ? String(item.serialNo).trim() : '';
+            if (s && s.toUpperCase() !== 'NEW') {
+                r = s;
+                item.refNo = r;
+                item.serialNo = r;
+                var inp = document.getElementById('itemRefInput_' + item.iowId);
+                if (inp && r) inp.value = r;
+            }
+        }
+        return r;
+    }
+
+    function ensureEntryRowHasRefNo(wgId) {
+        if (!entryRowState[wgId]) {
+            entryRowState[wgId] = { workGroupId: wgId, refNo: '' };
+        }
+        var entry = entryRowState[wgId];
+        var r = ($('#refInput_' + wgId).val() || entry.refNo || '').toString().trim();
+        entry.refNo = r;
+        return r;
+    }
+
     function getUOMOptionsHtml(selectedVal) {
         var units = (state.uomList && state.uomList.length > 0) ? state.uomList : [
             { unitId: 1, unitName: 'Cum' }, { unitId: 2, unitName: 'Sqm' },
@@ -2365,81 +2844,198 @@
             { unitId: 10, unitName: 'Sft' }, { unitId: 15, unitName: 'Cft' }
         ];
         var emptySelected = (!selectedVal || selectedVal === '') ? 'selected' : '';
-        var html = `<option value="" ${emptySelected}></option>`;
+        var html = `<option value="" ${emptySelected}>-- Unit --</option>`;
+        var found = false;
         html += units.map(function (u) {
             var uName = u.unitName || u.UnitName;
             var uId = u.unitId || u.UnitId;
-            var isSel = (selectedVal && (String(selectedVal).toLowerCase() === String(uName).toLowerCase() || String(selectedVal) === String(uId))) ? 'selected' : '';
-            return `<option value='${uName}' data-id='${uId}' ${isSel}>${uName}</option>`;
+            var isSel = (selectedVal && (String(selectedVal).toLowerCase() === String(uName).toLowerCase() || String(selectedVal) === String(uId)));
+            if (isSel) found = true;
+            return `<option value='${escapeHtml(uName)}' data-id='${uId}' ${isSel ? 'selected' : ''}>${escapeHtml(uName)}</option>`;
         }).join('');
+        if (selectedVal && !found && String(selectedVal).trim()) {
+            var sClean = String(selectedVal).trim();
+            html += `<option value='${escapeHtml(sClean)}' data-id='${escapeHtml(sClean)}' selected>${escapeHtml(sClean)}</option>`;
+        }
         return html;
     }
 
     function handleEntryWbsChevron(wgId) {
+        ensureEntryRowHasRefNo(wgId);
         ensureEntryRowHasRefAndSpec(wgId, 'wbs');
     }
 
     function handleEntryRateChevron(wgId) {
+        ensureEntryRowHasRefNo(wgId);
         ensureEntryRowHasRefAndSpec(wgId, 'rate');
     }
 
     function handleEntryQtyClick(wgId) {
+        ensureEntryRowHasRefNo(wgId);
         ensureEntryRowHasRefAndSpec(wgId, 'wbs');
     }
 
     function handleEntryRateClick(wgId) {
+        ensureEntryRowHasRefNo(wgId);
         ensureEntryRowHasRefAndSpec(wgId, 'rate');
     }
 
     function handleItemQtyClick(iowId) {
         var item = state.items.find(i => i.iowId == iowId);
-        if (item && (!item.refNo || !String(item.refNo).trim())) {
-            triggerItemRefNoValidation(iowId, 'Please enter Reference No. before selecting Quantity.');
+        if (!item) return;
+        ensureItemHasRefNo(item);
+
+        // Main row Qty is in read-only / calculated mode from WBS breakdown; toggle WBS breakdown directly without asking for measurement sheet
+        toggleDetailSection('item_' + iowId, 'wbs');
+    }
+
+    function handleWBSQtyClick(iowId, idx) {
+        var item = state.items.find(i => i.iowId == iowId);
+        if (!item || !item.wbsBreakdown || !item.wbsBreakdown[idx]) return;
+        var w = item.wbsBreakdown[idx];
+
+        if (w.isQtyLocked) {
+            Swal.fire({
+                title: 'Measurement Sheet Attached',
+                html: '<div class="text-xs text-slate-600 dark:text-slate-300 text-left p-1 space-y-2">' +
+                      '  <div class="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300">' +
+                      '    <i class="fas fa-calculator mr-1 text-amber-600"></i> WBS Quantity is calculated via Measurement Sheet: <strong class="font-mono text-sm">' + cleanNum(w.qty) + '</strong>' +
+                      '  </div>' +
+                      '  <p class="text-[11px] text-slate-500 mt-2">What would you like to do?</p>' +
+                      '</div>',
+                icon: 'question',
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonColor: '#0284c7',
+                denyButtonColor: '#e11d48',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="fas fa-edit mr-1"></i> Re-Edit Sheet',
+                denyButtonText: '<i class="fas fa-unlock mr-1"></i> Unlock & Type Manually',
+                cancelButtonText: 'Cancel'
+            }).then(function (res) {
+                if (res.isConfirmed) {
+                    openBoqMeasurementModal(iowId, 'wbs', idx);
+                } else if (res.isDenied) {
+                    w.isQtyLocked = false;
+                    w.measurementSheet = null;
+                    renderWBSRows(item);
+                    renderMainDataGrid();
+                    setTimeout(function () {
+                        var inp = document.getElementById('wbsQtyInput_' + iowId + '_' + idx);
+                        if (inp) {
+                            inp.removeAttribute('readonly');
+                            inp.removeAttribute('disabled');
+                            inp.focus();
+                            inp.select();
+                        }
+                    }, 50);
+                }
+            });
             return;
         }
-        toggleDetailSection('item_' + iowId, 'wbs');
+
+        // Prompt "Do you want measurement sheet?" (Yes / No)
+        Swal.fire({
+            title: 'Measurement Sheet?',
+            text: 'Do you want measurement sheet?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#0284c7',
+            cancelButtonColor: '#10b981',
+            confirmButtonText: 'Yes',
+            cancelButtonText: 'No',
+            reverseButtons: false
+        }).then(function (result) {
+            if (result.isConfirmed) {
+                promptMeasurementSheet(iowId, 'wbs', idx);
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                w.isQtyLocked = false;
+                var inp = document.getElementById('wbsQtyInput_' + iowId + '_' + idx);
+                if (inp) {
+                    inp.removeAttribute('readonly');
+                    inp.removeAttribute('disabled');
+                    inp.focus();
+                    inp.select();
+                }
+            }
+        });
+    }
+
+    function handleNewWBSQtyClick(iowId) {
+        var inp = document.getElementById('txtNewWBSQty_' + iowId);
+        Swal.fire({
+            title: 'Measurement Sheet?',
+            text: 'Do you want measurement sheet?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#0284c7',
+            cancelButtonColor: '#10b981',
+            confirmButtonText: 'Yes',
+            cancelButtonText: 'No',
+            reverseButtons: false
+        }).then(function (result) {
+            if (result.isConfirmed) {
+                promptMeasurementSheet(iowId, 'newWbs');
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                if (inp) {
+                    inp.focus();
+                    inp.select();
+                }
+            }
+        });
     }
 
     function handleItemRateClick(iowId) {
         var item = state.items.find(i => i.iowId == iowId);
-        if (item && (!item.refNo || !String(item.refNo).trim())) {
-            triggerItemRefNoValidation(iowId, 'Please enter Reference No. before selecting Rate.');
-            return;
-        }
+        if (!item) return;
+        ensureItemHasRefNo(item);
         toggleDetailSection('item_' + iowId, 'rate');
     }
 
     function ensureEntryRowHasRefAndSpec(wgId, targetTab) {
         var entry = entryRowState[wgId] || {};
-        var fieldName = targetTab === 'wbs' ? 'Quantity' : 'Rate';
+        var typedRef = ($('#refInput_' + wgId).val() || entry.refNo || '').toString().trim();
+        if (typedRef.toUpperCase() === 'NEW') typedRef = '';
+        entry.refNo = typedRef;
 
-        // 1. MUST enter Reference No. FIRST
-        if (!entry.refNo || !String(entry.refNo).trim()) {
-            triggerRefNoEmptyValidation(wgId, `Please enter Reference No. before selecting ${fieldName}.`);
-            return;
-        }
-
-        // 2. MUST enter or select Specification
-        if (!entry.specification || !String(entry.specification).trim()) {
-            var specEl = document.getElementById('specSelect_' + wgId);
-            if (specEl) {
-                specEl.focus();
-                $(specEl).closest('.grid-cell-box').addClass('ref-empty-error');
-                setTimeout(() => $(specEl).closest('.grid-cell-box').removeClass('ref-empty-error'), 2500);
-            }
+        // Requirement: Ref No must be typed by user, not automatic
+        if (!typedRef) {
             Swal.fire({
                 icon: 'warning',
-                title: 'Specification Required',
-                text: `Please select or enter a Specification before configuring ${fieldName}.`,
-                timer: 2500,
-                showConfirmButton: false,
-                toast: true,
-                position: 'top-end'
+                title: 'Enter Reference No',
+                text: 'Please enter Reference No before configuring breakdown. Ref No must be typed.',
+                confirmButtonColor: '#0284c7'
             });
+            $('#refInput_' + wgId).focus();
             return;
         }
 
-        // 3. Both are valid -> Save entry row and automatically open the target breakdown tab
+        // Check Specification
+        if (!entry.specification || !String(entry.specification).trim()) {
+            var $specEl = $('#specSelect_' + wgId);
+            var valFromSelect = $specEl.val();
+            if (valFromSelect && valFromSelect !== '__new__' && String(valFromSelect).trim()) {
+                entry.specification = String(valFromSelect).trim();
+            } else {
+                if ($specEl.length && $specEl.data('select2')) {
+                    $specEl.select2('open');
+                } else if ($specEl.length) {
+                    $specEl.focus();
+                }
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Select Specification',
+                    text: `Please select or enter a Specification for Ref ${entry.refNo}.`,
+                    timer: 2000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+                return;
+            }
+        }
+
+        // Save entry row and automatically open the target breakdown tab
         saveEntryRow(wgId, function (newItem) {
             if (newItem) toggleDetailSection('item_' + newItem.iowId, targetTab);
         });
@@ -2551,32 +3147,33 @@
                             <i class="fas fa-cube"></i>
                         </td>
                         <td class="w-[105px] px-2 py-1.5">
-                            <div class="grid-cell-box" id="itemRefBox_${item.iowId}">
-                                <input type="text" id="itemRefInput_${item.iowId}" value="${item.refNo || ''}" oninput="$(this).removeClass('ref-empty-error'); $(this).closest('.grid-cell-box').removeClass('ref-empty-error');" onchange="updateItemDirect(${item.iowId}, 'refNo', this.value)" class="font-medium" placeholder="Ref No *" title="Reference No." />
+                            <div class="grid-cell-box ${(!item.refNo || !String(item.refNo).trim()) ? 'ref-empty-error' : ''}" id="itemRefBox_${item.iowId}">
+                                <input type="text" id="itemRefInput_${item.iowId}" value="${item.refNo || ''}" oninput="$(this).removeClass('ref-empty-error'); $(this).closest('.grid-cell-box').removeClass('ref-empty-error');" onchange="updateItemDirect(${item.iowId}, 'refNo', this.value)" class="font-medium ${(!item.refNo || !String(item.refNo).trim()) ? 'ref-empty-error' : ''}" placeholder="Ref No *" title="Reference No." />
                             </div>
                         </td>
                         <td class="min-w-[480px] px-2 py-1.5">
+                            <select id="itemSpecSelect_${item.iowId}" class="select2-spec w-full text-xs">
+                                ${getSpecificationOptionsHtml(item.specification || '')}
+                            </select>
+                        </td>
+                        <td class="w-[105px] min-w-[95px] px-2 py-1.5">
                             <div class="grid-cell-box !p-0.5">
-                                <select class="w-full text-xs py-0.5 px-1 border-none rounded bg-transparent text-slate-800 dark:text-slate-100 font-medium focus:outline-none cursor-pointer" onchange="handleSpecDropdownChange(${item.iowId}, this.value, false)">
-                                    ${getSpecificationOptionsHtml(item.specification || '')}
+                                <select id="itemUnitSelect_${item.iowId}" class="w-full text-xs py-0.5 px-1 border-none rounded bg-transparent text-slate-800 dark:text-slate-100 font-medium focus:outline-none cursor-pointer" onchange="updateItemDirect(${item.iowId}, 'unitId', this.value)">
+                                    ${getUOMOptionsHtml(item.unitId || item.unitName || '')}
                                 </select>
                             </div>
                         </td>
-                        <td class="w-[85px] px-2 py-1.5">
-                            <div class="grid-cell-box !p-0.5">
-                                <select class="w-full text-xs py-0.5 px-1 border-none rounded bg-transparent text-slate-800 dark:text-slate-100 font-medium focus:outline-none" onchange="updateItemDirect(${item.iowId}, 'unitId', this.value)">
-                                    ${getUOMOptionsHtml(item.unitId || '')}
-                                </select>
-                            </div>
-                        </td>
-                        <td class="w-[130px] px-2 py-1.5 cursor-pointer" onclick="handleItemQtyClick(${item.iowId})">
-                            <div class="flex items-center gap-1.5 w-full">
-                                <div class="grid-cell-box flex-1 bg-slate-100/90 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-600 rounded hover:border-teal-500 transition">
-                                    <input type="text" readonly disabled tabindex="-1" value="${formattedQty}" class="text-right font-black w-full item-qty-val-${item.iowId} bg-transparent text-sky-700 dark:text-sky-300 cursor-pointer select-none border-none focus:outline-none" title="Quantity is rolled up from WBS breakdowns & Measurement Sheets (Click to configure)" />
+                        <td class="w-[140px] px-2 py-1.5 cursor-pointer" onclick="handleItemQtyClick(${item.iowId})">
+                            <div class="flex items-center gap-1 w-full">
+                                <div class="grid-cell-box flex-1 ${item.isQtyLocked ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700' : 'bg-slate-100/90 dark:bg-slate-800/90 border-slate-300 dark:border-slate-600'} rounded hover:border-teal-500 transition flex items-center px-1.5" title="${item.isQtyLocked ? 'Quantity locked by Measurement Sheet (Click to edit sheet or unlock)' : 'Quantity calculated from WBS / Measurement Sheet (Click to configure)'}">
+                                    ${item.isQtyLocked ? `
+                                        <button type="button" onclick="event.stopPropagation(); openBoqMeasurementModal(${item.iowId}, 'item');" class="mr-1 px-1.5 py-0.5 rounded bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-100 text-[9px] font-bold hover:bg-amber-300 transition flex items-center gap-0.5 flex-shrink-0 cursor-pointer shadow-2xs" title="Click to re-edit Measurement Sheet">
+                                            <i class="fas fa-edit text-[8px]"></i><span>Sheet</span>
+                                        </button>
+                                    ` : ''}
+                                    <input type="text" readonly tabindex="-1" id="itemQtyInput_${item.iowId}" value="${formattedQty}" 
+                                           class="text-right font-black w-full item-qty-val-${item.iowId} bg-transparent ${item.isQtyLocked ? 'text-amber-800 dark:text-amber-300' : 'text-sky-700 dark:text-sky-300'} cursor-pointer select-none border-none focus:outline-none" />
                                 </div>
-                                <button type="button" onclick="event.stopPropagation(); promptMeasurementSheet(${item.iowId}, 'item')" class="w-6 h-6 rounded bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center text-[10px] flex-shrink-0 transition shadow-2xs cursor-pointer" title="Measurement Sheet (Calculate Qty from Dimensions)">
-                                    <i class="fas fa-calculator"></i>
-                                </button>
                                 <button type="button" id="btnToggleWBS_${item.iowId}" onclick="event.stopPropagation(); toggleDetailSection('item_${item.iowId}', 'wbs');" class="w-5 h-5 rounded-full bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center text-[9px] flex-shrink-0 transition shadow-2xs cursor-pointer btn-toggle-wbs-${item.iowId}" title="WBS Breakdown (Calculates Qty)">
                                     <i class="fas ${wbsChevronClass}" id="iconToggleWBS_${item.iowId}"></i>
                                 </button>
@@ -2617,9 +3214,9 @@
                     trDrawer.innerHTML = `
                         <td colspan="8" class="p-3">
                             <div class="bg-slate-50/70 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-2xs space-y-2">
-                                <!-- STEPS 8–12: WBS BREAKDOWN SECTION (img-8, slices 4 & 5) -->
-                                <div id="detailSectionWBS_${item.iowId}" class="${currentTab === 'wbs' ? '' : 'hidden'} bg-[#ebf5fa] dark:bg-slate-900 border border-sky-300 dark:border-sky-800 rounded-md p-2 space-y-1.5">
-                                    <div class="flex items-center justify-between bg-[#cce3f5] dark:bg-sky-950 px-3 py-1.5 rounded-t border border-[#b8d7ee] dark:border-sky-800 text-xs font-bold text-sky-900 dark:text-sky-100">
+                                <!-- STEPS 8–12: WBS BREAKDOWN SECTION (Requirement 9: Soft Sky background) -->
+                                <div id="detailSectionWBS_${item.iowId}" class="${currentTab === 'wbs' ? '' : 'hidden'} section-wbs-container rounded-md p-2 space-y-1.5">
+                                    <div class="section-wbs-header flex items-center justify-between px-3 py-1.5 rounded-t font-bold text-xs">
                                         <div class="flex-1">WBS Name</div>
                                         <div class="w-32 text-right pr-6">Qty</div>
                                         <div class="flex items-center gap-1.5">
@@ -2631,7 +3228,7 @@
                                             </button>
                                         </div>
                                     </div>
-                                    <div class="bg-white dark:bg-slate-800 border-x border-b border-[#b8d7ee] dark:border-sky-800 rounded-b divide-y divide-slate-100 dark:divide-slate-700 max-h-56 overflow-y-auto custom-scrollbar" id="wbsRowsContainer_${item.iowId}"></div>
+                                    <div class="bg-white dark:bg-slate-800 border-x border-b border-[#7dd3fc] dark:border-sky-900 rounded-b divide-y divide-slate-100 dark:divide-slate-700 max-h-56 overflow-y-auto custom-scrollbar" id="wbsRowsContainer_${item.iowId}"></div>
                                     <div class="flex items-center justify-end gap-3 pt-1 text-xs">
                                         <span class="font-bold text-[#6b21a8] dark:text-purple-400">Total Qty</span>
                                         <span class="px-3 py-1 rounded border border-purple-200 dark:border-purple-800 bg-white dark:bg-slate-800 font-mono font-bold text-[#6b21a8] dark:text-purple-300 text-xs min-w-[90px] text-right shadow-inner" id="lblWBSTotalQty_${item.iowId}">
@@ -2640,9 +3237,9 @@
                                     </div>
                                 </div>
 
-                                <!-- STEP 14: RESOURCE RATE ANALYSIS (img-14, img-15) -->
-                                <div id="detailSectionRate_${item.iowId}" class="${currentTab === 'rate' ? '' : 'hidden'} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-3 space-y-3">
-                                    <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-700 flex-wrap gap-2 text-xs">
+                                <!-- STEP 14: RESOURCE RATE ANALYSIS (Requirement 9: Soft Indigo background) -->
+                                <div id="detailSectionRate_${item.iowId}" class="${currentTab === 'rate' ? '' : 'hidden'} section-resource-container rounded-lg p-3 space-y-3">
+                                    <div class="section-resource-header flex items-center justify-between p-2 rounded-t flex-wrap gap-2 text-xs font-bold">
                                         <div class="flex items-center gap-3 flex-wrap text-slate-700 dark:text-slate-300">
                                             <div class="flex items-center gap-1.5">
                                                 <span class="font-bold text-slate-600 dark:text-slate-300 uppercase text-[11px]">Working Qty:</span>
@@ -2741,16 +3338,14 @@
                             </div>
                         </td>
                         <td class="min-w-[480px] px-2 py-1.5">
-                            <div class="grid-cell-box grid-entry-box !p-0.5">
-                                <select id="specSelect_${wg.workGroupId}" class="w-full text-xs py-0.5 px-1 border-none rounded bg-transparent text-slate-800 dark:text-slate-100 font-medium focus:outline-none cursor-pointer" onchange="handleSpecDropdownChange(${wg.workGroupId}, this.value, true)">
-                                    ${getSpecificationOptionsHtml(pendingEntry.specification || '')}
-                                </select>
-                            </div>
+                            <select id="specSelect_${wg.workGroupId}" class="select2-spec w-full text-xs">
+                                ${getSpecificationOptionsHtml(pendingEntry.specification || '')}
+                            </select>
                         </td>
-                        <td class="w-[85px] px-2 py-1.5">
+                        <td class="w-[105px] min-w-[95px] px-2 py-1.5">
                             <div class="grid-cell-box grid-entry-box !p-0.5">
-                                <select id="unitSelect_${wg.workGroupId}" class="w-full text-xs py-0.5 px-1 border-none rounded bg-transparent text-slate-800 dark:text-slate-100 font-medium focus:outline-none" onchange="updateEntryRowData(${wg.workGroupId}, 'unitId', this.value)">
-                                    ${getUOMOptionsHtml(pendingEntry.unitId || '')}
+                                <select id="unitSelect_${wg.workGroupId}" class="w-full text-xs py-0.5 px-1 border-none rounded bg-transparent text-slate-800 dark:text-slate-100 font-medium focus:outline-none cursor-pointer" onchange="updateEntryRowData(${wg.workGroupId}, 'unitId', this.value)">
+                                    ${getUOMOptionsHtml(pendingEntry.unitId || pendingEntry.unitName || '')}
                                 </select>
                             </div>
                         </td>
@@ -2798,7 +3393,81 @@
             renderCompactResourceTable(item);
         });
 
+        // Initialize Select2 on Specification dropdowns in Entry Row & Item Rows
+        setTimeout(function () {
+            (state.selectedWorkgroups || []).forEach(function (wg) {
+                var $entrySpec = $('#specSelect_' + wg.workGroupId);
+                if ($entrySpec.length && !$entrySpec.hasClass('select2-hidden-accessible')) {
+                    var pending = entryRowState[wg.workGroupId] || {};
+                    initSpecificationSelect2($entrySpec, wg.workGroupId, true, pending.specification || '');
+                }
+            });
+
+            (state.items || []).forEach(function (item) {
+                var $itemSpec = $('#itemSpecSelect_' + item.iowId);
+                if ($itemSpec.length && !$itemSpec.hasClass('select2-hidden-accessible')) {
+                    initSpecificationSelect2($itemSpec, item.iowId, false, item.specification || '');
+                }
+            });
+        }, 50);
+
+        // Update badge count
+        var countEl = document.getElementById("badgeGridItemCount");
+        if (countEl) countEl.innerText = (state.items ? state.items.length : 0) + " Items";
+
         recalculateOverallProject();
+    }
+
+    var allWgCollapsed = false;
+    function toggleExpandAllGridWorkgroups() {
+        allWgCollapsed = !allWgCollapsed;
+        (state.selectedWorkgroups || []).forEach(function (wg) {
+            state.collapsedWorkgroups[wg.workGroupId] = allWgCollapsed;
+        });
+        $('#lblToggleAllWg').text(allWgCollapsed ? 'Expand All WorkGroups' : 'Collapse All WorkGroups');
+        renderMainDataGrid();
+    }
+
+    var allDrawersOpen = false;
+    function toggleExpandAllDrawers() {
+        allDrawersOpen = !allDrawersOpen;
+        (state.items || []).forEach(function (it) {
+            state.expandedIOWs[it.iowId] = allDrawersOpen;
+        });
+        $('#lblToggleAllDrawers').text(allDrawersOpen ? 'Collapse All Details' : 'Expand All Details');
+        renderMainDataGrid();
+    }
+
+    var isHeaderCompact = false;
+    function toggleFormHeaderCollapse() {
+        isHeaderCompact = !isHeaderCompact;
+        var $full = $('#formHeaderFullPanel');
+        var $compact = $('#formHeaderCompactBar');
+        var $icon = $('#iconToggleHeaderCollapse');
+        var $lbl = $('#lblToggleHeaderCollapse');
+        var $gridScroll = $('#gridTableScrollContainer');
+
+        if (isHeaderCompact) {
+            var projText = $('#ddlProject option:selected').text();
+            if (!projText || projText === '-- Select Project --') projText = 'No Project Selected';
+            $('#summaryProjectName').text(projText);
+            $('#summaryRefNo').text($('#txtReferenceNo').val() || '1');
+            $('#summaryRefDate').text($('#txtReferenceDate').val() || '—');
+            $('#summaryType').text($('#ddlType').val() || 'Plan');
+            $('#summaryRevision').text($('#ddlRevision').val() || 'No');
+
+            $full.slideUp(150);
+            $compact.slideDown(150);
+            $icon.removeClass('fa-compress-alt').addClass('fa-expand-alt');
+            $lbl.text('Full Header');
+            $gridScroll.css('max-height', 'calc(100vh - 175px)');
+        } else {
+            $compact.slideUp(150);
+            $full.slideDown(150);
+            $icon.removeClass('fa-expand-alt').addClass('fa-compress-alt');
+            $lbl.text('Compact View');
+            $gridScroll.css('max-height', 'calc(100vh - 310px)');
+        }
     }
 
     // ── STEP 3 — WORK GROUP SELECTION LOGIC (img-3 & img-4) ──
@@ -2899,8 +3568,10 @@
             tr.style.display = (level === 0) ? "table-row" : "none";
 
             tr.onclick = function (e) {
-                if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'I' && e.target.type !== 'radio') {
-                    onWgRadioSelect(node.workGroupId);
+                if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'I' && e.target.type !== 'checkbox') {
+                    var chk = tr.querySelector('.wg-checkbox');
+                    var willCheck = chk ? !chk.checked : true;
+                    onWgCheckboxChange(node.workGroupId, willCheck);
                 }
             };
 
@@ -2908,15 +3579,20 @@
 
             tr.innerHTML = `
                 <td class="py-2 px-3" style="padding-left: ${padLeft}px;">
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2.5">
                         ${hasChildren ? `<i class="fas fa-caret-right wg-caret-${node.workGroupId} text-sky-600 text-xs cursor-pointer p-1" onclick="event.stopPropagation(); toggleWgNodeChildren(this, '${node.workGroupId}')"></i>` : `<span class="w-3 inline-block"></span>`}
-                        <input type="radio" name="rdWorkgroupPick" value="${node.workGroupId}" ${isChecked ? 'checked' : ''} onchange="onWgRadioSelect(${node.workGroupId})" class="wg-radio w-3.5 h-3.5 text-sky-600 focus:ring-sky-500 border-slate-300 cursor-pointer" />
+                        <input type="checkbox"
+                               id="chk_wg_${node.workGroupId}"
+                               value="${node.workGroupId}"
+                               ${isChecked ? 'checked' : ''}
+                               onchange="onWgCheckboxChange(${node.workGroupId}, this.checked)"
+                               class="wg-checkbox w-4 h-4 rounded text-sky-600 bg-white dark:bg-slate-800 border-2 border-slate-500 dark:border-slate-400 focus:ring-2 focus:ring-sky-500 cursor-pointer shadow-xs" />
                         <span class="${titleWeight}">${node.serialNo}</span>
                     </div>
                 </td>
                 <td class="py-2 px-3 ${titleWeight}">${node.workGroupName}</td>
                 <td class="py-2 px-3 text-center">
-                    <button type="button" onclick="event.stopPropagation(); selectWorkGroupWithHierarchy(${node.workGroupId})" class="w-5 h-5 rounded bg-sky-500 hover:bg-sky-600 text-white inline-flex items-center justify-center text-xs shadow-2xs" title="Select WorkGroup">
+                    <button type="button" onclick="event.stopPropagation(); selectWorkGroupWithHierarchy(${node.workGroupId})" class="w-6 h-6 rounded bg-sky-500 hover:bg-sky-600 text-white inline-flex items-center justify-center text-xs shadow-2xs cursor-pointer" title="Select WorkGroup">
                         <i class="fas fa-plus"></i>
                     </button>
                 </td>
@@ -2946,19 +3622,19 @@
         roots.forEach(root => renderNode(root, 0, []));
     }
 
-    // Single select for Workgroup picklist (one workgroup selection only - no multi-select)
-    function onWgRadioSelect(wgId) {
-        state.selectedWorkgroupRadioId = String(wgId);
+    // Single checkbox selection for Workgroup picklist (Requirement 5)
+    function onWgCheckboxChange(wgId, isChecked) {
+        state.selectedWorkgroupRadioId = isChecked ? String(wgId) : null;
         var tbody = document.getElementById("tblWorkgroupPickListBody");
         if (tbody) {
             tbody.querySelectorAll("tr").forEach(tr => {
-                var rad = tr.querySelector('.wg-radio');
-                if (tr.dataset.wgId === String(wgId)) {
+                var chk = tr.querySelector('.wg-checkbox');
+                if (isChecked && tr.dataset.wgId === String(wgId)) {
                     tr.classList.add("highlight-green");
-                    if (rad) rad.checked = true;
+                    if (chk) chk.checked = true;
                 } else {
                     tr.classList.remove("highlight-green");
-                    if (rad) rad.checked = false;
+                    if (chk) chk.checked = false;
                 }
             });
         }
@@ -2998,22 +3674,82 @@
         });
     }
 
+    // Helper: Checks if a workgroup has sub-items (children)
+    function hasSubWorkgroups(wgId) {
+        return (state.workgroups || []).some(w => {
+            if (w.workGroupId == wgId) return false;
+            if (String(w.parentId) === String(wgId)) return true;
+            var pWg = state.workgroups.find(x => x.workGroupId == wgId);
+            if (pWg && pWg.serialNo && w.serialNo && String(w.serialNo).startsWith(String(pWg.serialNo) + '.')) {
+                return true;
+            }
+            return false;
+        });
+    }
+
+    // Requirement 6: Hierarchical Selection Logic
+    // - Select Parent -> only Parent selected.
+    // - Select 1st Child -> 1st Child + Parent.
+    // - Select 2nd Child (without sub) -> 2nd Child + 1st Child + Parent.
+    // - If 2nd Child has sub -> 2nd Child + Parent only (omit 1st Child).
+    function getWorkGroupHierarchyForSelection(targetWg) {
+        if (!targetWg) return [];
+        var fullChain = getAncestorsAndSelf(targetWg);
+
+        if (fullChain.length <= 1) {
+            // Parent only
+            return fullChain;
+        }
+
+        if (fullChain.length === 2) {
+            // 1st Child -> [Parent, 1st Child]
+            return fullChain;
+        }
+
+        // Level 2 (2nd Child)
+        var rootParent = fullChain[0];
+        var firstChild = fullChain[1];
+        var secondChild = fullChain[2];
+        var secondChildHasSub = hasSubWorkgroups(secondChild.workGroupId);
+
+        if (fullChain.length === 3) {
+            if (secondChildHasSub) {
+                // If 2nd Child has sub -> 2nd Child + Parent only (omit 1st Child)
+                return [rootParent, secondChild];
+            } else {
+                // Select 2nd Child (without sub) -> 2nd Child + 1st Child + Parent selected
+                return [rootParent, firstChild, secondChild];
+            }
+        }
+
+        // Deeper level (Level 3+):
+        if (secondChildHasSub) {
+            var res = [rootParent];
+            for (var i = 2; i < fullChain.length; i++) {
+                res.push(fullChain[i]);
+            }
+            return res;
+        } else {
+            return fullChain;
+        }
+    }
+
     function selectWorkGroupWithHierarchy(wgId) {
         var selected = state.workgroups.find(w => String(w.workGroupId) === String(wgId));
         if (!selected) return;
 
         state.selectedWorkgroupRadioId = String(wgId);
-        var chain = getAncestorsAndSelf(selected);
-        // Single workgroup hierarchy only (replaces previous selection)
+        var chain = getWorkGroupHierarchyForSelection(selected);
         state.selectedWorkgroups = chain;
 
         var leafWg = chain[chain.length - 1];
-        if (!entryRowState[leafWg.workGroupId]) {
+        if (leafWg && !entryRowState[leafWg.workGroupId]) {
             entryRowState[leafWg.workGroupId] = {
                 workGroupId: leafWg.workGroupId,
-                refNo: '',
+                refNo: '', // Typeable by user, not automatic!
                 specification: '',
                 unitId: '',
+                unitName: '',
                 qty: '0',
                 rate: '',
                 amount: '0'
@@ -3022,6 +3758,16 @@
 
         closeWorkgroupPickListModal();
         renderMainDataGrid();
+
+        // Focus the Ref No input so user can type it immediately!
+        setTimeout(function () {
+            if (leafWg) {
+                var refInp = document.getElementById('refInput_' + leafWg.workGroupId);
+                if (refInp) {
+                    refInp.focus();
+                }
+            }
+        }, 80);
     }
 
     // Apply single selected workgroup
@@ -3111,7 +3857,7 @@
         }
     }
 
-    // Specification handling with library autocomplete from IOWMas & Project_IOWMas
+    // Specification handling with library autocomplete from IOWMas & Project_IOWMas (Requirement 7)
     function handleSpecInput(inputEl, workGroupId, iowId, isEntryRow) {
         state.activeSpecContext = { workGroupId: workGroupId, iowId: iowId, isEntryRow: isEntryRow, inputEl: inputEl };
         var q = $(inputEl).val() || '';
@@ -3134,18 +3880,26 @@
                 entryRowState[workGroupId].libraryWorkGroup = 'CIVIL WORKS';
                 entryRowState[workGroupId].librarySerialNo = entryRowState[workGroupId].refNo || '';
             }
+        } else if (iowId) {
+            updateItemDirect(iowId, 'specification', q);
         }
 
         if (q.trim().length === 0) {
-            showSpecAutocomplete(state.libraryIOWs.slice(0, 15), inputEl, "");
+            showSpecAutocomplete((state.libraryIOWs || []).slice(0, 20), inputEl, "");
             return;
         }
 
-        var matches = state.libraryIOWs.filter(lib => {
-            return (lib.specification && lib.specification.toLowerCase().includes(q.toLowerCase())) ||
-                   (lib.serialNo && lib.serialNo.toLowerCase().includes(q.toLowerCase())) ||
-                   (lib.code && lib.code.toLowerCase().includes(q.toLowerCase()));
-        });
+        var qLower = q.toLowerCase();
+        var matches = [];
+        var libs = state.libraryIOWs || [];
+        for (var i = 0; i < libs.length && matches.length < 25; i++) {
+            var lib = libs[i];
+            if ((lib.specification && lib.specification.toLowerCase().includes(qLower)) ||
+                (lib.serialNo && lib.serialNo.toLowerCase().includes(qLower)) ||
+                (lib.code && lib.code.toLowerCase().includes(qLower))) {
+                matches.push(lib);
+            }
+        }
 
         showSpecAutocomplete(matches, inputEl, q);
     }
@@ -3157,11 +3911,146 @@
     }
 
     function showSpecAutocomplete(matches, anchorEl, q) {
-        $("#specAutocompleteDropdown").hide();
+        var $menu = $("#specAutocompleteDropdown");
+        if (!$menu.length) {
+            $menu = $('<div id="specAutocompleteDropdown" class="autocomplete-floating-menu hidden" style="display:none; position:absolute; z-index:999999; max-height:280px; width:450px;"></div>');
+            $('body').append($menu);
+        }
+
+        if ((!matches || matches.length === 0) && (!q || !q.trim())) {
+            $menu.hide().addClass('hidden');
+            return;
+        }
+
+        var rect = anchorEl.getBoundingClientRect();
+        var top = rect.bottom + window.scrollY + 2;
+        var left = rect.left + window.scrollX;
+        var width = Math.max(rect.width, 420);
+
+        if (rect.bottom + 260 > window.innerHeight && rect.top > 260) {
+            top = rect.top + window.scrollY - 264;
+        }
+
+        var html = '';
+        var maxItems = Math.min((matches || []).length, 25);
+        for (var i = 0; i < maxItems; i++) {
+            var item = matches[i];
+            var spec = item.specification || '';
+            var code = item.serialNo || item.code || '';
+            var uom = item.unit || item.unitId || 'LS';
+            var rate = item.defaultRate || item.rate || 0;
+            var wg = item.workGroupName || '';
+
+            html += '<div class="autocomplete-item p-2 hover:bg-sky-50 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-100 dark:border-slate-700 text-xs flex items-center justify-between gap-2" data-idx="' + i + '">' +
+                    '  <div class="truncate flex-1">' +
+                    (code ? '    <span class="font-bold text-sky-600 dark:text-sky-400 mr-1.5">[' + escapeHtml(code) + ']</span>' : '') +
+                    '    <span class="font-medium text-slate-800 dark:text-slate-100">' + escapeHtml(spec) + '</span>' +
+                    (wg ? '    <span class="text-[10px] text-slate-400 dark:text-slate-500 ml-1.5 font-normal">(' + escapeHtml(wg) + ')</span>' : '') +
+                    '  </div>' +
+                    '  <div class="text-right flex-shrink-0 text-[11px] font-mono text-slate-500 dark:text-slate-400">' +
+                    '    <span>' + escapeHtml(uom) + '</span>' +
+                    (rate > 0 ? ' <span class="font-bold text-emerald-600 dark:text-emerald-400 ml-1">₹' + cleanNum(rate) + '</span>' : '') +
+                    '  </div>' +
+                    '</div>';
+        }
+
+        if (q && q.trim()) {
+            html += '<div class="autocomplete-item p-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 cursor-pointer border-t-2 border-emerald-300 dark:border-emerald-700 text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5" data-action="new-spec">' +
+                    '  <i class="fas fa-plus-circle text-sm"></i>' +
+                    '  <span>Use "<strong>' + escapeHtml(q.trim()) + '</strong>" as New Specification</span>' +
+                    '</div>';
+        }
+
+        $menu.html(html);
+        $menu.css({
+            position: 'absolute',
+            top: top + 'px',
+            left: left + 'px',
+            width: width + 'px',
+            display: 'block'
+        }).removeClass('hidden');
+
+        $menu.find('.autocomplete-item').off('click').on('click', function () {
+            var isNewAction = $(this).attr('data-action') === 'new-spec';
+            if (isNewAction) {
+                onSpecificationSelected(null, q.trim(), true);
+            } else {
+                var idx = parseInt($(this).attr('data-idx'), 10);
+                var selectedMatch = matches[idx];
+                if (selectedMatch) {
+                    onSpecificationSelected(selectedMatch, selectedMatch.specification, false);
+                }
+            }
+            hideSpecAutocomplete();
+        });
     }
 
     function hideSpecAutocomplete() {
-        $("#specAutocompleteDropdown").hide();
+        $("#specAutocompleteDropdown").hide().addClass('hidden');
+    }
+
+    function onSpecificationSelected(libItem, specText, isNew) {
+        var ctx = state.activeSpecContext;
+        if (!ctx) return;
+
+        if (ctx.isEntryRow) {
+            var wgId = ctx.workGroupId;
+            updateEntryRowData(wgId, 'specification', specText);
+            if (ctx.inputEl) $(ctx.inputEl).val(specText);
+
+            if (libItem) {
+                var unit = (libItem.unit && libItem.unit !== 'LS') ? libItem.unit : (libItem.unitId || 'LS');
+                var rate = Number(libItem.defaultRate || libItem.rate || 0);
+                var ref = (libItem.serialNo || libItem.code || '').trim();
+                if (ref.toUpperCase() === 'NEW') ref = '';
+
+                updateEntryRowData(wgId, 'unitId', unit);
+                if (rate > 0) updateEntryRowData(wgId, 'rate', rate);
+                if (ref && (!entryRowState[wgId].refNo || !entryRowState[wgId].refNo.trim())) {
+                    entryRowState[wgId].refNo = ref;
+                    $('#refInput_' + wgId).val(ref);
+                }
+
+                var unitSel = document.getElementById("unitSelect_" + wgId);
+                if (unitSel && unit) unitSel.value = unit;
+
+                var rateInp = document.getElementById("rateInput_" + wgId);
+                if (rateInp && rate > 0) rateInp.value = cleanNum(rate);
+
+                var q = parseFloat(entryRowState[wgId]?.qty) || 0;
+                var amt = q * rate;
+                if (entryRowState[wgId]) entryRowState[wgId].amount = amt;
+                var amtInp = document.getElementById("amountInput_" + wgId);
+                if (amtInp) amtInp.value = cleanCurrency(amt);
+
+                entryRowState[wgId].isNewSpec = isNew;
+                entryRowState[wgId].libraryIOWId = libItem.iowId || libItem.IOWId;
+                entryRowState[wgId].libraryWorkGroup = libItem.workGroupName || 'CIVIL WORKS';
+                entryRowState[wgId].librarySerialNo = libItem.serialNo || libItem.code;
+            } else {
+                entryRowState[wgId].isNewSpec = true;
+            }
+        } else {
+            var iowId = ctx.iowId;
+            var it = state.items.find(function (i) { return i.iowId == iowId; });
+            if (it) {
+                it.specification = specText;
+                if (ctx.inputEl) $(ctx.inputEl).val(specText);
+                if (libItem) {
+                    var unit = (libItem.unit && libItem.unit !== 'LS') ? libItem.unit : (libItem.unitId || it.unitId);
+                    var rate = Number(libItem.defaultRate || libItem.rate || it.rate || 0);
+                    it.unitId = unit;
+                    if (rate > 0) {
+                        it.rate = rate;
+                        it.amount = (it.qty || 0) * rate;
+                    }
+                    it.isNewSpec = isNew;
+                } else {
+                    it.isNewSpec = true;
+                }
+                renderMainDataGrid();
+            }
+        }
     }
 
     function addNewSpecificationDirect(specText) {
@@ -3293,6 +4182,9 @@
     function updateEntryRowData(wgId, field, val) {
         if (!entryRowState[wgId]) entryRowState[wgId] = { workGroupId: wgId };
         entryRowState[wgId][field] = val;
+        if (field === 'unitId') {
+            entryRowState[wgId].unitName = val;
+        }
 
         var q = parseFloat(entryRowState[wgId].qty) || 0;
         var r = parseFloat(entryRowState[wgId].rate) || 0;
@@ -3315,15 +4207,25 @@
             it.amount = (it.qty || 0) * it.rate;
             $(`.item-amount-val-${iowId}`).text(cleanCurrency(it.amount));
         } else if (prop === 'refNo') {
-            it.refNo = val;
+            it.refNo = val ? val.trim() : '';
+            var $box = $('#itemRefBox_' + iowId);
+            var $inp = $('#itemRefInput_' + iowId);
+            if (!it.refNo) {
+                $box.addClass('ref-empty-error');
+                $inp.addClass('ref-empty-error');
+            } else {
+                $box.removeClass('ref-empty-error');
+                $inp.removeClass('ref-empty-error');
+            }
         } else if (prop === 'specification') {
             it.specification = val;
             var match = (state.libraryIOWs || []).find(lib => 
                 (lib.specification || '').trim().toLowerCase() === (val || '').trim().toLowerCase()
             );
             it.isNewSpec = !match;
-        } else if (prop === 'unitId') {
+        } else if (prop === 'unitId' || prop === 'unitName') {
             it.unitId = val;
+            it.unitName = val;
         }
 
         recalculateOverallProject();
@@ -3375,17 +4277,37 @@
     }
 
     function saveEntryRow(wgId, callback) {
+        ensureEntryRowHasRefNo(wgId);
         var entry = entryRowState[wgId] || {};
 
-        // STEP 6: RefNo cannot be empty
-        if (!entry.refNo || !entry.refNo.trim()) {
-            triggerRefNoEmptyValidation(wgId);
+        var cleanRef = ($('#refInput_' + wgId).val() || entry.refNo || '').toString().trim();
+        if (cleanRef.toUpperCase() === 'NEW') cleanRef = '';
+        if (!cleanRef) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Empty Ref No Not Allowed',
+                text: 'Please enter a Reference No for this item. Empty Ref No is not allowed.',
+                confirmButtonColor: '#0284c7'
+            });
+            $('#refInput_' + wgId).focus();
             return;
         }
+        entry.refNo = cleanRef;
 
         if (!entry.specification || !entry.specification.trim()) {
-            Swal.fire({ icon: 'warning', text: 'Please enter Specification or select from library.' });
-            return;
+            var $specEl = $('#specSelect_' + wgId);
+            var v = $specEl.val();
+            if (v && v !== '__new__' && String(v).trim()) {
+                entry.specification = String(v).trim();
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Empty Specification Not Allowed',
+                    text: 'Please enter Specification or select from library. Empty Ref No and Specification rows are not allowed to save.',
+                    confirmButtonColor: '#0284c7'
+                });
+                return;
+            }
         }
 
         var specTrimmed = (entry.specification || '').trim();
@@ -3401,9 +4323,6 @@
         var targetWg = state.workgroups.find(w => w.workGroupId == wgId);
         var wgName = targetWg ? targetWg.workGroupName : '';
 
-        var cleanRef = (entry.refNo || '').trim();
-        if (cleanRef.toUpperCase() === 'NEW') cleanRef = '';
-
         var newItem = {
             iowId: newId,
             workGroupId: wgId,
@@ -3411,7 +4330,9 @@
             refNo: cleanRef,
             serialNo: cleanRef,
             specification: specTrimmed,
+            shortSpec: (specTrimmed && specTrimmed.length > 40) ? (specTrimmed.substring(0, 40) + '...') : specTrimmed,
             unitId: entry.unitId || '',
+            unitName: entry.unitName || entry.unitId || '',
             qty: q,
             rate: r,
             amount: q * r,
@@ -3420,6 +4341,9 @@
             librarySerialNo: entry.librarySerialNo || (matchLib ? (matchLib.serialNo || matchLib.code) : cleanRef),
             librarySpecification: specTrimmed,
             workingQty: 1.0,
+            hasMeasurementSheet: false,
+            isQtyLocked: false,
+            measurementSheet: null,
             wbsBreakdown: [],
             resources: [],
             totalWeightagePct: 0.0,
@@ -3430,34 +4354,40 @@
             qualifierValue: 0.0,
             grandTotal: r,
             roundingOff: 0.0,
-            netRate: r
+            netRate: r,
+            calculations: {
+                totalWeightagePct: 0.0,
+                wastageAmount: 0.0,
+                loadingUnloading: 0.0,
+                handlingCharges: 0.0,
+                baseTotal: r,
+                qualifierValue: 0.0,
+                grandTotal: r,
+                roundingOff: 0.0,
+                netRate: r
+            }
         };
 
-        // If specification is not present in library dropdown, save as new and add to state.libraryIOWs so it immediately appears in dropdown!
-        if (isNew && specTrimmed.length > 0) {
-            var newLibItem = {
+        // If new spec, persist to library
+        if (isNew) {
+            state.libraryIOWs = state.libraryIOWs || [];
+            var projId = state.header.costCentreId || '1';
+            state.libraryIOWs.push({
                 iowId: newId,
-                code: cleanRef,
-                serialNo: cleanRef,
-                workGroupName: wgName || 'CIVIL WORKS',
                 specification: specTrimmed,
-                unit: entry.unitId || '',
+                sourceTable: 'Project_IOWMas',
+                workGroupId: wgId,
+                workGroupName: wgName,
+                serialNo: cleanRef,
                 unitId: entry.unitId || '',
-                defaultRate: r,
-                sourceTable: 'IOWMas'
-            };
-            state.libraryIOWs.unshift(newLibItem);
-            if (typeof renderLibraryIOWTable === 'function') {
-                renderLibraryIOWTable();
-            }
+                rate: r
+            });
 
-            // Persist to dbo.Project_IOWMas
-            var projId = $('#ddlProject').val() || '1';
-            $.ajax({
-                url: '/ProjectIOW/SaveNewSpecification',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
+            // Asynchronously register into Project_IOWMas via Web_SaveIOWMas
+            fetch('/ProjectIOW/SaveIOWMasItem', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
                     CostcenterId: projId,
                     ProectKickOfId: projId,
                     WorkGroupId: wgId ? String(wgId) : null,
@@ -3472,12 +4402,13 @@
 
         state.items.push(newItem);
 
-        // Reset entry row
+        // Reset entry row with empty Ref No so user types the next Ref No
         entryRowState[wgId] = {
             workGroupId: wgId,
-            refNo: '',
+            refNo: '', // Typeable, not automatic!
             specification: '',
             unitId: '',
+            unitName: '',
             qty: '0',
             rate: '',
             amount: '0'
@@ -3493,6 +4424,7 @@
             }
             var nextRef = document.getElementById("refInput_" + wgId);
             if (nextRef) {
+                nextRef.value = '';
                 nextRef.focus();
             }
         }, 50);
@@ -3536,10 +4468,7 @@
 
         if (!isCurrentlyOpen) {
             var item = state.items.find(it => it.iowId == iowId);
-            if (item && (!item.refNo || !String(item.refNo).trim())) {
-                triggerItemRefNoValidation(iowId, 'Please enter Reference No. before opening breakdown.');
-                return;
-            }
+            if (item) ensureItemHasRefNo(item);
         }
 
         // Collapse all other rows
@@ -3591,13 +4520,9 @@
             return;
         }
 
-        // Before opening or switching tab, check Ref No!
+        // Before opening or switching tab, ensure Ref No!
         var item = state.items.find(it => it.iowId == iowId);
-        if (item && (!item.refNo || !String(item.refNo).trim())) {
-            var tabName = targetTab === 'wbs' ? 'Quantity' : 'Rate';
-            triggerItemRefNoValidation(iowId, `Please enter Reference No. before selecting ${tabName}.`);
-            return;
-        }
+        if (item) ensureItemHasRefNo(item);
 
         itemActiveSection[iowId] = targetTab;
 
@@ -3664,14 +4589,20 @@
                         <span class="w-4 h-4 rounded bg-sky-100 text-sky-700 font-bold text-[9px] flex items-center justify-center">${idx + 1}</span>
                         <span class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">${w.fullWBSName || w.wbsName}</span>
                     </div>
-                    <div class="w-36 px-1 py-1 text-right flex items-center gap-1">
-                        <input type="number" step="any" value="${cleanNum(w.qty)}" 
-                               oninput="updateWBSQty(${item.iowId}, ${idx}, this.value)" 
-                               onfocus="this.select()"
-                               class="w-full text-xs font-bold font-mono py-0.5 px-2 border border-slate-300 dark:border-slate-600 rounded text-right bg-white dark:bg-slate-700 focus:outline-none focus:ring-1 focus:ring-sky-500" title="Enter WBS Quantity or click 🧮 for Measurement Sheet" />
-                        <button type="button" onclick="event.stopPropagation(); promptMeasurementSheet(${item.iowId}, 'wbs', ${idx})" class="w-5 h-5 rounded bg-blue-100 hover:bg-blue-600 text-blue-700 hover:text-white flex items-center justify-center text-[9px] flex-shrink-0 transition shadow-2xs cursor-pointer" title="Calculate via Measurement Sheet">
-                            <i class="fas fa-calculator"></i>
-                        </button>
+                    <div class="w-36 px-1 py-1 text-right flex items-center gap-1 cursor-pointer" onclick="handleWBSQtyClick(${item.iowId}, ${idx})">
+                        <div class="flex items-center w-full relative">
+                            ${w.isQtyLocked ? `
+                                <button type="button" onclick="event.stopPropagation(); openBoqMeasurementModal(${item.iowId}, 'wbs', ${idx});" class="absolute left-1 z-10 px-1 py-0.2 rounded bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-100 text-[9px] font-bold hover:bg-amber-300 transition flex items-center gap-0.5 cursor-pointer shadow-2xs" title="Click to re-edit Measurement Sheet">
+                                    <i class="fas fa-edit text-[8px]"></i><span>Sheet</span>
+                                </button>
+                            ` : ''}
+                            <input type="number" step="any" id="wbsQtyInput_${item.iowId}_${idx}" value="${cleanNum(w.qty)}" 
+                                   ${w.isQtyLocked ? 'readonly' : ''}
+                                   oninput="updateWBSQty(${item.iowId}, ${idx}, this.value)" 
+                                   onclick="event.stopPropagation(); handleWBSQtyClick(${item.iowId}, ${idx});"
+                                   class="w-full text-xs font-bold font-mono py-1 px-2 border border-slate-300 dark:border-slate-600 rounded text-right ${w.isQtyLocked ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 cursor-pointer pl-12' : 'bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100'} focus:outline-none focus:ring-1 focus:ring-sky-500" 
+                                   title="${w.isQtyLocked ? 'Quantity locked by Measurement Sheet (Click to edit sheet or unlock)' : 'Click to edit quantity or attach Measurement Sheet'}" />
+                        </div>
                     </div>
                     <div class="w-8 text-center px-1">
                         <button type="button" onclick="deleteWBSRow(${item.iowId}, ${idx})" class="text-slate-400 hover:text-rose-600 p-1 transition cursor-pointer" title="Remove WBS"><i class="fas fa-trash-alt text-xs"></i></button>
@@ -3692,22 +4623,32 @@
                     ${getWBSOptionsHtml('')}
                 </select>
             </div>
-            <div class="w-36 text-right flex items-center gap-1">
+            <div class="w-36 text-right flex items-center gap-1 cursor-pointer" onclick="handleNewWBSQtyClick(${item.iowId})">
                 <input type="number" step="any" id="txtNewWBSQty_${item.iowId}" 
                        placeholder="0" 
-                       onfocus="this.select()"
-                       class="w-full text-xs font-mono font-bold text-right px-2 py-1 border-2 border-slate-600 dark:border-slate-400 rounded bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500" 
+                       onclick="event.stopPropagation(); handleNewWBSQtyClick(${item.iowId});"
+                       class="w-full text-xs font-mono font-bold text-right px-2 py-1.5 border-2 border-slate-600 dark:border-slate-400 rounded bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500" 
                        onkeydown="if(event.key === 'Enter') handleWBSCommit(${item.iowId})" 
                        onchange="handleWBSCommit(${item.iowId})"
-                       title="Enter WBS Quantity or click 🧮 for Measurement Sheet" />
-                <button type="button" onclick="event.stopPropagation(); promptMeasurementSheet(${item.iowId}, 'newWbs')" class="w-6 h-6 rounded bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center text-[10px] flex-shrink-0 transition shadow-2xs cursor-pointer" title="Calculate via Measurement Sheet">
-                    <i class="fas fa-calculator"></i>
-                </button>
+                       title="Click to enter Quantity or choose Measurement Sheet" />
             </div>
             <div class="w-8 text-center flex items-center justify-center">
             </div>
         `;
         container.appendChild(inputRow);
+
+        setTimeout(function () {
+            var $ddl = $('#ddlNewWBS_' + item.iowId);
+            if ($ddl.length && !$ddl.hasClass('select2-hidden-accessible')) {
+                $ddl.select2({
+                    dropdownAutoWidth: true,
+                    width: '100%',
+                    placeholder: '-- Select or Search WBS Master --'
+                }).on('select2:select', function (e) {
+                    onWBSDropdownChange(item.iowId, e.target.value);
+                });
+            }
+        }, 50);
     }
 
     // Save/Commit WBS Row from Normal Dropdown Input Row
@@ -3732,11 +4673,7 @@
 
             var item = state.items.find(i => i.iowId == iowId);
             if (!item) return;
-
-            if (!item.refNo || !String(item.refNo).trim()) {
-                triggerItemRefNoValidation(iowId, 'Please enter Reference No. before saving WBS Quantity.');
-                return;
-            }
+            ensureItemHasRefNo(item);
 
             if (!item.wbsBreakdown) item.wbsBreakdown = [];
 
@@ -3805,10 +4742,7 @@
 
     // WBS PickList Modal
     function openWBSPickListModal(item) {
-        if (item && (!item.refNo || !String(item.refNo).trim())) {
-            triggerItemRefNoValidation(item.iowId, 'Please enter Reference No. before opening WBS PickList.');
-            return;
-        }
+        if (item) ensureItemHasRefNo(item);
         state.activeIOWForWBS = item;
         renderWBSPickListTable();
         document.getElementById("modalWBSOverlay").style.display = "flex";
@@ -3916,10 +4850,7 @@
     // ── STEP 14 — RESOURCE RATE CALCULATION (img-14+) ──
     function openResourcePickListModal(iowId) {
         var item = state.items.find(i => i.iowId == iowId);
-        if (item && (!item.refNo || !String(item.refNo).trim())) {
-            triggerItemRefNoValidation(iowId, 'Please enter Reference No. before opening Resource PickList.');
-            return;
-        }
+        if (item) ensureItemHasRefNo(item);
         state.activeIOWForResource = iowId || (state.items.length > 0 ? state.items[0].iowId : null);
         renderResourcePickListTable();
         document.getElementById("modalResourceOverlay").style.display = "flex";
@@ -4173,6 +5104,19 @@
 
         html += `</tbody></table>`;
         container.innerHTML = html;
+
+        setTimeout(function () {
+            var $ddlRes = $('#ddlNewResource_' + item.iowId);
+            if ($ddlRes.length && !$ddlRes.hasClass('select2-hidden-accessible')) {
+                $ddlRes.select2({
+                    dropdownAutoWidth: true,
+                    width: '100%',
+                    placeholder: '-- Select or Search Resource --'
+                }).on('select2:select', function (e) {
+                    onResourceDropdownChange(item.iowId, e.target.value);
+                });
+            }
+        }, 50);
     }
 
     function toggleResourceIncExc(iowId, idx, isChecked) {
@@ -4790,6 +5734,117 @@
         });
     }
 
+    // ── SYNC SAVED BOQ STATE — Background sync of database IDs for continuous editing ──
+    function syncSavedBOQState(boqId, callback) {
+        if (!boqId) return;
+        $.ajax({
+            url: '/ProjectIOW/GetBOQById',
+            type: 'GET',
+            data: { id: boqId },
+            dataType: 'json',
+            success: function (res) {
+                if (res && res.success && res.header) {
+                    state.editingBOQId = res.header.boqId;
+                    if (res.header.totalAmount != null) {
+                        state.header.totalAmount = res.header.totalAmount;
+                    }
+
+                    // Preserve open drawer state
+                    var openDrawers = Object.assign({}, state.expandedIOWs || {});
+
+                    if (res.items && res.items.length > 0) {
+                        state.items = res.items.map(function (it, idx) {
+                            var wbs = (it.wbsBreakdown || []).map(function (wb) {
+                                return {
+                                    project_WBSId: wb.projectWBSId || 0,
+                                    wbsId: wb.wbsId,
+                                    wbsName: wb.wbsName,
+                                    fullWBSName: wb.fullWBSName || wb.wbsName,
+                                    qty: Number(wb.qty || 0)
+                                };
+                            });
+
+                            var resources = (it.resources || []).map(function (r) {
+                                return {
+                                    project_ResourceId: r.projectResourceId || r.resourceDetailId || 0,
+                                    resourceDetailId: r.resourceDetailId,
+                                    iowId: it.projectIOWId || it.iowId,
+                                    resourceCode: r.resourceCode || '',
+                                    resourceName: r.resourceName || '',
+                                    resourceId: r.resourceId,
+                                    incExc: r.incExc,
+                                    coefficient: Number(r.coefficient || 1.0),
+                                    unitId: r.unitId || '',
+                                    unit: r.unit || r.unitName || '',
+                                    rate: Number(r.rate || 0),
+                                    amount: Number(r.amount || 0),
+                                    weightagePct: Number(r.weightagePct || 0),
+                                    wastagePct: Number(r.wastagePct || 0)
+                                };
+                            });
+
+                            var calcs = it.calculations || {};
+
+                            return {
+                                iowId: it.projectIOWId || it.iowId || (Date.now() + idx),
+                                project_IOWId: it.projectIOWId || 0,
+                                workGroupId: it.workGroupId || '1',
+                                workGroupName: it.workGroupName || '',
+                                refNo: it.refNo || '',
+                                serialNo: it.serialNo || it.refNo || '',
+                                specification: it.specification || '',
+                                shortSpec: it.specification ? (it.specification.length > 40 ? it.specification.substring(0, 40) + '...' : it.specification) : '',
+                                unitId: it.unitId || '',
+                                unitName: it.unitName || it.unitId || '',
+                                qty: Number(it.qty || 1.0),
+                                rate: Number(it.rate || 0.0),
+                                amount: Number(it.amount || 0.0),
+                                isNewSpec: false,
+                                hasMeasurementSheet: it.hasMeasurementSheet === true,
+                                isQtyLocked: it.isQtyLocked === true,
+                                measurementSheet: it.measurementSheet || null,
+                                wbsBreakdown: wbs,
+                                resources: resources,
+                                calculations: {
+                                    totalWeightagePct: Number(calcs.totalWeightagePct || 0),
+                                    wastageAmount: Number(calcs.wastageAmount || 0),
+                                    loadingUnloading: Number(calcs.loadingUnloading || 0),
+                                    handlingCharges: Number(calcs.handlingCharges || 0),
+                                    baseTotal: Number(calcs.baseTotal || 0),
+                                    qualifierValue: Number(calcs.qualifierValue || 0),
+                                    grandTotal: Number(calcs.grandTotal || 0),
+                                    roundingOff: Number(calcs.roundingOff || 0),
+                                    netRate: Number(calcs.netRate || it.rate || 0)
+                                }
+                            };
+                        });
+                    }
+
+                    state.expandedIOWs = openDrawers;
+                    renderMainDataGrid();
+                    recalculateOverallProject();
+
+                    (state.selectedWorkgroups || []).forEach(function (sw) {
+                        if (!entryRowState[sw.workGroupId]) {
+                            entryRowState[sw.workGroupId] = {
+                                workGroupId: sw.workGroupId,
+                                refNo: '',
+                                specification: '',
+                                unitId: '',
+                                unitName: '',
+                                qty: '0',
+                                rate: '',
+                                amount: '0'
+                            };
+                        }
+                    });
+
+                    if (typeof callback === 'function') callback();
+                }
+            }
+        });
+    }
+
     // ── FINAL SAVE — SAVE TRANSACTIONALLY TO 4 TABLES & OUTPUT SUMMARY ──
     function submitProjectIOW() {
         var refDateVal = state.header.referenceDate || document.getElementById("txtReferenceDate").value;
@@ -4806,17 +5861,46 @@
             }
         }
 
-        // Auto-commit any pending entry row that has data before saving
-        (state.selectedWorkgroups || []).forEach(w => {
+        var headerRefNo = (document.getElementById("txtReferenceNo")?.value || state.header.referenceNo || "").trim();
+        if (!headerRefNo) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Reference No Required',
+                text: 'Please enter a BOQ Reference No before saving. Empty Ref No is not allowed.',
+                confirmButtonColor: '#0284c7'
+            });
+            $('#txtReferenceNo').focus();
+            return;
+        }
+
+        // Auto-commit any pending entry row that has a specification filled in
+        for (var i = 0; i < (state.selectedWorkgroups || []).length; i++) {
+            var w = state.selectedWorkgroups[i];
             var pEntry = entryRowState[w.workGroupId];
-            if (pEntry && pEntry.specification && pEntry.specification.trim() !== '') {
-                if (!pEntry.refNo || !pEntry.refNo.trim()) {
-                    var itemsInWg = state.items.filter(i => i.workGroupId == w.workGroupId);
-                    pEntry.refNo = (w.serialNo || '1') + '.' + (itemsInWg.length + 1);
+            if (pEntry) {
+                var inputVal = $('#specSelect_' + w.workGroupId).val() || '';
+                if (inputVal && inputVal.trim() && inputVal !== '__new__') {
+                    pEntry.specification = inputVal.trim();
                 }
-                saveEntryRow(w.workGroupId);
+                var hasSpec = pEntry.specification && pEntry.specification.trim() !== '';
+                if (hasSpec) {
+                    var inputRef = ($('#refInput_' + w.workGroupId).val() || pEntry.refNo || '').toString().trim();
+                    if (inputRef.toUpperCase() === 'NEW') inputRef = '';
+                    if (!inputRef) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Empty Ref No Not Allowed',
+                            text: 'Please enter a Reference No for the pending row in WorkGroup "' + (w.workGroupName || w.workGroupId) + '". Empty Ref No is not allowed.',
+                            confirmButtonColor: '#0284c7'
+                        });
+                        $('#refInput_' + w.workGroupId).focus();
+                        return;
+                    }
+                    pEntry.refNo = inputRef;
+                    saveEntryRow(w.workGroupId);
+                }
             }
-        });
+        }
 
         if (!state.items || state.items.length === 0) {
             Swal.fire({
@@ -4826,6 +5910,37 @@
                 confirmButtonColor: '#0284c7'
             });
             return;
+        }
+
+        // Strict Validation: Empty Ref No and Specification rows are not allowed to save
+        for (var i = 0; i < state.items.length; i++) {
+            var itm = state.items[i];
+            var itmRef = (itm.refNo != null ? String(itm.refNo) : '').trim();
+            if (itmRef.toUpperCase() === 'NEW') itmRef = '';
+            var itmSpec = (itm.specification != null ? String(itm.specification) : '').trim();
+
+            if (!itmRef) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Empty Ref No Not Allowed',
+                    text: 'Item row #' + (i + 1) + ' (' + (itmSpec || 'Untitled') + ') has an empty Ref No. Empty Ref No and Specification rows are not allowed to save.',
+                    confirmButtonColor: '#0284c7'
+                });
+                $('#itemRefBox_' + itm.iowId).addClass('ref-empty-error');
+                $('#itemRefInput_' + itm.iowId).addClass('ref-empty-error').focus();
+                return;
+            }
+
+            if (!itmSpec) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Empty Specification Not Allowed',
+                    text: 'Item row #' + (i + 1) + ' (Ref No: ' + itmRef + ') has an empty Specification. Empty Ref No and Specification rows are not allowed to save.',
+                    confirmButtonColor: '#0284c7'
+                });
+                $('#itemSpecSelect_' + itm.iowId).focus();
+                return;
+            }
         }
 
         var header = {
@@ -4863,7 +5978,27 @@
                 var itRate = Number(it.rate) || 0;
                 var itAmount = Number(it.amount) || (itQty * itRate);
 
+                var pIowId = it.project_IOWId || it.projectIOWId || 0;
+                var hasSheet = it.hasMeasurementSheet === true || (it.measurementSheet != null);
+                var isLocked = it.isQtyLocked === true || hasSheet;
+
+                var sheetModel = null;
+                if (it.measurementSheet) {
+                    sheetModel = {
+                        MeasurementSheetId: it.measurementSheet.measurementSheetId || 0,
+                        BOQId: state.editingBOQId || 0,
+                        Project_IOWId: pIowId,
+                        Project_WBSId: 0,
+                        TemplateId: it.measurementSheet.templateId || 0,
+                        TemplateName: it.measurementSheet.templateName || '',
+                        SelectedColumn: it.measurementSheet.selectedColumn || 'Qty',
+                        SheetDataJson: typeof it.measurementSheet.sheetDataJson === 'string' ? it.measurementSheet.sheetDataJson : JSON.stringify(it.measurementSheet.sheetDataJson || []),
+                        TotalQty: Number(it.measurementSheet.totalQty) || itQty
+                    };
+                }
+
                 return {
+                    Project_IOWId: pIowId,
                     IOWId: it.iowId || 0,
                     WorkGroupId: it.workGroupId != null ? String(it.workGroupId) : '',
                     WorkGroupName: it.workGroupName || '',
@@ -4876,13 +6011,18 @@
                     Rate: itRate,
                     Amount: itAmount,
                     IsNewSpec: it.isNewSpec === true,
+                    HasMeasurementSheet: hasSheet,
+                    IsQtyLocked: isLocked,
+                    MeasurementSheet: sheetModel,
                     WBSBreakdown: (it.wbsBreakdown || []).map(w => ({
+                        Project_WBSId: w.project_WBSId || w.projectWBSId || 0,
                         WBSId: w.wbsId != null ? String(w.wbsId) : '0',
                         WBSName: w.wbsName || '',
                         FullWBSName: w.fullWBSName || w.wbsName || '',
                         Qty: Number(w.qty) || 0
                     })),
                     Resources: (it.resources || []).map(r => ({
+                        Project_ResourceId: r.project_ResourceId || r.projectResourceId || r.resourceDetailId || 0,
                         ResourceId: r.resourceId != null ? String(r.resourceId) : '',
                         RefNo: r.refNo || '',
                         Type: r.type || 'AC',
@@ -4909,7 +6049,18 @@
                         NetRate: Number(it.netRate) || 0
                     }
                 };
-            })
+            }),
+            MeasurementSheets: state.items.filter(it => it.measurementSheet).map(it => ({
+                MeasurementSheetId: it.measurementSheet.measurementSheetId || 0,
+                BOQId: state.editingBOQId || 0,
+                Project_IOWId: it.project_IOWId || it.projectIOWId || 0,
+                Project_WBSId: 0,
+                TemplateId: it.measurementSheet.templateId || 0,
+                TemplateName: it.measurementSheet.templateName || '',
+                SelectedColumn: it.measurementSheet.selectedColumn || 'Qty',
+                SheetDataJson: typeof it.measurementSheet.sheetDataJson === 'string' ? it.measurementSheet.sheetDataJson : JSON.stringify(it.measurementSheet.sheetDataJson || []),
+                TotalQty: Number(it.measurementSheet.totalQty) || Number(it.qty) || 0
+            }))
         };
 
         var jsonString = JSON.stringify(fullPayload, null, 2);
@@ -4949,6 +6100,24 @@
                     state.editingBOQId = res.boqId;
                     $('#lblBOQFormTitle').text("Edit Bill of Quantity #" + res.boqId + " (" + (header.ReferenceNo ? "Ref: " + header.ReferenceNo : "") + ")");
                     $('#badgeEditMode').removeClass('hidden').text("Editing BOQ #" + res.boqId);
+
+                    // Update client items with returned saved item IDs immediately
+                    if (res.savedItems && res.savedItems.length > 0) {
+                        res.savedItems.forEach(function (sv) {
+                            var match = (state.items || []).find(function (it) {
+                                return (sv.clientIowId && it.iowId == sv.clientIowId) ||
+                                       (it.refNo && String(it.refNo).trim() === String(sv.refNo).trim());
+                            });
+                            if (match) {
+                                match.project_IOWId = sv.project_IOWId;
+                                match.projectIOWId = sv.project_IOWId;
+                                match.iowId = sv.project_IOWId;
+                            }
+                        });
+                    }
+
+                    // Background sync full state with database IDs for continuous editing
+                    syncSavedBOQState(res.boqId);
 
                     Swal.fire({
                         icon: 'success',
@@ -5131,11 +6300,8 @@
     function promptMeasurementSheet(iowId, targetType, targetIdx, onNoCallback, onFinishedCallback) {
         var it = state.items.find(function (i) { return i.iowId == iowId; });
 
-        // Validate Reference No. before opening measurement sheet!
-        if (it && (!it.refNo || !String(it.refNo).trim())) {
-            triggerItemRefNoValidation(iowId, 'Please enter Reference No. before opening Measurement Sheet.');
-            return;
-        }
+        // Ensure Reference No. before opening measurement sheet!
+        if (it) ensureItemHasRefNo(it);
 
         var targetLabel = "Quantity";
         if (targetType === 'item') {
@@ -5207,6 +6373,155 @@
     }
 
     var boqActiveTargetColumn = 'Qty';
+    var isBoqMeasurementFullscreen = false;
+    var isBoqMeasurementConfigCollapsed = false;
+
+    function toggleBoqMeasurementFullscreen() {
+        isBoqMeasurementFullscreen = !isBoqMeasurementFullscreen;
+        var $container = $('#modalBOQMeasurementContainer');
+        var $icon = $('#iconBoqMeasurementFullscreen');
+        var $lbl = $('#lblBoqMeasurementFullscreen');
+
+        if (isBoqMeasurementFullscreen) {
+            $container.removeClass('w-[96vw] max-w-7xl h-[90vh] my-auto rounded-xl')
+                      .addClass('w-screen h-screen max-w-none max-h-none my-0 rounded-none border-none');
+            $icon.removeClass('fa-expand').addClass('fa-compress');
+            $lbl.text('Restore');
+        } else {
+            $container.removeClass('w-screen h-screen max-w-none max-h-none my-0 rounded-none border-none')
+                      .addClass('w-[96vw] max-w-7xl h-[90vh] my-auto rounded-xl');
+            $icon.removeClass('fa-compress').addClass('fa-expand');
+            $lbl.text('Fullscreen');
+        }
+
+        setTimeout(function () {
+            updateHotDimensions();
+            if (boqHotInstance) boqHotInstance.render();
+        }, 150);
+    }
+
+    function toggleBoqMeasurementConfig() {
+        isBoqMeasurementConfigCollapsed = !isBoqMeasurementConfigCollapsed;
+        var $panel = $('#boqMeasurementConfigPanel');
+        var $icon = $('#iconToggleBoqMeasurementConfig');
+        var $lbl = $('#lblToggleBoqMeasurementConfig');
+        var $summary = $('#lblBoqCompactSettingsSummary');
+
+        if (isBoqMeasurementConfigCollapsed) {
+            $panel.slideUp(150);
+            $icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+            $lbl.text('Show Settings');
+            var tplName = $('#ddlBoqMeasurementTemplate option:selected').text() || '';
+            var colName = $('#selBoqMeasurementColumns').val() || boqActiveTargetColumn || 'Qty';
+            $summary.text('(' + tplName + ' → ' + colName + ')').removeClass('hidden');
+        } else {
+            $panel.slideDown(150);
+            $icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+            $lbl.text('Hide Settings');
+            $summary.addClass('hidden');
+        }
+
+        setTimeout(function () {
+            updateHotDimensions();
+            if (boqHotInstance) boqHotInstance.render();
+        }, 200);
+    }
+
+    function boqAddSpreadsheetRows(count) {
+        if (!boqHotInstance) return;
+        var currentCols = boqHotInstance.countCols();
+        var newRows = [];
+        for (var i = 0; i < count; i++) {
+            newRows.push(new Array(currentCols).fill(''));
+        }
+        var currentData = boqHotInstance.getData();
+        var combined = currentData.concat(newRows);
+        boqHotInstance.loadData(combined);
+        recalculateBoqMeasurement();
+        updateHotDimensions();
+    }
+
+    function boqClearEmptySpreadsheetRows() {
+        if (!boqHotInstance) return;
+        var currentData = boqHotInstance.getData();
+        if (!currentData || currentData.length <= 1) return;
+        var headers = currentData[0];
+        var filtered = [headers];
+        for (var r = 1; r < currentData.length; r++) {
+            var row = currentData[r];
+            var hasContent = row.some(function(val) {
+                return val !== null && val !== undefined && $.trim(String(val)) !== '';
+            });
+            if (hasContent) {
+                filtered.push(row);
+            }
+        }
+        while (filtered.length < 7) {
+            filtered.push(new Array(headers.length).fill(''));
+        }
+        boqHotInstance.loadData(filtered);
+        recalculateBoqMeasurement();
+    }
+
+    function detachBoqMeasurementSheet() {
+        if (!boqMeasurementActiveTarget) return;
+        var iowId = boqMeasurementActiveTarget.iowId;
+        var targetType = boqMeasurementActiveTarget.targetType;
+        var targetIdx = boqMeasurementActiveTarget.targetIdx;
+        var it = state.items.find(function (i) { return i.iowId == iowId; });
+
+        Swal.fire({
+            title: 'Detach Measurement Sheet?',
+            text: 'This will unlock the quantity for manual typing and remove the attached sheet calculations.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e11d48',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, Detach & Unlock',
+            cancelButtonText: 'Keep Sheet'
+        }).then(function (result) {
+            if (result.isConfirmed) {
+                if (it) {
+                    it.isQtyLocked = false;
+                    it.hasMeasurementSheet = false;
+                    it.measurementSheet = null;
+                    if (targetType === 'wbs' && it.wbsBreakdown && it.wbsBreakdown[targetIdx]) {
+                        it.wbsBreakdown[targetIdx].isQtyLocked = false;
+                        it.wbsBreakdown[targetIdx].measurementSheet = null;
+                    } else if (targetType === 'item' && it.wbsBreakdown && it.wbsBreakdown.length === 1) {
+                        it.wbsBreakdown[0].isQtyLocked = false;
+                        it.wbsBreakdown[0].measurementSheet = null;
+                    }
+                }
+                closeBoqMeasurementModal();
+                renderMainDataGrid();
+                if (targetType === 'item') {
+                    toggleDetailSection('item_' + iowId, 'wbs');
+                }
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'info',
+                    title: 'Measurement Sheet detached. Quantity is now unlocked for manual entry.',
+                    showConfirmButton: false,
+                    timer: 2500
+                });
+            }
+        });
+    }
+
+    function updateHotDimensions() {
+        if (!boqHotInstance) return;
+        var wrapper = document.getElementById('boqMeasurementSpreadsheetWrapper');
+        if (wrapper) {
+            var h = wrapper.clientHeight;
+            if (h && h > 200) {
+                boqHotInstance.updateSettings({
+                    height: h
+                });
+            }
+        }
+    }
 
     function openBoqMeasurementModal(iowId, targetType, targetIdx, chosenTemplateId) {
         boqMeasurementActiveTarget = {
@@ -5216,27 +6531,73 @@
         };
 
         var it = state.items.find(function (i) { return i.iowId == iowId; });
+        if (it) ensureItemHasRefNo(it);
         var targetDesc = "BOQ Item #" + (it ? (it.refNo || it.specification || iowId) : iowId);
         if (targetType === 'wbs' && it && it.wbsBreakdown && it.wbsBreakdown[targetIdx]) {
             targetDesc = "WBS: " + (it.wbsBreakdown[targetIdx].fullWBSName || it.wbsBreakdown[targetIdx].wbsName);
         } else if (targetType === 'newWbs') {
             targetDesc = "New WBS Row for " + (it ? (it.specification || 'Item') : 'Item');
         }
-        $('#lblBoqMeasurementTargetInfo').text("Calculating for: " + targetDesc);
 
         // Display modal immediately
         $('#modalBOQMeasurementOverlay').css('display', 'flex').removeClass('hidden');
 
-        // Load templates into dropdown and open template
+        var existingSheet = (it && it.measurementSheet) ? it.measurementSheet : null;
+        if (targetType === 'wbs' && it && it.wbsBreakdown && it.wbsBreakdown[targetIdx] && it.wbsBreakdown[targetIdx].measurementSheet) {
+            existingSheet = it.wbsBreakdown[targetIdx].measurementSheet;
+        }
+        if (!existingSheet && it) {
+            if (it.measurementSheet) existingSheet = it.measurementSheet;
+            else if (it.wbsBreakdown) {
+                for (var b = 0; b < it.wbsBreakdown.length; b++) {
+                    if (it.wbsBreakdown[b] && it.wbsBreakdown[b].measurementSheet) {
+                        existingSheet = it.wbsBreakdown[b].measurementSheet;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (existingSheet) {
+            $('#badgeBoqEditingExistingSheet').removeClass('hidden');
+            $('#btnDetachBoqMeasurement').removeClass('hidden');
+            $('#lblBoqMeasurementTargetInfo').html('Re-editing Measurement Sheet (Current Total: <strong class="text-sky-600 dark:text-sky-400 font-mono">' + cleanNum(existingSheet.totalQty || 0) + '</strong>) for ' + targetDesc);
+        } else {
+            $('#badgeBoqEditingExistingSheet').addClass('hidden');
+            $('#btnDetachBoqMeasurement').addClass('hidden');
+            $('#lblBoqMeasurementTargetInfo').text('Enter dimensions below — total quantity calculates automatically for ' + targetDesc);
+        }
+
+        // Load templates into dropdown and open template or existing sheet data
         loadBoqMeasurementTemplates(function () {
-            var selectedTplId = chosenTemplateId || $('#ddlBoqMeasurementTemplate').val() || '1';
+            var selectedTplId = chosenTemplateId || (existingSheet ? existingSheet.templateId : null) || $('#ddlBoqMeasurementTemplate').val() || '1';
             $('#ddlBoqMeasurementTemplate').val(selectedTplId);
+
+            if (existingSheet && existingSheet.sheetDataJson) {
+                try {
+                    var parsedData = typeof existingSheet.sheetDataJson === 'string' ? JSON.parse(existingSheet.sheetDataJson) : existingSheet.sheetDataJson;
+                    if (Array.isArray(parsedData) && parsedData.length > 0) {
+                        var col = existingSheet.selectedColumn || 'Qty';
+                        boqActiveTargetColumn = col;
+                        $('#lblBoqTotalColName').text(col);
+                        $('#lblBoqActiveTargetColName').text(col);
+                        syncBoqColumnsDropdown(parsedData[0] || [], col);
+                        renderBoqSpreadsheet(parsedData, col);
+                        return;
+                    }
+                } catch (e) {
+                    console.error("Error parsing existing measurement sheet data:", e);
+                }
+            }
             loadBoqMeasurementTemplate(selectedTplId);
-        }, chosenTemplateId);
+        }, chosenTemplateId || (existingSheet ? existingSheet.templateId : null));
     }
 
     function closeBoqMeasurementModal() {
         $('#modalBOQMeasurementOverlay').css('display', 'none').addClass('hidden');
+        if (isBoqMeasurementFullscreen) {
+            toggleBoqMeasurementFullscreen();
+        }
     }
 
     function loadBoqMeasurementTemplates(callback, preserveSelectedId) {
@@ -5395,18 +6756,28 @@
 
         // Wait a frame for layout dimensions to be fully computed
         setTimeout(function () {
+            var wrapper = document.getElementById('boqMeasurementSpreadsheetWrapper');
+            var dynamicHeight = (wrapper && wrapper.clientHeight > 200) ? wrapper.clientHeight : 460;
+
             boqHotInstance = new Handsontable(container, {
                 data: sheetData,
                 colHeaders: true,
                 rowHeaders: true,
                 contextMenu: true,
-                minRows: 8,
-                height: 378,
+                minRows: 10,
+                minSpareRows: 1,
+                height: dynamicHeight,
                 width: '100%',
-                colWidths: 130,
+                colWidths: function (colIndex) {
+                    if (colIndex === 0) return 320; // Description column spacious
+                    return 130;
+                },
                 stretchH: 'all',
                 manualColumnResize: true,
                 manualRowResize: true,
+                enterBeginsEditing: true,
+                tabMoves: { row: 0, col: 1 },
+                autoWrapRow: true,
                 cells: function (row, col) {
                     var cellProperties = {};
                     if (row === 0) {
@@ -5453,8 +6824,9 @@
                 if (boqHotInstance) {
                     boqHotInstance.render();
                     recalculateBoqMeasurement();
+                    updateHotDimensions();
                 }
-            }, 60);
+            }, 80);
         }, 50);
     }
 
@@ -5567,21 +6939,49 @@
 
         var it = state.items.find(function (i) { return i.iowId == iowId; });
 
+        var sheetData = boqHotInstance ? boqHotInstance.getData() : [];
+        var selectedTplId = $('#ddlBoqMeasurementTemplate').val() || '1';
+        var selectedTplName = $('#ddlBoqMeasurementTemplate option:selected').text() || 'Standard Measurement';
+
+        var sheetObj = {
+            measurementSheetId: (it && it.measurementSheet) ? (it.measurementSheet.measurementSheetId || 0) : 0,
+            boqId: state.editingBOQId || 0,
+            project_IOWId: it ? (it.project_IOWId || it.projectIOWId || 0) : 0,
+            project_WBSId: 0,
+            templateId: parseInt(selectedTplId) || 1,
+            templateName: selectedTplName,
+            selectedColumn: boqActiveTargetColumn || 'Qty',
+            sheetDataJson: JSON.stringify(sheetData),
+            totalQty: totalQty
+        };
+
+        if (it) {
+            it.measurementSheet = sheetObj;
+            it.hasMeasurementSheet = true;
+            it.isQtyLocked = true;
+        }
+
         if (targetType === 'item') {
             // Apply to main BOQ Item
             updateItemDirect(iowId, 'qty', totalQty);
             $('.item-qty-val-' + iowId).val(cleanNum(totalQty));
             if (it && it.wbsBreakdown && it.wbsBreakdown.length === 1) {
                 it.wbsBreakdown[0].qty = totalQty;
+                it.wbsBreakdown[0].measurementSheet = sheetObj;
+                it.wbsBreakdown[0].isQtyLocked = true;
                 renderWBSRows(it);
                 updateWBSTotalAndSync(it);
             }
+            renderMainDataGrid();
         } else if (targetType === 'wbs') {
             // Apply to specific WBS row
             if (it && it.wbsBreakdown && it.wbsBreakdown[targetIdx]) {
+                it.wbsBreakdown[targetIdx].measurementSheet = sheetObj;
+                it.wbsBreakdown[targetIdx].isQtyLocked = true;
                 updateWBSQty(iowId, targetIdx, totalQty);
                 renderWBSRows(it);
             }
+            renderMainDataGrid();
         } else if (targetType === 'newWbs') {
             // Apply to the new WBS input box
             $('#txtNewWBSQty_' + iowId).val(cleanNum(totalQty));
@@ -5591,6 +6991,7 @@
             } else {
                 $('#txtNewWBSQty_' + iowId).focus();
             }
+            renderMainDataGrid();
         }
 
         closeBoqMeasurementModal();
@@ -5599,9 +7000,9 @@
             toast: true,
             position: 'top-end',
             icon: 'success',
-            title: 'Quantity (' + cleanNum(totalQty) + ') saved to WBS!',
+            title: 'Quantity (' + cleanNum(totalQty) + ') applied & locked via Measurement Sheet!',
             showConfirmButton: false,
-            timer: 2000
+            timer: 2500
         });
     }
 </script>

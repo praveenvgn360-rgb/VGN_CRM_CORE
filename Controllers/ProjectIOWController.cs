@@ -58,6 +58,30 @@ namespace VGN_CRM_CORE.Controllers
             return View();
         }
 
+        // GET: /ProjectIOW/GetNextRefNo
+        // Calls Stored Procedure: Web_GetNextBOQRefNo
+        [HttpGet]
+        public async Task<IActionResult> GetNextRefNo()
+        {
+            try
+            {
+                using (var con = new SqlConnection(_connPROJ))
+                using (var cmd = new SqlCommand("dbo.Web_GetNextBOQRefNo", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.CommandTimeout = 60;
+                    await con.OpenAsync();
+                    var res = await cmd.ExecuteScalarAsync();
+                    int nextNo = (res != null && res != DBNull.Value) ? Convert.ToInt32(res) : 1;
+                    return Json(new { success = true, nextRefNo = nextNo });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error getting next RefNo: " + ex.Message, nextRefNo = 1 });
+            }
+        }
+
         // GET: /ProjectIOW/GetProjects
         // Calls Stored Procedure: Web_GetProjects
         [HttpGet]
@@ -872,10 +896,12 @@ namespace VGN_CRM_CORE.Controllers
                         var dtWBS = ds.Tables.Count > 2 ? ds.Tables[2] : new DataTable();
                         // Table 3: Resources
                         var dtResources = ds.Tables.Count > 3 ? ds.Tables[3] : new DataTable();
+                        // Table 4: Measurement Sheets
+                        var dtSheets = ds.Tables.Count > 4 ? ds.Tables[4] : new DataTable();
 
                         var rHeader = ds.Tables[0].Rows[0];
-                        double headerTotal = rHeader["TotalAmount"] != DBNull.Value ? Convert.ToDouble(rHeader["TotalAmount"]) : 0.0;
-                        if (headerTotal <= 0 && dtItems.Rows.Count > 0)
+                        double headerTotal = 0.0;
+                        if (dtItems.Rows.Count > 0)
                         {
                             foreach (DataRow dr in dtItems.Rows)
                             {
@@ -888,6 +914,10 @@ namespace VGN_CRM_CORE.Controllers
                                 }
                                 headerTotal += amt;
                             }
+                        }
+                        else if (rHeader["TotalAmount"] != DBNull.Value)
+                        {
+                            headerTotal = Convert.ToDouble(rHeader["TotalAmount"]);
                         }
 
                         var headerObj = new
@@ -930,6 +960,46 @@ namespace VGN_CRM_CORE.Controllers
                                 };
                             }
 
+                            // Matching Measurement Sheet for this IOW item
+                            object sheetObj = null;
+                            bool hasSheet = false;
+                            bool isQtyLocked = false;
+                            if (dtSheets.Rows.Count > 0)
+                            {
+                                foreach (DataRow rSheet in dtSheets.Rows)
+                                {
+                                    if (rSheet.Table.Columns.Contains("Project_IOWId") && rSheet["Project_IOWId"]?.ToString() == projIowId)
+                                    {
+                                        hasSheet = true;
+                                        if (rSheet.Table.Columns.Contains("IsLocked") && rSheet["IsLocked"] != DBNull.Value)
+                                        {
+                                            var lk = rSheet["IsLocked"]?.ToString();
+                                            isQtyLocked = (lk == "1" || lk.Equals("true", StringComparison.OrdinalIgnoreCase));
+                                        }
+                                        else
+                                        {
+                                            // When a measurement sheet is attached, quantity is locked by the sheet
+                                            isQtyLocked = true;
+                                        }
+
+                                        sheetObj = new
+                                        {
+                                            measurementSheetId = rSheet.Table.Columns.Contains("MeasurementSheetId") && rSheet["MeasurementSheetId"] != DBNull.Value ? Convert.ToInt32(rSheet["MeasurementSheetId"]) : 0,
+                                            boqId = rSheet.Table.Columns.Contains("BOQId") && rSheet["BOQId"] != DBNull.Value ? Convert.ToInt32(rSheet["BOQId"]) : 0,
+                                            projectIOWId = projIowId,
+                                            projectWBSId = rSheet.Table.Columns.Contains("Project_WBSId") ? (rSheet["Project_WBSId"]?.ToString() ?? "0") : "0",
+                                            templateId = rSheet.Table.Columns.Contains("TemplateId") && rSheet["TemplateId"] != DBNull.Value ? Convert.ToInt32(rSheet["TemplateId"]) : 0,
+                                            templateName = rSheet.Table.Columns.Contains("TemplateName") ? (rSheet["TemplateName"]?.ToString() ?? "") : "",
+                                            selectedColumn = rSheet.Table.Columns.Contains("SelectedColumn") ? (rSheet["SelectedColumn"]?.ToString() ?? "Qty") : "Qty",
+                                            sheetDataJson = rSheet.Table.Columns.Contains("SheetDataJson") ? (rSheet["SheetDataJson"]?.ToString() ?? "[]") : "[]",
+                                            totalQty = rSheet.Table.Columns.Contains("TotalQty") && rSheet["TotalQty"] != DBNull.Value ? Convert.ToDouble(rSheet["TotalQty"]) : 0.0,
+                                            isLocked = isQtyLocked
+                                        };
+                                        break;
+                                    }
+                                }
+                            }
+
                             // Matching WBS items for this IOW
                             var wbsList = new List<object>();
                             foreach (DataRow rWbs in dtWBS.Rows)
@@ -938,6 +1008,7 @@ namespace VGN_CRM_CORE.Controllers
                                 {
                                     wbsList.Add(new
                                     {
+                                        projectWBSId = rWbs["Project_WBSId"]?.ToString() ?? "0",
                                         wbsId = rWbs["WBSId"]?.ToString() ?? "0",
                                         wbsName = rWbs["WBSName"]?.ToString() ?? "",
                                         fullWBSName = rWbs["FullWBSName"]?.ToString() ?? "",
@@ -957,6 +1028,7 @@ namespace VGN_CRM_CORE.Controllers
                                 {
                                     resList.Add(new
                                     {
+                                        projectResourceId = rRes["Project_ResourceId"]?.ToString() ?? "",
                                         resourceDetailId = rRes["Project_ResourceId"]?.ToString() ?? "",
                                         iowId = projIowId,
                                         resourceCode = rRes["ResourceCode"]?.ToString() ?? "",
@@ -990,20 +1062,28 @@ namespace VGN_CRM_CORE.Controllers
                                 }
                             }
 
+                            var rawRef = rItem.Table.Columns.Contains("RefNo") && rItem["RefNo"] != DBNull.Value ? rItem["RefNo"].ToString().Trim() : "";
+                            var rawSerial = rItem.Table.Columns.Contains("SerialNo") && rItem["SerialNo"] != DBNull.Value ? rItem["SerialNo"].ToString().Trim() : "";
+                            var resolvedRef = !string.IsNullOrWhiteSpace(rawRef) ? rawRef : (!string.IsNullOrWhiteSpace(rawSerial) ? rawSerial : $"{wgId}.{itemsList.Count + 1}");
+                            var resolvedSerial = !string.IsNullOrWhiteSpace(rawSerial) ? rawSerial : resolvedRef;
+
                             itemsList.Add(new
                             {
                                 projectIOWId = projIowId,
                                 iowId = rItem["IOWId"]?.ToString() ?? "0",
                                 workGroupId = wgId,
                                 workGroupName = wgName,
-                                refNo = rItem["RefNo"]?.ToString() ?? "",
-                                serialNo = rItem["SerialNo"]?.ToString() ?? "",
+                                refNo = resolvedRef,
+                                serialNo = resolvedSerial,
                                 specification = rItem["Specification"]?.ToString() ?? "",
                                 unitId = rItem["UnitId"]?.ToString() ?? "",
                                 unitName = rItem["UnitName"]?.ToString() ?? "",
                                 qty = rItem["Qty"] != DBNull.Value ? Convert.ToDouble(rItem["Qty"]) : 0.0,
                                 rate = rItem["Rate"] != DBNull.Value ? Convert.ToDouble(rItem["Rate"]) : 0.0,
                                 amount = rItem["Amount"] != DBNull.Value ? Convert.ToDouble(rItem["Amount"]) : 0.0,
+                                hasMeasurementSheet = hasSheet,
+                                isQtyLocked = isQtyLocked,
+                                measurementSheet = sheetObj,
                                 wbsBreakdown = wbsList,
                                 resources = resList,
                                 calculations = calcsObj ?? new { }
@@ -1117,7 +1197,36 @@ namespace VGN_CRM_CORE.Controllers
 
             var costCenterId = payload.Header?.CostCentreId?.ToString() ?? "1";
             var kickoffId = payload.Header?.ProjectKickoffId?.ToString() ?? "1";
-            var refNo = payload.Header?.ReferenceNo ?? "51070";
+            var refNo = payload.Header?.ReferenceNo?.Trim() ?? "";
+            if (string.IsNullOrWhiteSpace(refNo))
+            {
+                return Json(new { success = false, message = "BOQ Reference No is required. Empty Ref No is not allowed." });
+            }
+
+            if (payload.Items == null || payload.Items.Count == 0)
+            {
+                return Json(new { success = false, message = "Please add at least one line item (specification) before saving." });
+            }
+
+            // Strict Validation: Empty Ref No and Specification rows are not allowed to save
+            int validateIdx = 0;
+            foreach (var itm in payload.Items)
+            {
+                validateIdx++;
+                string itmRef = (itm.RefNo ?? itm.SerialNo ?? "").Trim();
+                if (itmRef.Equals("NEW", StringComparison.OrdinalIgnoreCase)) itmRef = "";
+
+                if (string.IsNullOrWhiteSpace(itmRef))
+                {
+                    return Json(new { success = false, message = $"Row #{validateIdx} has an empty Ref No. Empty Ref No and Specification rows are not allowed to save." });
+                }
+
+                if (string.IsNullOrWhiteSpace(itm.Specification))
+                {
+                    return Json(new { success = false, message = $"Row #{validateIdx} (Ref No: {itmRef}) has an empty Specification. Empty Ref No and Specification rows are not allowed to save." });
+                }
+            }
+
             var typeVal = payload.Header?.Type ?? "Budget";
             var revisionVal = payload.Header?.Revision ?? "No";
             var readyForApproval = payload.Header?.ReadyForApproval == true ? "1" : "0";
@@ -1147,6 +1256,7 @@ namespace VGN_CRM_CORE.Controllers
             int totalWBSCount = 0;
             int totalResCount = 0;
             double finalTotalAmount = headerTotalAmount;
+            var savedItemList = new List<object>();
 
             try
             {
@@ -1171,7 +1281,7 @@ namespace VGN_CRM_CORE.Controllers
                                 cmdBOQ.Parameters.AddWithValue("@ReferenceNo", refNo);
                                 cmdBOQ.Parameters.AddWithValue("@Type", typeVal);
                                 cmdBOQ.Parameters.AddWithValue("@Remarks", remarksVal);
-                                cmdBOQ.Parameters.AddWithValue("@TotalAmount", headerTotalAmount.ToString("F2"));
+                                cmdBOQ.Parameters.AddWithValue("@TotalAmount", headerTotalAmount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture));
                                 cmdBOQ.Parameters.AddWithValue("@Revision", revisionVal);
                                 cmdBOQ.Parameters.AddWithValue("@ReadyForApproval", readyForApproval);
                                 cmdBOQ.Parameters.AddWithValue("@ApprovalLogId", "");
@@ -1182,10 +1292,57 @@ namespace VGN_CRM_CORE.Controllers
 
                                 using (var r = await cmdBOQ.ExecuteReaderAsync())
                                 {
-                                    if (await r.ReadAsync())
+                                    do
                                     {
-                                        int returnedId = r["BOQId"] != DBNull.Value ? Convert.ToInt32(r["BOQId"]) : 0;
-                                        if (returnedId > 0) savedBOQId = returnedId;
+                                        while (await r.ReadAsync())
+                                        {
+                                            for (int c = 0; c < r.FieldCount; c++)
+                                            {
+                                                if (string.Equals(r.GetName(c), "BOQId", StringComparison.OrdinalIgnoreCase))
+                                                {
+                                                    if (r[c] != DBNull.Value && int.TryParse(r[c].ToString(), out int parsedId) && parsedId > 0)
+                                                    {
+                                                        savedBOQId = parsedId;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            if (savedBOQId > 0) break;
+                                        }
+                                        if (savedBOQId > 0) break;
+                                    } while (await r.NextResultAsync());
+                                }
+
+                                // Fallback 1: If updating an existing BOQ, retain existing BOQId
+                                if (savedBOQId <= 0 && isUpdate && existingBOQId > 0)
+                                {
+                                    savedBOQId = existingBOQId;
+                                }
+
+                                // Fallback 2: Query the identity directly within the same transaction scope
+                                if (savedBOQId <= 0)
+                                {
+                                    using (var cmdFallback = new SqlCommand("SELECT CAST(ISNULL(IDENT_CURRENT('dbo.Project_BOQ_Mas'), 0) AS INT)", con, tran))
+                                    {
+                                        var scalar = await cmdFallback.ExecuteScalarAsync();
+                                        if (scalar != null && scalar != DBNull.Value && int.TryParse(scalar.ToString(), out int fbId) && fbId > 0)
+                                        {
+                                            savedBOQId = fbId;
+                                        }
+                                    }
+                                }
+
+                                // Fallback 3: Query MAX(BOQId) for current CostCenter & ReferenceNo
+                                if (savedBOQId <= 0)
+                                {
+                                    using (var cmdMax = new SqlCommand("SELECT ISNULL(MAX(BOQId), 0) FROM dbo.Project_BOQ_Mas WHERE CostcenterId = @CostcenterId", con, tran))
+                                    {
+                                        cmdMax.Parameters.AddWithValue("@CostcenterId", costCenterId);
+                                        var scalarMax = await cmdMax.ExecuteScalarAsync();
+                                        if (scalarMax != null && scalarMax != DBNull.Value && int.TryParse(scalarMax.ToString(), out int maxId) && maxId > 0)
+                                        {
+                                            savedBOQId = maxId;
+                                        }
                                     }
                                 }
 
@@ -1195,27 +1352,52 @@ namespace VGN_CRM_CORE.Controllers
                                 }
                             }
 
-                            // If UPDATE: clean old child records via stored procedure Web_DeleteProject_BOQ_Details
-                            if (isUpdate)
-                            {
-                                using (var cmdClean = new SqlCommand("dbo.Web_DeleteProject_BOQ_Details", con, tran))
-                                {
-                                    cmdClean.CommandType = CommandType.StoredProcedure;
-                                    cmdClean.Parameters.AddWithValue("@BOQId", savedBOQId);
-                                    await cmdClean.ExecuteNonQueryAsync();
-                                }
-                            }
-
                             // ═══════════════════════════════════════════════════════════════════════
-                            // 2. dbo.Web_SaveProject_BOQ_IOWMas (Items)
+                            // 2. dbo.Web_SaveProject_BOQ_IOWMas (Items) - SAFE UPSERT & SYNC
                             // ═══════════════════════════════════════════════════════════════════════
                             var workgroupList = payload.WorkGroups ?? new List<ProjectIOWWorkGroupModel>();
 
-                            foreach (var item in payload.Items ?? Enumerable.Empty<ProjectIOWItemModel>())
+                            // If updating, cleanly deactivate any items removed from the BOQ by the user
+                            if (isUpdate && savedBOQId > 0)
                             {
-                                if (string.IsNullOrWhiteSpace(item.Specification))
-                                    continue;
+                                var keptProjectIowIds = (payload.Items ?? Enumerable.Empty<ProjectIOWItemModel>())
+                                    .Where(i => i.Project_IOWId != null && int.TryParse(i.Project_IOWId.ToString(), out var pid) && pid > 0)
+                                    .Select(i => Convert.ToInt32(i.Project_IOWId))
+                                    .ToList();
 
+                                string notInClause = keptProjectIowIds.Count > 0 ? string.Join(",", keptProjectIowIds) : "0";
+                                using (var cmdDeact = new SqlCommand($@"
+                                    UPDATE dbo.Project_BOQ_IOWMas 
+                                    SET Status = '0' 
+                                    WHERE BOQId = @BOQIdStr AND Status = '1' AND Project_IOWId NOT IN ({notInClause});
+
+                                    UPDATE w 
+                                    SET w.Status = '0' 
+                                    FROM dbo.Project_BOQ_WBSMas w
+                                    INNER JOIN dbo.Project_BOQ_IOWMas i ON w.Project_IOWId = CAST(i.Project_IOWId AS VARCHAR(50))
+                                    WHERE i.BOQId = @BOQIdStr AND i.Status = '0' AND w.Status = '1';
+
+                                    UPDATE r 
+                                    SET r.Status = '0' 
+                                    FROM dbo.Project_BOQ_ResourceMas r
+                                    INNER JOIN dbo.Project_BOQ_IOWMas i ON r.Project_IOWId = CAST(i.Project_IOWId AS VARCHAR(50))
+                                    WHERE i.BOQId = @BOQIdStr AND i.Status = '0' AND r.Status = '1';
+
+                                    UPDATE m 
+                                    SET m.Status = '0' 
+                                    FROM dbo.Project_BOQ_MeasurementSheet m
+                                    INNER JOIN dbo.Project_BOQ_IOWMas i ON m.Project_IOWId = i.Project_IOWId
+                                    WHERE m.BOQId = @BOQIdNum AND i.Status = '0' AND m.Status = '1';
+                                ", con, tran))
+                                {
+                                    cmdDeact.Parameters.AddWithValue("@BOQIdStr", savedBOQId.ToString());
+                                    cmdDeact.Parameters.AddWithValue("@BOQIdNum", savedBOQId);
+                                    await cmdDeact.ExecuteNonQueryAsync();
+                                }
+                            }
+
+                            foreach (var item in payload.Items)
+                            {
                                 // Clean serial / ref no (never use "NEW" keyword)
                                 string itemSerial = (item.SerialNo ?? item.RefNo ?? "").Trim();
                                 if (itemSerial.Equals("NEW", StringComparison.OrdinalIgnoreCase)) itemSerial = "";
@@ -1223,9 +1405,15 @@ namespace VGN_CRM_CORE.Controllers
                                 string itemRef = (item.RefNo ?? itemSerial).Trim();
                                 if (itemRef.Equals("NEW", StringComparison.OrdinalIgnoreCase)) itemRef = "";
 
+                                if (string.IsNullOrWhiteSpace(itemSerial))
+                                {
+                                    itemSerial = itemRef;
+                                }
+
+                                var itemWgIdStr = item.WorkGroupId?.ToString() ?? "1";
+
                                 // Resolve WorkGroup Parent Id
                                 string wgParentId = "0";
-                                var itemWgIdStr = item.WorkGroupId?.ToString() ?? "";
                                 var matchedWg = workgroupList.FirstOrDefault(w => (w.WorkGroupId?.ToString() ?? "") == itemWgIdStr);
                                 if (matchedWg != null && !string.IsNullOrWhiteSpace(matchedWg.ParentId))
                                 {
@@ -1243,11 +1431,11 @@ namespace VGN_CRM_CORE.Controllers
                                             cmdLib.CommandType = CommandType.StoredProcedure;
                                             cmdLib.Parameters.AddWithValue("@WorkGroupId", !string.IsNullOrEmpty(itemWgIdStr) ? (object)itemWgIdStr : DBNull.Value);
                                             cmdLib.Parameters.AddWithValue("@WorkGroupParentId", wgParentId);
-                                            cmdLib.Parameters.AddWithValue("@RefNo", double.TryParse(itemRef, out var rNum) ? rNum : 0);
+                                            cmdLib.Parameters.AddWithValue("@RefNo", double.TryParse(itemRef, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var rNum) ? rNum : 0);
                                             cmdLib.Parameters.AddWithValue("@SerialNo", string.IsNullOrEmpty(itemSerial) ? (object)DBNull.Value : itemSerial);
                                             cmdLib.Parameters.AddWithValue("@Specification", item.Specification.Trim());
                                             cmdLib.Parameters.AddWithValue("@UnitId", string.IsNullOrEmpty(item.UnitId) ? (object)DBNull.Value : item.UnitId);
-                                            cmdLib.Parameters.AddWithValue("@Rate", (item.Rate ?? 0.0).ToString());
+                                            cmdLib.Parameters.AddWithValue("@Rate", (item.Rate ?? 0.0).ToString("F2", System.Globalization.CultureInfo.InvariantCulture));
                                             cmdLib.Parameters.AddWithValue("@CreatedBy", userName);
 
                                             var newLibId = await cmdLib.ExecuteScalarAsync();
@@ -1263,21 +1451,28 @@ namespace VGN_CRM_CORE.Controllers
                                     }
                                 }
 
-                                int savedProjectIOWId = 0;
+                                int inputProjectIOWId = 0;
+                                if (item.Project_IOWId != null && int.TryParse(item.Project_IOWId.ToString(), out var parsedIowId))
+                                {
+                                    inputProjectIOWId = parsedIowId;
+                                }
+
+                                int savedProjectIOWId = inputProjectIOWId;
                                 double itemAmount = (item.Amount ?? 0.0) > 0 ? (item.Amount ?? 0.0) : ((item.Qty ?? 0.0) * (item.Rate ?? 0.0));
 
                                 using (var cmdIOW = new SqlCommand("dbo.Web_SaveProject_BOQ_IOWMas", con, tran))
                                 {
                                     cmdIOW.CommandType = CommandType.StoredProcedure;
-                                    cmdIOW.Parameters.AddWithValue("@Flag", "INSERT");
+                                    cmdIOW.Parameters.AddWithValue("@Flag", inputProjectIOWId > 0 ? "UPDATE" : "INSERT");
+                                    cmdIOW.Parameters.AddWithValue("@Project_IOWId", inputProjectIOWId);
                                     cmdIOW.Parameters.AddWithValue("@CostcenterId", costCenterId);
                                     cmdIOW.Parameters.AddWithValue("@ProectKickOfId", kickoffId);
                                     cmdIOW.Parameters.AddWithValue("@BOQId", savedBOQId.ToString());
                                     cmdIOW.Parameters.AddWithValue("@WorkGroupId", itemWgIdStr);
                                     cmdIOW.Parameters.AddWithValue("@WorkGroupParentId", wgParentId);
                                     cmdIOW.Parameters.AddWithValue("@IOWId", libraryIOWId);
-                                    cmdIOW.Parameters.AddWithValue("@RefNo", double.TryParse(itemRef, out var refFloat) ? (object)refFloat : DBNull.Value);
-                                    cmdIOW.Parameters.AddWithValue("@SerialNo", itemSerial);
+                                    cmdIOW.Parameters.AddWithValue("@RefNo", double.TryParse(itemRef, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var refFloat) ? (object)refFloat : DBNull.Value);
+                                    cmdIOW.Parameters.AddWithValue("@SerialNo", !string.IsNullOrWhiteSpace(itemSerial) ? itemSerial : itemRef);
                                     cmdIOW.Parameters.AddWithValue("@Specification", item.Specification.Trim());
                                     cmdIOW.Parameters.AddWithValue("@UnitId", item.UnitId ?? item.UnitName ?? "");
                                     cmdIOW.Parameters.AddWithValue("@Qty", item.Qty ?? 0.0);
@@ -1290,27 +1485,128 @@ namespace VGN_CRM_CORE.Controllers
 
                                     using (var r = await cmdIOW.ExecuteReaderAsync())
                                     {
-                                        if (await r.ReadAsync())
+                                        do
                                         {
-                                            savedProjectIOWId = r["Project_IOWId"] != DBNull.Value ? Convert.ToInt32(r["Project_IOWId"]) : 0;
+                                            while (await r.ReadAsync())
+                                            {
+                                                for (int c = 0; c < r.FieldCount; c++)
+                                                {
+                                                    if (string.Equals(r.GetName(c), "Project_IOWId", StringComparison.OrdinalIgnoreCase))
+                                                    {
+                                                        if (r[c] != DBNull.Value && int.TryParse(r[c].ToString(), out int pIowId) && pIowId > 0)
+                                                        {
+                                                            savedProjectIOWId = pIowId;
+                                                            totalIOWCount++;
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                                if (savedProjectIOWId > 0) break;
+                                            }
+                                            if (savedProjectIOWId > 0) break;
+                                        } while (await r.NextResultAsync());
+                                    }
+                                }
+
+                                if (savedProjectIOWId <= 0 && inputProjectIOWId > 0)
+                                {
+                                    savedProjectIOWId = inputProjectIOWId;
+                                }
+                                else if (savedProjectIOWId <= 0)
+                                {
+                                    using (var cmdFb = new SqlCommand("SELECT CAST(ISNULL(IDENT_CURRENT('dbo.Project_BOQ_IOWMas'), 0) AS INT)", con, tran))
+                                    {
+                                        var sc = await cmdFb.ExecuteScalarAsync();
+                                        if (sc != null && sc != DBNull.Value && int.TryParse(sc.ToString(), out int fbIowId) && fbIowId > 0)
+                                        {
+                                            savedProjectIOWId = fbIowId;
                                             totalIOWCount++;
                                         }
                                     }
                                 }
 
+                                savedItemList.Add(new
+                                {
+                                    clientIowId = item.IOWId,
+                                    project_IOWId = savedProjectIOWId,
+                                    refNo = itemRef,
+                                    serialNo = itemSerial,
+                                    workGroupId = itemWgIdStr,
+                                    specification = item.Specification.Trim(),
+                                    unitId = item.UnitId ?? item.UnitName ?? "",
+                                    qty = item.Qty ?? 0.0,
+                                    rate = item.Rate ?? 0.0,
+                                    amount = itemAmount
+                                });
+
                                 // ═══════════════════════════════════════════════════════════════════
-                                // 3. dbo.Web_SaveProject_BOQ_WBSMas (WBS Breakdown)
+                                // 2b. dbo.Web_SaveProject_BOQ_MeasurementSheet (Measurement Sheet)
                                 // ═══════════════════════════════════════════════════════════════════
+                                var sheetToSave = item.MeasurementSheet;
+                                if (sheetToSave == null && payload.MeasurementSheets != null && payload.MeasurementSheets.Count > 0)
+                                {
+                                    sheetToSave = payload.MeasurementSheets.FirstOrDefault(s =>
+                                        (s.Project_IOWId != null && s.Project_IOWId.ToString() == savedProjectIOWId.ToString()) ||
+                                        (inputProjectIOWId > 0 && s.Project_IOWId != null && s.Project_IOWId.ToString() == inputProjectIOWId.ToString()));
+                                }
+
+                                if (sheetToSave != null && !string.IsNullOrWhiteSpace(sheetToSave.SheetDataJson))
+                                {
+                                    using (var cmdSheet = new SqlCommand("dbo.Web_SaveProject_BOQ_MeasurementSheet", con, tran))
+                                    {
+                                        cmdSheet.CommandType = CommandType.StoredProcedure;
+                                        cmdSheet.Parameters.AddWithValue("@Flag", "UPSERT");
+                                        cmdSheet.Parameters.AddWithValue("@MeasurementSheetId", sheetToSave.MeasurementSheetId);
+                                        cmdSheet.Parameters.AddWithValue("@BOQId", savedBOQId);
+                                        cmdSheet.Parameters.AddWithValue("@Project_IOWId", savedProjectIOWId);
+                                        cmdSheet.Parameters.AddWithValue("@Project_WBSId", 0);
+                                        cmdSheet.Parameters.AddWithValue("@TemplateId", sheetToSave.TemplateId ?? 0);
+                                        cmdSheet.Parameters.AddWithValue("@TemplateName", sheetToSave.TemplateName ?? "");
+                                        cmdSheet.Parameters.AddWithValue("@SelectedColumn", sheetToSave.SelectedColumn ?? "Qty");
+                                        cmdSheet.Parameters.AddWithValue("@SheetDataJson", sheetToSave.SheetDataJson ?? "[]");
+                                        cmdSheet.Parameters.AddWithValue("@TotalQty", sheetToSave.TotalQty ?? item.Qty ?? 0.0);
+                                        cmdSheet.Parameters.AddWithValue("@CreatedBy", userName);
+                                        await cmdSheet.ExecuteNonQueryAsync();
+                                    }
+                                }
+
+                                // Cleanly deactivate any WBS items removed from this IOW during update
+                                if (inputProjectIOWId > 0 && savedProjectIOWId > 0)
+                                {
+                                    var keptWbsIds = (item.WBSBreakdown ?? Enumerable.Empty<ProjectIOWWBSItemModel>())
+                                        .Where(w => w.Project_WBSId != null && int.TryParse(w.Project_WBSId.ToString(), out var wid) && wid > 0)
+                                        .Select(w => Convert.ToInt32(w.Project_WBSId))
+                                        .ToList();
+
+                                    string notInWbs = keptWbsIds.Count > 0 ? string.Join(",", keptWbsIds) : "0";
+                                    using (var cmdWbsDeact = new SqlCommand($@"
+                                        UPDATE dbo.Project_BOQ_WBSMas 
+                                        SET Status = '0' 
+                                        WHERE Project_IOWId = @PIOWId AND Status = '1' AND Project_WBSId NOT IN ({notInWbs});
+                                    ", con, tran))
+                                    {
+                                        cmdWbsDeact.Parameters.AddWithValue("@PIOWId", savedProjectIOWId.ToString());
+                                        await cmdWbsDeact.ExecuteNonQueryAsync();
+                                    }
+                                }
+
                                 int firstWBSId = 0;
                                 foreach (var wbs in item.WBSBreakdown ?? Enumerable.Empty<ProjectIOWWBSItemModel>())
                                 {
                                     if ((wbs.Qty ?? 0.0) <= 0 && string.IsNullOrWhiteSpace(wbs.WBSName))
                                         continue;
 
+                                    int inputWBSId = 0;
+                                    if (wbs.Project_WBSId != null && int.TryParse(wbs.Project_WBSId.ToString(), out var pWbsId))
+                                    {
+                                        inputWBSId = pWbsId;
+                                    }
+
                                     using (var cmdWBS = new SqlCommand("dbo.Web_SaveProject_BOQ_WBSMas", con, tran))
                                     {
                                         cmdWBS.CommandType = CommandType.StoredProcedure;
-                                        cmdWBS.Parameters.AddWithValue("@Flag", "INSERT");
+                                        cmdWBS.Parameters.AddWithValue("@Flag", inputWBSId > 0 ? "UPDATE" : "INSERT");
+                                        cmdWBS.Parameters.AddWithValue("@Project_WBSId", inputWBSId);
                                         cmdWBS.Parameters.AddWithValue("@CostcenterId", costCenterId);
                                         cmdWBS.Parameters.AddWithValue("@ProectKickOfId", kickoffId);
                                         cmdWBS.Parameters.AddWithValue("@BOQId", savedBOQId.ToString());
@@ -1331,8 +1627,8 @@ namespace VGN_CRM_CORE.Controllers
                                         {
                                             if (await r.ReadAsync())
                                             {
-                                                int pWbsId = r["Project_WBSId"] != DBNull.Value ? Convert.ToInt32(r["Project_WBSId"]) : 0;
-                                                if (firstWBSId == 0) firstWBSId = pWbsId;
+                                                int pWbsIdReturned = r["Project_WBSId"] != DBNull.Value ? Convert.ToInt32(r["Project_WBSId"]) : 0;
+                                                if (firstWBSId == 0) firstWBSId = pWbsIdReturned > 0 ? pWbsIdReturned : inputWBSId;
                                                 totalWBSCount++;
                                             }
                                         }
@@ -1353,6 +1649,27 @@ namespace VGN_CRM_CORE.Controllers
                                 double roundOff = (calcs.RoundingOff ?? 0.0) != 0 ? (calcs.RoundingOff ?? 0.0) : (item.RoundingOff ?? 0.0);
                                 double netRateVal = (calcs.NetRate ?? 0.0) > 0 ? (calcs.NetRate ?? 0.0) : ((item.NetRate ?? 0.0) > 0 ? (item.NetRate ?? 0.0) : (item.Rate ?? 0.0));
 
+                                // Cleanly deactivate any Resource items removed from this IOW during update
+                                if (inputProjectIOWId > 0 && savedProjectIOWId > 0)
+                                {
+                                    var keptResIds = (item.Resources ?? Enumerable.Empty<ProjectIOWResourceModel>())
+                                        .Where(r => (r.Project_ResourceId != null && int.TryParse(r.Project_ResourceId.ToString(), out var rid) && rid > 0) ||
+                                                    (r.ResourceDetailId != null && int.TryParse(r.ResourceDetailId.ToString(), out var rdid) && rdid > 0))
+                                        .Select(r => (r.Project_ResourceId != null && int.TryParse(r.Project_ResourceId.ToString(), out var rid) && rid > 0) ? rid : Convert.ToInt32(r.ResourceDetailId))
+                                        .ToList();
+
+                                    string notInRes = keptResIds.Count > 0 ? string.Join(",", keptResIds) : "0";
+                                    using (var cmdResDeact = new SqlCommand($@"
+                                        UPDATE dbo.Project_BOQ_ResourceMas 
+                                        SET Status = '0' 
+                                        WHERE Project_IOWId = @PIOWId AND Status = '1' AND Project_ResourceId NOT IN ({notInRes});
+                                    ", con, tran))
+                                    {
+                                        cmdResDeact.Parameters.AddWithValue("@PIOWId", savedProjectIOWId.ToString());
+                                        await cmdResDeact.ExecuteNonQueryAsync();
+                                    }
+                                }
+
                                 foreach (var res in item.Resources ?? Enumerable.Empty<ProjectIOWResourceModel>())
                                 {
                                     string resName = res.ResourceName ?? "";
@@ -1360,10 +1677,21 @@ namespace VGN_CRM_CORE.Controllers
 
                                     string resUnit = !string.IsNullOrWhiteSpace(res.UnitId) ? res.UnitId : (!string.IsNullOrWhiteSpace(res.Unit) ? res.Unit : "");
 
+                                    int inputResId = 0;
+                                    if (res.Project_ResourceId != null && int.TryParse(res.Project_ResourceId.ToString(), out var pResId))
+                                    {
+                                        inputResId = pResId;
+                                    }
+                                    else if (res.ResourceDetailId != null && int.TryParse(res.ResourceDetailId.ToString(), out var pResDetId))
+                                    {
+                                        inputResId = pResDetId;
+                                    }
+
                                     using (var cmdRes = new SqlCommand("dbo.Web_SaveProject_BOQ_ResourceMas", con, tran))
                                     {
                                         cmdRes.CommandType = CommandType.StoredProcedure;
-                                        cmdRes.Parameters.AddWithValue("@Flag", "INSERT");
+                                        cmdRes.Parameters.AddWithValue("@Flag", inputResId > 0 ? "UPDATE" : "INSERT");
+                                        cmdRes.Parameters.AddWithValue("@Project_ResourceId", inputResId);
                                         cmdRes.Parameters.AddWithValue("@CostcenterId", costCenterId);
                                         cmdRes.Parameters.AddWithValue("@ProectKickOfId", kickoffId);
                                         cmdRes.Parameters.AddWithValue("@BOQId", savedBOQId.ToString());
@@ -1440,6 +1768,7 @@ namespace VGN_CRM_CORE.Controllers
                     wbsCount = totalWBSCount,
                     resourceCount = totalResCount,
                     totalAmount = finalTotalAmount > 0 ? finalTotalAmount : headerTotalAmount,
+                    savedItems = savedItemList,
                     timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
                 });
             }
