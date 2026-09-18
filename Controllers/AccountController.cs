@@ -17,6 +17,13 @@ namespace VGN_CRM_CORE.Controllers
             _config = config;
         }
 
+        // ── GET /Account or /Account/Index ───────────────────
+        [HttpGet]
+        public IActionResult Index()
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
         // ── GET /Account/Login ────────────────────────────────
         [HttpGet]
         public IActionResult Login(string ReturnUrl = "")

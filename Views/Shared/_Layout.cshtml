@@ -11,6 +11,32 @@
 
     // Load dynamic menus from session
     var dynamicMenus = VGN_CRM_CORE.CommonFunctions.SessionHelper.GetMenuList(Context.Session);
+    if (dynamicMenus != null && dynamicMenus.Any())
+    {
+        var boqMenu = dynamicMenus.FirstOrDefault(m => m.ControllerName == "ProjectIOW");
+        if (!dynamicMenus.Any(m => m.ControllerName == "OtherCostAllocation"))
+        {
+            dynamicMenus.Add(new VGN_CRM_CORE.Models.MenuModel
+            {
+                Department = boqMenu != null ? boqMenu.Department : "PROJECTS",
+                ModuleType = boqMenu != null ? boqMenu.ModuleType : "MASTER",
+                ModuleCaptionName = "Other Cost Allocation",
+                ControllerName = "OtherCostAllocation",
+                ActionName = "Index"
+            });
+        }
+        if (!dynamicMenus.Any(m => m.ControllerName == "OtherCostBreakup"))
+        {
+            dynamicMenus.Add(new VGN_CRM_CORE.Models.MenuModel
+            {
+                Department = boqMenu != null ? boqMenu.Department : "PROJECTS",
+                ModuleType = boqMenu != null ? boqMenu.ModuleType : "MASTER",
+                ModuleCaptionName = "Other Cost Breakup",
+                ControllerName = "OtherCostBreakup",
+                ActionName = "Index"
+            });
+        }
+    }
 }
 <!DOCTYPE html>
 @* <html lang="en" data-theme="light" data-primary="#a82024" data-sidebar="full" data-contrast="default" data-sidebar-view="tiles"> *@
@@ -5147,7 +5173,7 @@
                             <div class="nav-section-sub list-only-item"><span class="nav-label-sub">@modType</span></div>
                             @foreach (var item in modGroup.OrderBy(m => m.ModuleCaptionName))
                             {
-                                string url = "/" + item.ControllerName + "/" + item.ActionName;
+                                string url = Url.Action(string.IsNullOrEmpty(item.ActionName) ? "Index" : item.ActionName, item.ControllerName);
                                 string caption = item.ControllerName == "ProjectIOW" ? "Bill of quantity" : item.ModuleCaptionName;
                                 <a class="nav-link list-only-item" href="@url" style="padding: 0.4rem 1rem 0.4rem 2rem">
                                     <span>@caption</span>
@@ -5208,7 +5234,7 @@
                                 <div class="nav-section"><span class="nav-label">@modType</span></div>
                                 @foreach (var item in modGroup.OrderBy(m => m.ModuleCaptionName))
                                 {
-                                    string url = "/" + item.ControllerName + "/" + item.ActionName;
+                                    string url = Url.Action(string.IsNullOrEmpty(item.ActionName) ? "Index" : item.ActionName, item.ControllerName);
                                     string caption = item.ControllerName == "ProjectIOW" ? "Bill of quantity" : item.ModuleCaptionName;
                                     <a class="nav-link" href="@url">
                                         <i class="fas fa-circle" style="font-size:0.4rem;opacity:0.5"></i>

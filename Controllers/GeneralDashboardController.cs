@@ -136,6 +136,41 @@ namespace VGN_CRM_CORE.Controllers
                         ActionName = "Index"
                     });
                 }
+                if (!menuList.Exists(m => m.ControllerName == "OtherCostAllocation"))
+                {
+                    var boqMenu = menuList.FirstOrDefault(m => m.ControllerName == "ProjectIOW");
+                    menuList.Add(new Models.MenuModel
+                    {
+                        Department = boqMenu != null ? boqMenu.Department : "PROJECTS",
+                        ModuleType = boqMenu != null ? boqMenu.ModuleType : "ACTIVITIES",
+                        ModuleCaptionName = "Other Cost Allocation",
+                        ControllerName = "OtherCostAllocation",
+                        ActionName = "Index"
+                    });
+                }
+                if (!menuList.Exists(m => m.ControllerName == "OtherCostBreakup"))
+                {
+                    var boqMenu = menuList.FirstOrDefault(m => m.ControllerName == "ProjectIOW");
+                    menuList.Add(new Models.MenuModel
+                    {
+                        Department = boqMenu != null ? boqMenu.Department : "PROJECTS",
+                        ModuleType = boqMenu != null ? boqMenu.ModuleType : "ACTIVITIES",
+                        ModuleCaptionName = "Other Cost Breakup",
+                        ControllerName = "OtherCostBreakup",
+                        ActionName = "Index"
+                    });
+                }
+                if (!menuList.Exists(m => m.ControllerName == "ServiceMaster"))
+                {
+                    menuList.Add(new Models.MenuModel
+                    {
+                        Department = "PROJECTS",
+                        ModuleType = "MASTER",
+                        ModuleCaptionName = "Service Master",
+                        ControllerName = "ServiceMaster",
+                        ActionName = "Index"
+                    });
+                }
                 SessionHelper.SetMenuList(HttpContext.Session, menuList);
             }
         }

@@ -1,0 +1,1703 @@
+@{
+    ViewBag.Title = "Other Cost Allocation - VGN ERP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles {
+    <style>
+        /* Scoped Select2 styling for Project Name dropdown */
+        #ddlFormProject + .select2-container .select2-selection--single {
+            height: 36px !important;
+            border-radius: 0.5rem !important;
+            display: flex !important;
+            align-items: center !important;
+            border-color: #cbd5e1 !important;
+            background-color: #ffffff !important;
+        }
+        .dark #ddlFormProject + .select2-container .select2-selection--single {
+            border-color: #475569 !important;
+            background-color: #0f172a !important;
+        }
+        #ddlFormProject + .select2-container .select2-selection--single .select2-selection__rendered {
+            line-height: 34px !important;
+            font-weight: 700 !important;
+            font-size: 0.75rem !important;
+            color: #1e293b !important;
+            padding-left: 0.75rem !important;
+            padding-right: 1.75rem !important;
+        }
+        .dark #ddlFormProject + .select2-container .select2-selection--single .select2-selection__rendered {
+            color: #f1f5f9 !important;
+        }
+        #ddlFormProject + .select2-container .select2-selection--single .select2-selection__arrow {
+            height: 34px !important;
+            right: 8px !important;
+        }
+        #ddlFormProject + .select2-container .select2-selection--single .select2-selection__clear {
+            margin-right: 18px !important;
+            font-size: 14px !important;
+            color: #94a3b8 !important;
+        }
+    </style>
+}
+
+<div class="p-3 sm:p-5 space-y-4">
+
+    <!-- =========================================================================
+         1. LOAD SCREEN (LISTING VIEW)
+         ========================================================================= -->
+    <div id="viewAllocationList" class="space-y-4">
+        <!-- Header Bar -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[var(--surface)] p-4 sm:p-5 rounded-2xl shadow-sm border border-[var(--border)]">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400 text-xl font-bold">
+                    <i class="fas fa-hand-holding-usd"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-xl font-bold text-[var(--text)] tracking-tight">Other Cost Allocation</h1>
+                        <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20" id="badgeTotalRecords">
+                            0 Projects
+                        </span>
+                    </div>
+                    <p class="text-xs text-[var(--text-muted)] mt-0.5">Allocate project budget overheads and additional services across departments and cost centers</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2.5 w-full md:w-auto justify-end flex-wrap">
+                <a href="@Url.Action("Index", "OtherCostBreakup")" class="px-3.5 py-2 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-600 bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer flex items-center gap-1.5 shadow-2xs" title="Manage Itemized Breakups">
+                    <i class="fas fa-layer-group text-teal-600 dark:text-teal-400"></i>
+                    <span>Cost Breakup</span>
+                </a>
+                <a href="@Url.Action("Index", "ProjectIOW")" class="px-3.5 py-2 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-600 bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer flex items-center gap-1.5 shadow-2xs" title="Bill of Quantities">
+                    <i class="fas fa-th-list text-blue-600"></i>
+                    <span>BOQ</span>
+                </a>
+                <button type="button" onclick="openCalculationHelpModal()" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/40 flex items-center gap-1.5 transition cursor-pointer shadow-2xs" title="View Allocation Formulas and Rules">
+                    <i class="fas fa-calculator text-amber-600 dark:text-amber-400"></i>
+                    <span>Calculation Help</span>
+                </button>
+                <button type="button" onclick="loadGridData()" class="btn-clear !text-xs !py-2 !px-3.5 cursor-pointer" title="Refresh List">
+                    <i class="fas fa-sync-alt mr-1"></i> Refresh
+                </button>
+                <button type="button" onclick="openNewAllocationForm()" class="btn-save !text-xs !py-2 !px-4 text-white flex items-center gap-2 shadow-md bg-teal-700 hover:bg-teal-800 cursor-pointer">
+                    <i class="fas fa-plus"></i>
+                    <span>Add New Cost Allocation</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Summary Metric Cards (Whole Numbers Only - No Decimals) -->
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+                <div>
+                    <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Allocated Projects</span>
+                    <span class="text-2xl font-black text-[var(--text)] mt-1 block" id="statTotalCount">0</span>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center text-lg">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+            </div>
+            <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+                <div>
+                    <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Total Allocated</span>
+                    <span class="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1 block" id="statTotalAllocated">&#8377; 0</span>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center text-lg">
+                    <i class="fas fa-calculator"></i>
+                </div>
+            </div>
+            <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+                <div>
+                    <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Breakup (Used)</span>
+                    <span class="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1 block" id="statTotalUsed">&#8377; 0</span>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center text-lg">
+                    <i class="fas fa-receipt"></i>
+                </div>
+            </div>
+            <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 flex items-center justify-between shadow-sm">
+                <div>
+                    <span class="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider block">Remaining Amount</span>
+                    <span class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block" id="statTotalRemaining">&#8377; 0</span>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-lg">
+                    <i class="fas fa-wallet"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Grid (One Row Per Project With Master-Detail Department Breakdown) -->
+        <div class="bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-md p-4 sm:p-5">
+            <div id="dxGridOtherCostAllocation"></div>
+        </div>
+    </div>
+
+
+    <!-- =========================================================================
+         2. ADD / EDIT COST ALLOCATION SCREEN (CARD EFFECT DESIGN)
+         ========================================================================= -->
+    <div id="viewAllocationForm" style="display: none;" class="space-y-4">
+
+        <!-- Top Navigation & Prominent Action Bar -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[var(--surface)] p-3.5 sm:p-4 rounded-xl border border-[var(--border)] shadow-sm">
+            <div class="flex items-center gap-2.5">
+                <button type="button" onclick="switchToAllocationList()" class="px-3.5 py-2 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-600 bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer flex items-center gap-1.5 shadow-2xs">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Allocation List</span>
+                </button>
+                <span id="formModeBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200">
+                    New Allocation
+                </span>
+            </div>
+
+            <!-- PROMINENT TOP SAVE & HELP BUTTONS -->
+            <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+                <button type="button" onclick="openCalculationHelpModal()" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/40 flex items-center gap-1.5 transition cursor-pointer shadow-2xs">
+                    <i class="fas fa-calculator text-amber-600 dark:text-amber-400"></i>
+                    <span>Calculation Help</span>
+                </button>
+                <button type="button" id="btnTopSaveAllocation" onclick="submitOtherCostAllocation()" class="px-6 py-2 rounded-lg text-xs font-bold text-white shadow-md bg-teal-600 hover:bg-teal-700 dark:bg-teal-600 dark:hover:bg-teal-700 flex items-center gap-2 transition cursor-pointer">
+                    <i class="fas fa-save"></i>
+                    <span>Save Allocation</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Hidden Revision Id field -->
+        <input type="hidden" id="txtRevisionId" value="0" />
+
+        <!-- CARD 1: PROJECT & BUDGET OVERHEAD DEFINITION (CARD EFFECT) -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 sm:p-5">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center text-sm font-bold">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-bold text-slate-800 dark:text-white tracking-tight">Project & Allocation Overhead Definition</h2>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Select project to automatically load budget and calculate overhead allocation cap</p>
+                    </div>
+                </div>
+                <span class="text-[11px] font-bold px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                    Step 1 of 2
+                </span>
+            </div>
+
+            <!-- Card Grid: Project, Estimate, Allocation %, Allocation Amount -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Project Name Card -->
+                <div class="p-3.5 rounded-xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                    <label for="ddlFormProject" class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                        <i class="fas fa-building text-teal-600"></i>
+                        <span>Project Name <span class="text-rose-500">*</span></span>
+                    </label>
+                    <select id="ddlFormProject" style="width: 100%;" class="w-full text-xs font-bold px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500 focus:outline-none cursor-pointer">
+                        <option value="">-- Select Project --</option>
+                    </select>
+                    <div id="badgeProjectCostCenter" class="text-[11px] text-teal-600 dark:text-teal-400 font-semibold mt-1.5 flex items-center gap-1">
+                        <i class="fas fa-info-circle text-[10px]"></i>
+                        <span>Select project to load estimate</span>
+                    </div>
+                </div>
+
+                <!-- Estimate Amount Card -->
+                <div class="p-3.5 rounded-xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                    <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                        <i class="fas fa-coins text-slate-500"></i>
+                        <span>Estimate Amount</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2 text-xs font-bold text-slate-400 select-none">&#8377;</span>
+                        <input type="text" id="txtEstimateAmt" readonly
+                               class="w-full pl-7 pr-3 py-2 text-right text-xs font-black text-slate-800 dark:text-white bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-lg cursor-not-allowed select-none"
+                               value="0" />
+                    </div>
+                    <span class="text-[10px] text-slate-400 block mt-1.5">Total project estimated budget</span>
+                </div>
+
+                <!-- Header Allocation % Card (Integer Only) -->
+                <div class="p-3.5 rounded-xl bg-slate-50/90 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                    <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                        <i class="fas fa-percent text-blue-500"></i>
+                        <span>Header Allocation %</span>
+                    </label>
+                    <div class="relative">
+                        <input type="number" step="1" min="0" max="100" id="txtAllocationPer" oninput="onHeaderAllocationPerChange(this.value)"
+                               class="w-full pl-3 pr-7 py-2 text-right text-xs font-black text-slate-800 dark:text-white bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                               value="10" />
+                        <span class="absolute right-3 top-2 text-xs font-bold text-slate-400 select-none">%</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400 block mt-1.5">Overhead budget percentage</span>
+                </div>
+
+                <!-- Header Allocation Amount Card (Cap) -->
+                <div class="p-3.5 rounded-xl bg-teal-50/60 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800/60">
+                    <label class="block text-[11px] font-bold text-teal-800 dark:text-teal-200 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                        <i class="fas fa-shield-alt text-teal-600"></i>
+                        <span>Allocation Amount (Cap)</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2 text-xs font-bold text-teal-600 dark:text-teal-400 select-none">&#8377;</span>
+                        <input type="text" id="txtAllocationAmt" oninput="onHeaderAllocationAmtChange(this.value)"
+                               class="w-full pl-7 pr-3 py-2 text-right text-xs font-black text-teal-800 dark:text-teal-200 bg-white dark:bg-slate-900 border border-teal-300 dark:border-teal-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                               value="0" />
+                    </div>
+                    <span class="text-[10px] text-teal-700 dark:text-teal-300 block mt-1.5 font-medium">Max allocation cap for all departments</span>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- CARD 2: DEPARTMENT-WISE ALLOCATIONS (CARD EFFECT) -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+            
+            <!-- Card Header & Live Budget Status Bar -->
+            <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center text-sm font-bold">
+                            <i class="fas fa-sitemap"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-sm font-bold text-slate-800 dark:text-white tracking-tight">Department-wise Service Allocations</h2>
+                                <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">Step 2 of 2</span>
+                            </div>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Select Department from CRM DB, then Other Cost Name from <code>Project_ServiceGroupMas</code></p>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <button type="button" onclick="openAddServiceModal()" class="px-3.5 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer">
+                            <i class="fas fa-plus-circle text-xs"></i>
+                            <span>Create New Cost Name</span>
+                        </button>
+                        <button type="button" onclick="addNewServiceRow()" class="px-3.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-300 border border-teal-300 dark:border-teal-700 hover:bg-teal-50 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-2xs">
+                            <i class="fas fa-plus text-xs"></i>
+                            <span>Add Service Row</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Live Status Chips Bar (No Decimals) -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-3.5 pt-3 border-t border-slate-200/80 dark:border-slate-700/80 text-xs">
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="openCalculationHelpModal()" class="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/25 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs font-bold transition cursor-pointer shadow-2xs" title="View Calculation Rules">
+                            <i class="fas fa-calculator"></i>
+                        </button>
+                        <span class="text-xs font-bold text-slate-600 dark:text-slate-300">Live Allocation Constraint Monitor:</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <div class="px-3 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 shadow-2xs">
+                            <span class="text-[10px] uppercase font-bold text-slate-400">Cap:</span>
+                            <span class="font-black text-slate-700 dark:text-slate-200" id="chipCapAmt">&#8377; 0</span>
+                        </div>
+                        <div class="px-3 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 shadow-2xs">
+                            <span class="text-[10px] uppercase font-bold text-slate-400">Allocated:</span>
+                            <span class="font-black text-blue-600 dark:text-blue-400" id="chipAllocAmt">&#8377; 0</span>
+                            <span class="text-[10px] font-bold text-slate-500" id="chipAllocPer">(0%)</span>
+                        </div>
+                        <div id="chipBalanceBox" class="px-3 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5 shadow-2xs">
+                            <span class="text-[10px] uppercase font-bold">Remaining:</span>
+                            <span class="font-black" id="chipRemainingAmt">&#8377; 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Warning banner when allocation exceeds limit -->
+                <div id="alertExceededBanner" style="display: none;" class="mt-3 p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/50 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle text-rose-500 text-sm"></i>
+                    <span><strong>Limit Exceeded:</strong> Total service allocation exceeds the Header Allocation Amount (<span id="txtExceededAmtDiff" class="font-bold">&#8377; 0</span> over). Please adjust the percentages so total is &le; 100%.</span>
+                </div>
+            </div>
+
+            <!-- Detail Grid Table (Department First, then Other Cost Name) -->
+            <div class="p-4 sm:p-5 overflow-x-auto">
+                <table class="w-full border-collapse border border-slate-200 dark:border-slate-700 text-xs" id="tblOtherCostAllocation">
+                    <thead>
+                        <tr class="bg-[#eaf3f5] dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700 font-bold">
+                            <th class="py-2.5 px-3 text-left font-bold text-xs min-w-[220px]">Department (from CRM DB)</th>
+                            <th class="py-2.5 px-3 text-left font-bold text-xs min-w-[260px]">Other Cost Name (Project_ServiceGroupMas)</th>
+                            <th class="py-2.5 px-3 text-right font-bold text-xs w-40">Allocation %</th>
+                            <th class="py-2.5 px-3 text-right font-bold text-xs w-48">Allocation Amount (&#8377;)</th>
+                            <th class="py-2.5 px-3 text-center font-bold text-xs w-16">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblOtherCostBody" class="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-900">
+                        <!-- Dynamic Rows Injected via JS -->
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-slate-50 dark:bg-slate-800/80 font-bold border-t-2 border-slate-300 dark:border-slate-600">
+                            <td colspan="2" class="py-3 px-3 text-right text-sm font-black text-[#4338ca] dark:text-indigo-400">
+                                Total Service Allocations
+                            </td>
+                            <td class="py-3 px-3 text-right">
+                                <div class="inline-block border-2 border-[#84cc16] dark:border-lime-500 rounded px-3 py-1 bg-white dark:bg-slate-900 text-xs font-black text-slate-900 dark:text-white transition shadow-2xs" id="lblTotalServicePer">
+                                    0 %
+                                </div>
+                            </td>
+                            <td class="py-3 px-3 text-right">
+                                <div class="inline-block border-2 border-[#84cc16] dark:border-lime-500 rounded px-3 py-1 bg-white dark:bg-slate-900 text-xs font-black text-slate-900 dark:text-white transition shadow-2xs" id="lblTotalServiceAmt">
+                                    &#8377; 0
+                                </div>
+                            </td>
+                            <td class="py-3 px-3"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Bottom Action Buttons: Save & Cancel -->
+            <div class="p-4 sm:p-5 border-t border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 flex items-center justify-end gap-3">
+                <button type="button" onclick="switchToAllocationList()" class="px-6 py-2 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 hover:bg-slate-100 text-slate-700 dark:text-slate-200 transition cursor-pointer shadow-2xs">
+                    Cancel
+                </button>
+                <button type="button" id="btnSubmitAllocation" onclick="submitOtherCostAllocation()" class="px-7 py-2 rounded-lg text-xs font-bold text-white shadow-md bg-teal-600 hover:bg-teal-700 dark:bg-teal-600 dark:hover:bg-teal-700 transition cursor-pointer flex items-center gap-2">
+                    <i class="fas fa-save"></i>
+                    <span>Save Allocation</span>
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =========================================================================
+     MODAL 1: CALCULATION HELP & FORMULA MODAL
+     ========================================================================= -->
+<div id="modalCalculationHelp" class="fixed inset-0 z-[9999] overflow-y-auto" style="display: none; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);">
+    <div class="min-h-full flex items-center justify-center p-3 sm:p-4 text-center">
+        <div class="relative w-full max-w-3xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 text-left transform transition-all my-8 overflow-hidden inline-block">
+            
+            <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg font-bold">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800 dark:text-white">Other Cost Allocation - Calculation Guide</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Formulas, constraint rules, and integer distribution examples</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeCalculationHelpModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-200 dark:hover:bg-slate-800 transition cursor-pointer">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+
+            <div class="p-5 sm:p-6 space-y-5 max-h-[75vh] overflow-y-auto text-xs text-slate-700 dark:text-slate-300">
+                <div class="p-3.5 rounded-xl bg-teal-50/70 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800/50 space-y-1">
+                    <div class="font-bold text-teal-800 dark:text-teal-200 flex items-center gap-2">
+                        <i class="fas fa-lightbulb text-teal-600"></i> What is Other Cost Allocation?
+                    </div>
+                    <p class="text-[12px] text-teal-900 dark:text-teal-300 leading-relaxed">
+                        Other Cost Allocation distributes a portion of the project's overall estimated budget to overheads, legal fees, PMC, and indirect services. Allocations are distributed department-wise and tracked under standard Cost Groups (<code>Project_ServiceGroupMas</code>) without decimal fractions.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+                        <div class="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 inline-flex items-center justify-center text-[10px] font-black">1</span>
+                            Header Allocation Cap Formula
+                        </div>
+                        <div class="p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono text-[11px] text-blue-700 dark:text-blue-300 font-bold">
+                            Allocation Amount = Estimate Amount &times; (Allocation % &divide; 100)
+                        </div>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                            <em>Example:</em> If Project Estimate is <strong>&#8377; 1,13,00,550</strong> and Header Allocation is <strong>10%</strong>, the Allocation Cap is <strong>&#8377; 11,30,055</strong>.
+                        </p>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+                        <div class="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 inline-flex items-center justify-center text-[10px] font-black">2</span>
+                            Service Row Amount Formula
+                        </div>
+                        <div class="p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono text-[11px] text-emerald-700 dark:text-emerald-300 font-bold">
+                            Service Amount = Header Allocation Amount &times; (Service % &divide; 100)
+                        </div>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                            <em>Example:</em> If Header Allocation Amount is <strong>&#8377; 11,30,055</strong> and Legal is allocated <strong>30%</strong>, Legal gets <strong>&#8377; 3,39,017</strong>.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 space-y-2">
+                    <div class="font-bold text-amber-800 dark:text-amber-200 flex items-center gap-2">
+                        <i class="fas fa-shield-alt text-amber-600"></i> The Strict 100% Allocation Cap Rule
+                    </div>
+                    <ul class="list-disc list-inside space-y-1 text-[11px] text-amber-900 dark:text-amber-300">
+                        <li><strong>Percentage Limit:</strong> Sum of all department service rows cannot exceed <strong>100%</strong>.</li>
+                        <li><strong>Amount Limit:</strong> Sum of all department row amounts cannot exceed the <strong>Header Allocation Amount</strong>.</li>
+                        <li><strong>No Decimals:</strong> All allocation percentages and amounts are formatted as clean whole integers.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="p-4 sm:p-5 border-t border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/70 flex justify-end">
+                <button type="button" onclick="closeCalculationHelpModal()" class="px-5 py-2 rounded-lg text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white transition cursor-pointer shadow-md">
+                    Got it, Close
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- =========================================================================
+     MODAL 2: QUICK ADD SERVICE GROUP
+     ========================================================================= -->
+<div id="modalAddServiceType" class="fixed inset-0 z-[9999] overflow-y-auto" style="display: none; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);">
+    <div class="min-h-full flex items-center justify-center p-3 sm:p-4 text-center">
+        <div class="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 text-left transform transition-all my-8 overflow-hidden inline-block">
+            
+            <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/80">
+                <h3 class="text-sm font-bold text-slate-800 dark:text-white">Create New Other Cost (Service Group)</h3>
+                <button type="button" onclick="closeAddServiceModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div class="p-5 space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Other Cost Name <span class="text-rose-500">*</span></label>
+                    <input type="text" id="txtModalServiceTypeName" placeholder="e.g. Legal Fees, Admin Expenses, PMC Charges"
+                           class="w-full text-xs px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-white focus:ring-1 focus:ring-teal-500 outline-none" />
+                </div>
+                <p class="text-[11px] text-slate-500">This will be inserted into <code>Project_ServiceGroupMas</code> via stored procedure <code>Web_SaveProjectServiceGroupMas</code>.</p>
+            </div>
+
+            <div class="p-4 sm:p-5 border-t border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/70 flex justify-end gap-2.5">
+                <button type="button" onclick="closeAddServiceModal()" class="px-4 py-2 rounded-lg text-xs font-semibold border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 cursor-pointer">
+                    Cancel
+                </button>
+                <button type="button" onclick="saveQuickServiceType()" class="px-5 py-2 rounded-lg text-xs font-bold text-white bg-teal-600 hover:bg-teal-700 cursor-pointer shadow-md">
+                    Save & Add to Row
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        // Global master registries
+        var allProjects = [];
+        var allDepartments = [];
+        var allServiceGroups = [];
+        var gridInstance = null;
+        var currentEditProectKickOfId = null;
+        var activeModalRowId = null;
+        var lastActiveRowId = null;
+        var selectedCostcenterId = "";
+
+        $(document).ready(function () {
+            initDataGrid();
+            loadProjects();
+            loadDepartments();
+            loadServiceGroups();
+            loadGridData();
+        });
+
+        // =========================================================================
+        // DATA LOADERS
+        // =========================================================================
+
+        function loadProjects(callback) {
+            $.ajax({
+                url: '/OtherCostAllocation/GetProjects',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (res && res.success && res.data) {
+                        allProjects = res.data;
+                        var $ddl = $('#ddlFormProject');
+                        var curVal = $ddl.val();
+
+                        if ($ddl.hasClass('select2-hidden-accessible')) {
+                            $ddl.select2('destroy');
+                        }
+
+                        $ddl.empty().append('<option value="">-- Select Project --</option>');
+                        allProjects.forEach(function (p) {
+                            var pId = p.projectKickoffId || p.ProjectKickoffId;
+                            var pName = p.projectName || p.ProjectName;
+                            var cc = p.costCentreId || p.CostCentreId || '';
+                            $ddl.append($('<option></option>').attr('value', pId).attr('data-cc', cc).text(pName));
+                        });
+
+                        $ddl.select2({
+                            placeholder: '-- Select Project --',
+                            allowClear: true,
+                            width: '100%'
+                        });
+
+                        if (curVal) {
+                            $ddl.val(curVal).trigger('change.select2');
+                        }
+
+                        $ddl.off('change.projectSelect').on('change.projectSelect', function () {
+                            onFormProjectChange($(this).val());
+                        });
+
+                        if (typeof callback === 'function') callback();
+                    }
+                }
+            });
+        }
+
+        function loadDepartments(callback) {
+            $.ajax({
+                url: '/OtherCostAllocation/GetDepartments',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (res && res.success && res.data) {
+                        allDepartments = res.data;
+                        populateAllDepartmentDropdowns();
+                        if (typeof callback === 'function') callback();
+                    }
+                }
+            });
+        }
+
+        function populateAllDepartmentDropdowns() {
+            if (!allDepartments || allDepartments.length === 0) return;
+            $('#tblOtherCostBody tr').each(function () {
+                var $row = $(this);
+                var $deptSel = $row.find('.selDepartment');
+                var curVal = $deptSel.val() || $deptSel.attr('data-selected-val');
+
+                if ($deptSel.find('option').length <= 1) {
+                    $deptSel.empty().append('<option value="">-- Select Department --</option>');
+                    allDepartments.forEach(function (d) {
+                        var dId = d.deptId || d.DeptId || d.deptID || '';
+                        var dName = d.deptName || d.DeptName || d.deptname || '';
+                        var sName = d.shortName || d.ShortName || '';
+                        var text = dName + (sName ? ' (' + sName + ')' : '');
+                        $deptSel.append(new Option(text, dId, false, false));
+                    });
+                    if (curVal) {
+                        $deptSel.val(curVal);
+                    }
+                    if ($deptSel.hasClass('select2-hidden-accessible')) {
+                        $deptSel.trigger('change.select2');
+                    } else {
+                        $deptSel.select2({
+                            placeholder: '-- Select Department --',
+                            width: '100%'
+                        });
+                    }
+                }
+            });
+        }
+
+        function loadServiceGroups(callback) {
+            $.ajax({
+                url: '/OtherCostAllocation/GetServiceGroups',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (res && res.success && res.data) {
+                        allServiceGroups = res.data;
+                        populateAllServiceGroupDropdowns();
+                        if (typeof callback === 'function') callback();
+                    }
+                }
+            });
+        }
+
+        function populateAllServiceGroupDropdowns() {
+            if (!allServiceGroups || allServiceGroups.length === 0) return;
+            $('#tblOtherCostBody tr').each(function () {
+                var $row = $(this);
+                var $sgSel = $row.find('.selServiceGroup');
+                var curVal = $sgSel.val() || $sgSel.attr('data-selected-val');
+                var curName = $sgSel.attr('data-selected-name');
+
+                if ($sgSel.find('option').length <= 2) {
+                    $sgSel.empty();
+                    $sgSel.append(new Option('-- Select or Create Other Cost Name --', '', false, false));
+                    $sgSel.append(new Option('+ Create New Other Cost...', '__CREATE_NEW__', false, false));
+                    allServiceGroups.forEach(function (sg) {
+                        $sgSel.append(new Option(sg.serviceGroupName, sg.serviceGroupId, false, false));
+                    });
+                    if (curVal) {
+                        $sgSel.val(curVal);
+                    } else if (curName) {
+                        var found = allServiceGroups.find(x => x.serviceGroupName.toLowerCase() === curName.toLowerCase());
+                        if (found) {
+                            $sgSel.val(found.serviceGroupId);
+                        } else {
+                            $sgSel.append(new Option(curName, curName, true, true));
+                        }
+                    }
+                    if ($sgSel.hasClass('select2-hidden-accessible')) {
+                        $sgSel.trigger('change.select2');
+                    }
+                }
+            });
+        }
+
+        function onFormProjectChange(projectKickoffId) {
+            if (!projectKickoffId || projectKickoffId === "" || projectKickoffId === "0") {
+                selectedCostcenterId = "";
+                $('#badgeProjectCostCenter').html('<i class="fas fa-info-circle text-[10px]"></i><span>Select project to load estimate</span>');
+                $('#txtEstimateAmt').val("0");
+                recalculateHeaderAmount();
+                return;
+            }
+
+            var p = allProjects.find(function (x) {
+                return String(x.projectKickoffId || x.ProjectKickoffId) === String(projectKickoffId);
+            });
+            selectedCostcenterId = p ? (p.costCentreId || p.CostCentreId || "") : "";
+            var pName = p ? (p.projectName || p.ProjectName || "") : "";
+
+            if (selectedCostcenterId) {
+                $('#badgeProjectCostCenter').html(`<i class="fas fa-tag text-[10px]"></i><span>Cost Center: <strong>${selectedCostcenterId}</strong></span>`);
+            } else {
+                $('#badgeProjectCostCenter').html(`<i class="fas fa-check text-[10px]"></i><span>${pName}</span>`);
+            }
+
+            $.ajax({
+                url: '/OtherCostAllocation/GetBudgetAmount?projectKickoffId=' + encodeURIComponent(projectKickoffId),
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    var budget = 0;
+                    if (res && res.success && res.budgetAmount !== undefined && parseFloat(res.budgetAmount) > 0) {
+                        budget = Math.round(parseFloat(res.budgetAmount));
+                    } else {
+                        budget = 11300550;
+                    }
+                    $('#txtEstimateAmt').val(formatIndianInteger(budget));
+                    recalculateHeaderAmount();
+                },
+                error: function () {
+                    $('#txtEstimateAmt').val(formatIndianInteger(11300550));
+                    recalculateHeaderAmount();
+                }
+            });
+        }
+
+        // =========================================================================
+        // INTEGER CALCULATIONS & NO-DECIMAL FORMATTING
+        // =========================================================================
+
+        function parseCurrency(val) {
+            if (!val) return 0;
+            var clean = String(val).replace(/,/g, '').replace(/[\u20B9₹â‚¹]/g, '').trim();
+            var num = parseFloat(clean);
+            return isNaN(num) ? 0 : Math.round(num);
+        }
+
+        function formatIndianInteger(num) {
+            if (num === null || num === undefined || isNaN(num)) return "0";
+            var rounded = Math.round(Number(num));
+            var isNeg = rounded < 0;
+            var str = Math.abs(rounded).toString();
+            var lastThree = str.substring(str.length - 3);
+            var otherNumbers = str.substring(0, str.length - 3);
+            if (otherNumbers !== '') {
+                lastThree = ',' + lastThree;
+            }
+            var res = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree;
+            return (isNeg ? "-" : "") + res;
+        }
+
+        function onHeaderAllocationPerChange(val) {
+            var est = parseCurrency($('#txtEstimateAmt').val());
+            var per = Math.round(parseFloat(val) || 0);
+            $('#txtAllocationPer').val(per);
+            var amt = Math.round((est * per) / 100.0);
+            $('#txtAllocationAmt').val(formatIndianInteger(amt));
+            recalculateAllRows();
+        }
+
+        function onHeaderAllocationAmtChange(val) {
+            var est = parseCurrency($('#txtEstimateAmt').val());
+            var amt = parseCurrency(val);
+            $('#txtAllocationAmt').val(formatIndianInteger(amt));
+            if (est > 0) {
+                var per = Math.round((amt / est) * 100.0);
+                $('#txtAllocationPer').val(per);
+            }
+            recalculateAllRows();
+        }
+
+        function recalculateHeaderAmount() {
+            var est = parseCurrency($('#txtEstimateAmt').val());
+            var per = Math.round(parseFloat($('#txtAllocationPer').val()) || 0);
+            var amt = Math.round((est * per) / 100.0);
+            $('#txtAllocationAmt').val(formatIndianInteger(amt));
+            recalculateAllRows();
+        }
+
+        function onRowPerChange(input) {
+            var $row = $(input).closest('tr');
+            var headerAllocAmt = parseCurrency($('#txtAllocationAmt').val());
+            var rowPer = Math.round(parseFloat($(input).val()) || 0);
+            $(input).val(rowPer);
+            var rowAmt = Math.round((headerAllocAmt * rowPer) / 100.0);
+            $row.find('.txtRowAmt').val(formatIndianInteger(rowAmt));
+            updateGridTotals();
+        }
+
+        function onRowAmtChange(input) {
+            var $row = $(input).closest('tr');
+            var headerAllocAmt = parseCurrency($('#txtAllocationAmt').val());
+            var rowAmt = parseCurrency($(input).val());
+            $(input).val(formatIndianInteger(rowAmt));
+            if (headerAllocAmt > 0) {
+                var rowPer = Math.round((rowAmt / headerAllocAmt) * 100.0);
+                $row.find('.txtRowPer').val(rowPer);
+            }
+            updateGridTotals();
+        }
+
+        function recalculateAllRows() {
+            var headerAllocAmt = parseCurrency($('#txtAllocationAmt').val());
+            $('#tblOtherCostBody tr').each(function () {
+                var $row = $(this);
+                var rowPer = Math.round(parseFloat($row.find('.txtRowPer').val()) || 0);
+                var rowAmt = Math.round((headerAllocAmt * rowPer) / 100.0);
+                $row.find('.txtRowAmt').val(formatIndianInteger(rowAmt));
+            });
+            updateGridTotals();
+        }
+
+        function updateGridTotals() {
+            var headerAllocAmt = parseCurrency($('#txtAllocationAmt').val());
+            var totalPer = 0;
+            var totalAmt = 0;
+
+            $('#tblOtherCostBody tr').each(function () {
+                var $row = $(this);
+                var per = Math.round(parseFloat($row.find('.txtRowPer').val()) || 0);
+                var amt = parseCurrency($row.find('.txtRowAmt').val());
+                totalPer += per;
+                totalAmt += amt;
+            });
+
+            $('#lblTotalServicePer').text(totalPer + ' %');
+            $('#lblTotalServiceAmt').text('\u20B9 ' + formatIndianInteger(totalAmt));
+
+            $('#chipCapAmt').text('\u20B9 ' + formatIndianInteger(headerAllocAmt));
+            $('#chipAllocAmt').text('\u20B9 ' + formatIndianInteger(totalAmt));
+            $('#chipAllocPer').text('(' + totalPer + '%)');
+
+            var remainingAmt = headerAllocAmt - totalAmt;
+            var isExceeded = (totalPer > 100) || (headerAllocAmt > 0 && totalAmt > headerAllocAmt);
+
+            if (isExceeded) {
+                var overAmt = totalAmt - headerAllocAmt;
+                if (overAmt <= 0) overAmt = 0;
+                $('#chipBalanceBox')
+                    .removeClass('bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300')
+                    .addClass('bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-300');
+                $('#chipRemainingAmt').text('Exceeded: \u20B9 ' + formatIndianInteger(overAmt));
+
+                $('#alertExceededBanner').show();
+                $('#txtExceededAmtDiff').text('\u20B9 ' + formatIndianInteger(overAmt));
+
+                $('#lblTotalServicePer')
+                    .removeClass('border-[#84cc16] dark:border-lime-500 text-slate-900 dark:text-white')
+                    .addClass('border-rose-500 bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300');
+                $('#lblTotalServiceAmt')
+                    .removeClass('border-[#84cc16] dark:border-lime-500 text-slate-900 dark:text-white')
+                    .addClass('border-rose-500 bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300');
+            } else {
+                $('#chipBalanceBox')
+                    .removeClass('bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-300')
+                    .addClass('bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300');
+                $('#chipRemainingAmt').text('\u20B9 ' + formatIndianInteger(remainingAmt >= 0 ? remainingAmt : 0));
+
+                $('#alertExceededBanner').hide();
+
+                $('#lblTotalServicePer')
+                    .removeClass('border-rose-500 bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300')
+                    .addClass('border-[#84cc16] dark:border-lime-500 text-slate-900 dark:text-white');
+                $('#lblTotalServiceAmt')
+                    .removeClass('border-rose-500 bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300')
+                    .addClass('border-[#84cc16] dark:border-lime-500 text-slate-900 dark:text-white');
+            }
+        }
+
+        // =========================================================================
+        // DYNAMIC TABLE ROWS
+        // =========================================================================
+
+        function addNewServiceRow(item) {
+            var rowId = 'row_' + Math.random().toString(36).substr(2, 9);
+            var deptId = item ? (item.deptId || '') : '';
+            var serviceGroupId = item ? (item.serviceGroupId || item.serviceTypeId || '') : '';
+            var serviceGroupName = item ? (item.serviceGroupName || item.serviceTypeName || '') : '';
+            var per = item && item.serviceAllocationPer !== undefined ? Math.round(item.serviceAllocationPer) : 0;
+            var amt = item && item.serviceAllocationAmt !== undefined ? formatIndianInteger(item.serviceAllocationAmt) : '0';
+            var masId = item ? (item.otherCostMasId || 0) : 0;
+
+            var trHtml = `
+                <tr id="${rowId}" class="hover:bg-slate-50/60 dark:hover:bg-slate-800/60 transition">
+                    <td class="py-2.5 px-3">
+                        <input type="hidden" class="hdnOtherCostMasId" value="${masId}" />
+                        <select class="selDepartment w-full text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-1 focus:ring-teal-500 outline-none">
+                            <option value="">-- Select Department --</option>
+                        </select>
+                    </td>
+                    <td class="py-2.5 px-3">
+                        <div class="flex items-center gap-1.5">
+                            <div class="flex-1">
+                                <select class="selServiceGroup w-full text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-1 focus:ring-teal-500 outline-none">
+                                    <option value="">-- Select or Create Other Cost Name --</option>
+                                    <option value="__CREATE_NEW__" class="font-bold text-teal-600 bg-teal-50/80">+ Create New Other Cost...</option>
+                                </select>
+                            </div>
+                            <button type="button" onclick="openAddServiceModal('${rowId}')" title="Create New Cost Group" class="px-2.5 py-1.5 rounded text-teal-600 hover:text-teal-800 hover:bg-teal-50 border border-slate-200 dark:border-slate-700 transition flex-shrink-0 cursor-pointer">
+                                <i class="fas fa-plus text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td class="py-2.5 px-3 text-right">
+                        <input type="number" step="1" min="0" max="100" class="txtRowPer w-28 px-2 py-1.5 text-right text-xs font-bold text-slate-800 dark:text-white bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-1 focus:ring-teal-500 outline-none"
+                               value="${per}" oninput="onRowPerChange(this)" />
+                    </td>
+                    <td class="py-2.5 px-3 text-right">
+                        <input type="text" class="txtRowAmt w-36 px-2 py-1.5 text-right text-xs font-bold text-slate-800 dark:text-white bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-1 focus:ring-teal-500 outline-none"
+                               value="${amt}" oninput="onRowAmtChange(this)" />
+                    </td>
+                    <td class="py-2.5 px-3 text-center">
+                        <button type="button" onclick="removeServiceRow('${rowId}')" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 transition cursor-pointer" title="Delete Row">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            $('#tblOtherCostBody').append(trHtml);
+            var $row = $('#' + rowId);
+            lastActiveRowId = rowId;
+
+            $row.on('click focusin', function () {
+                lastActiveRowId = rowId;
+            });
+
+            // 1. Populate and initialize Department dropdown
+            var $deptSel = $row.find('.selDepartment');
+            $deptSel.attr('data-selected-val', deptId);
+            $deptSel.empty().append('<option value="">-- Select Department --</option>');
+            if (allDepartments && allDepartments.length > 0) {
+                allDepartments.forEach(function (d) {
+                    var dId = d.deptId || d.DeptId || d.deptID || '';
+                    var dName = d.deptName || d.DeptName || d.deptname || '';
+                    var sName = d.shortName || d.ShortName || '';
+                    var text = dName + (sName ? ' (' + sName + ')' : '');
+                    var opt = new Option(text, dId, false, false);
+                    $deptSel.append(opt);
+                });
+                if (deptId) {
+                    $deptSel.val(deptId);
+                }
+            } else {
+                loadDepartments();
+            }
+            $deptSel.select2({
+                placeholder: '-- Select Department --',
+                width: '100%'
+            }).on('select2:open select2:select change', function () {
+                lastActiveRowId = rowId;
+            });
+
+            // 2. Populate and initialize Service Group dropdown
+            var $sgSel = $row.find('.selServiceGroup');
+            $sgSel.attr('data-selected-val', serviceGroupId);
+            $sgSel.attr('data-selected-name', serviceGroupName);
+            $sgSel.empty();
+            $sgSel.append(new Option('-- Select or Create Other Cost Name --', '', false, false));
+            $sgSel.append(new Option('+ Create New Other Cost...', '__CREATE_NEW__', false, false));
+            if (allServiceGroups && allServiceGroups.length > 0) {
+                allServiceGroups.forEach(function (sg) {
+                    var opt = new Option(sg.serviceGroupName, sg.serviceGroupId, false, false);
+                    $sgSel.append(opt);
+                });
+
+                if (serviceGroupId) {
+                    $sgSel.val(serviceGroupId);
+                } else if (serviceGroupName) {
+                    var found = allServiceGroups.find(x => x.serviceGroupName.toLowerCase() === serviceGroupName.toLowerCase());
+                    if (found) {
+                        $sgSel.val(found.serviceGroupId);
+                    } else {
+                        var customOpt = new Option(serviceGroupName, serviceGroupName, true, true);
+                        $sgSel.append(customOpt);
+                    }
+                }
+            } else {
+                loadServiceGroups();
+            }
+
+            $sgSel.select2({
+                placeholder: '-- Select or Create Other Cost Name --',
+                tags: true,
+                width: '100%',
+                createTag: function (params) {
+                    var term = $.trim(params.term);
+                    if (term === '' || term === '__CREATE_NEW__') return null;
+                    return { id: term, text: term, newTag: true };
+                },
+                templateResult: function (data) {
+                    if (data.id === '__CREATE_NEW__') {
+                        return $("<span class='text-teal-700 dark:text-teal-400 font-bold'><i class='fas fa-plus-circle mr-1'></i> Create New Other Cost...</span>");
+                    }
+                    var $result = $("<span></span>").text(data.text);
+                    if (data.newTag) {
+                        $result.append(" <em class='text-teal-600 text-[10px] font-bold'>(New - Save & Add to list)</em>");
+                    }
+                    return $result;
+                }
+            }).on('select2:open', function () {
+                lastActiveRowId = rowId;
+            }).on('select2:select', function (e) {
+                lastActiveRowId = rowId;
+                var selectedData = (e && e.params) ? e.params.data : $(this).select2('data')[0];
+                if (!selectedData) return;
+
+                if (selectedData.id === '__CREATE_NEW__') {
+                    $(this).val('').trigger('change.select2');
+                    openAddServiceModal(rowId);
+                    return;
+                }
+
+                if (selectedData.newTag) {
+                    var typedName = $.trim(selectedData.text);
+                    createAndSelectServiceGroup(typedName, rowId);
+                }
+            });
+
+            $row.find('.txtRowPer, .txtRowAmt').on('focus input', function () {
+                lastActiveRowId = rowId;
+            });
+
+            updateGridTotals();
+        }
+
+        function removeServiceRow(rowId) {
+            if (lastActiveRowId === rowId) lastActiveRowId = null;
+            if (activeModalRowId === rowId) activeModalRowId = null;
+            $('#' + rowId).remove();
+            updateGridTotals();
+        }
+
+        // =========================================================================
+        // SWITCH VIEWS
+        // =========================================================================
+
+        function openNewAllocationForm() {
+            currentEditProectKickOfId = null;
+            lastActiveRowId = null;
+            activeModalRowId = null;
+            $('#formModeBadge').text('New Allocation').removeClass('bg-amber-100 text-amber-800').addClass('bg-blue-100 text-blue-800');
+            
+            $('#ddlFormProject').val('').trigger('change.select2');
+            $('#badgeProjectCostCenter').html('<i class="fas fa-info-circle text-[10px]"></i><span>Select project to load estimate</span>');
+            selectedCostcenterId = "";
+
+            $('#txtEstimateAmt').val('0');
+            $('#txtAllocationPer').val('10');
+            $('#txtAllocationAmt').val('0');
+            $('#txtRevisionId').val('0');
+            $('#tblOtherCostBody').empty();
+
+            addNewServiceRow();
+
+            $('#viewAllocationList').hide();
+            $('#viewAllocationForm').fadeIn(150, function () {
+                if ($('#ddlFormProject').hasClass('select2-hidden-accessible')) {
+                    $('#ddlFormProject').select2({
+                        placeholder: '-- Select Project --',
+                        allowClear: true,
+                        width: '100%'
+                    });
+                }
+            });
+            updateGridTotals();
+        }
+
+        function switchToAllocationList() {
+            $('#viewAllocationForm').hide();
+            $('#viewAllocationList').fadeIn(150);
+        }
+
+        function editAllocation(projectKickoffId) {
+            if (!projectKickoffId) return;
+            currentEditProectKickOfId = projectKickoffId;
+            $('#formModeBadge').text('Edit Allocation').removeClass('bg-blue-100 text-blue-800').addClass('bg-amber-100 text-amber-800');
+
+            Swal.fire({
+                title: 'Loading allocation details...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            $.ajax({
+                url: '/OtherCostAllocation/GetByProject?projectKickoffId=' + encodeURIComponent(projectKickoffId),
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    Swal.close();
+                    if (res && res.success) {
+                        var h = res.header || {};
+                        $('#ddlFormProject').val(String(projectKickoffId)).trigger('change.select2');
+
+                        var p = allProjects.find(function (x) {
+                            return String(x.projectKickoffId || x.ProjectKickoffId) === String(projectKickoffId);
+                        });
+                        selectedCostcenterId = p ? (p.costCentreId || p.CostCentreId || "") : "";
+                        var pName = p ? (p.projectName || p.ProjectName || "") : "";
+                        if (selectedCostcenterId) {
+                            $('#badgeProjectCostCenter').html(`<i class="fas fa-tag text-[10px]"></i><span>Cost Center: <strong>${selectedCostcenterId}</strong></span>`);
+                        } else {
+                            $('#badgeProjectCostCenter').html(`<i class="fas fa-check text-[10px]"></i><span>${pName}</span>`);
+                        }
+
+                        $('#txtEstimateAmt').val(formatIndianInteger(h.estimateAmt || 0));
+                        $('#txtAllocationPer').val(Math.round(h.allocationPer || 10));
+                        $('#txtAllocationAmt').val(formatIndianInteger(h.allocationAmt || 0));
+                        $('#txtRevisionId').val(h.revisionId || '0');
+
+                        $('#tblOtherCostBody').empty();
+                        if (res.items && res.items.length > 0) {
+                            res.items.forEach(function (item) {
+                                addNewServiceRow(item);
+                            });
+                        } else {
+                            addNewServiceRow();
+                        }
+
+                        $('#viewAllocationList').hide();
+                        $('#viewAllocationForm').fadeIn(150, function () {
+                            if ($('#ddlFormProject').hasClass('select2-hidden-accessible')) {
+                                $('#ddlFormProject').select2({
+                                    placeholder: '-- Select Project --',
+                                    allowClear: true,
+                                    width: '100%'
+                                });
+                            }
+                        });
+                        updateGridTotals();
+                    } else {
+                        Swal.fire('Error', res.message || 'Could not load allocation details.', 'error');
+                    }
+                },
+                error: function () {
+                    Swal.close();
+                    Swal.fire('Error', 'Failed to load details from server.', 'error');
+                }
+            });
+        }
+
+        // =========================================================================
+        // SUBMIT ALLOCATION
+        // =========================================================================
+
+        function submitOtherCostAllocation() {
+            var pId = $('#ddlFormProject').val();
+            if (!pId) {
+                Swal.fire('Validation Warning', 'Please select a Project first.', 'warning');
+                return;
+            }
+
+            var estAmt = parseCurrency($('#txtEstimateAmt').val());
+            var allocPer = Math.round(parseFloat($('#txtAllocationPer').val()) || 0);
+            var allocAmt = parseCurrency($('#txtAllocationAmt').val());
+            var revId = $('#txtRevisionId').val().trim() || '0';
+
+            var totalServicePer = 0;
+            var totalServiceAmt = 0;
+            var items = [];
+            var missingDeptCount = 0;
+
+            $('#tblOtherCostBody tr').each(function () {
+                var $row = $(this);
+                var masId = parseInt($row.find('.hdnOtherCostMasId').val()) || 0;
+                
+                var $deptSel = $row.find('.selDepartment');
+                var deptId = $deptSel.val();
+                var deptName = $deptSel.find('option:selected').text();
+
+                var $sgSel = $row.find('.selServiceGroup');
+                var sgVal = $sgSel.val();
+                var sgText = $sgSel.find('option:selected').text();
+
+                if (!sgVal || sgVal === "") return;
+
+                if (!deptId || deptId === "") {
+                    missingDeptCount++;
+                }
+
+                var sPer = Math.round(parseFloat($row.find('.txtRowPer').val()) || 0);
+                var sAmt = parseCurrency($row.find('.txtRowAmt').val());
+
+                totalServicePer += sPer;
+                totalServiceAmt += sAmt;
+
+                var isExistingId = !isNaN(sgVal) && parseInt(sgVal) > 0;
+
+                items.push({
+                    otherCostMasId: masId,
+                    deptId: deptId || "",
+                    deptName: deptName || "",
+                    serviceGroupId: isExistingId ? sgVal : "0",
+                    serviceGroupName: isExistingId ? sgText : sgVal,
+                    serviceTypeId: isExistingId ? sgVal : "0",
+                    serviceTypeName: isExistingId ? sgText : sgVal,
+                    serviceAllocationPer: sPer,
+                    serviceAllocationAmt: sAmt
+                });
+            });
+
+            if (items.length === 0) {
+                Swal.fire('Validation Warning', 'Please enter at least one service row with an Other Cost Name.', 'warning');
+                return;
+            }
+
+            if (missingDeptCount > 0) {
+                Swal.fire('Validation Warning', 'Please select a Department for each service row before saving.', 'warning');
+                return;
+            }
+
+            if (totalServicePer > 100 || (allocAmt > 0 && totalServiceAmt > allocAmt)) {
+                var overAmt = totalServiceAmt - allocAmt;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Allocation Limit Exceeded',
+                    html: `
+                        <div class="text-left text-xs space-y-2">
+                            <p>The sum of all department allocations cannot exceed the <strong>Header Allocation Amount</strong>.</p>
+                            <div class="p-2.5 rounded bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300">
+                                <div><strong>Allocation Cap:</strong> \u20B9 ${formatIndianInteger(allocAmt)} (100%)</div>
+                                <div><strong>Total Allocated:</strong> \u20B9 ${formatIndianInteger(totalServiceAmt)} (${totalServicePer}%)</div>
+                                <div class="mt-1 font-bold text-rose-800 dark:text-rose-200">Exceeded by \u20B9 ${formatIndianInteger(overAmt > 0 ? overAmt : 0)}</div>
+                            </div>
+                            <p class="text-slate-500">Please adjust the allocation percentages so the total does not exceed 100%.</p>
+                        </div>
+                    `
+                });
+                return;
+            }
+
+            var payload = {
+                costcenterId: selectedCostcenterId,
+                proectKickOfId: pId,
+                estimateAmt: estAmt,
+                allocationPer: allocPer,
+                allocationAmt: allocAmt,
+                revisionId: revId,
+                items: items
+            };
+
+            Swal.fire({
+                title: 'Saving Cost Allocation...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            $.ajax({
+                url: '/OtherCostAllocation/Save',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function (res) {
+                    Swal.close();
+                    if (res && res.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Saved Successfully',
+                            text: res.message || 'Other Cost Allocation records saved!',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        loadServiceGroups();
+                        switchToAllocationList();
+                        loadGridData();
+                    } else {
+                        Swal.fire('Save Failed', res.message || 'Error occurred while saving.', 'error');
+                    }
+                },
+                error: function () {
+                    Swal.close();
+                    Swal.fire('Error', 'Server communication error.', 'error');
+                }
+            });
+        }
+
+        // =========================================================================
+        // DEVE XTREME DATA GRID (ONE ROW PER PROJECT WITH MASTER-DETAIL)
+        // =========================================================================
+
+        function initDataGrid() {
+            gridInstance = $("#dxGridOtherCostAllocation").dxDataGrid({
+                dataSource: [],
+                keyExpr: "proectKickOfId",
+                showBorders: true,
+                showRowLines: true,
+                rowAlternationEnabled: true,
+                hoverStateEnabled: true,
+                columnAutoWidth: true,
+                wordWrapEnabled: false,
+                allowColumnResizing: true,
+                searchPanel: {
+                    visible: true,
+                    width: 250,
+                    placeholder: "Search project allocations..."
+                },
+                headerFilter: { visible: true },
+                export: { enabled: true, fileName: "OtherCostAllocations" },
+                paging: { pageSize: 15 },
+                pager: {
+                    showPageSizeSelector: true,
+                    allowedPageSizes: [10, 15, 25, 50],
+                    showInfo: true
+                },
+                columns: [
+                    {
+                        caption: "Actions",
+                        width: 95,
+                        alignment: "center",
+                        fixed: true,
+                        fixedPosition: "left",
+                        visibleIndex: 0,
+                        cellTemplate: function (container, options) {
+                            var $btnEdit = $(`
+                                <button type="button" class="text-sky-600 hover:text-sky-800 dark:text-sky-400 p-1.5 rounded hover:bg-sky-50 dark:hover:bg-slate-700 transition cursor-pointer" title="Edit Allocation">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            `).on('click', function () {
+                                editAllocation(options.data.proectKickOfId);
+                            });
+
+                            var breakupUrl = '@Url.Action("Index", "OtherCostBreakup")?projectKickoffId=' + encodeURIComponent(options.data.proectKickOfId);
+                            var $btnBreakup = $(`
+                                <a href="${breakupUrl}" class="text-teal-600 hover:text-teal-800 dark:text-teal-400 p-1.5 rounded hover:bg-teal-50 dark:hover:bg-slate-700 transition ml-1 cursor-pointer inline-flex items-center" title="Breakdown into Itemized Lines">
+                                    <i class="fas fa-layer-group"></i>
+                                </a>
+                            `);
+
+                            var $btnDelete = $(`
+                                <button type="button" class="text-rose-600 hover:text-rose-800 dark:text-rose-400 p-1.5 rounded hover:bg-rose-50 dark:hover:bg-slate-700 transition ml-1 cursor-pointer" title="Delete Allocation">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            `).on('click', function () {
+                                deleteProjectAllocation(options.data.proectKickOfId, options.data.projectName);
+                            });
+
+                            container.append($btnEdit).append($btnBreakup).append($btnDelete);
+                        }
+                    },
+                    {
+                        dataField: "projectName",
+                        caption: "Project Name",
+                        minWidth: 200,
+                        cellTemplate: function (container, options) {
+                            var pName = options.data.projectName || ("Project #" + options.data.proectKickOfId);
+                            var cc = options.data.costcenterId ? `<span class="text-[10px] text-slate-400 block font-normal">CC: ${options.data.costcenterId}</span>` : "";
+                            $(`<div><span class="font-bold text-slate-800 dark:text-white">${pName}</span>${cc}</div>`).appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "departmentCount",
+                        caption: "Departments",
+                        minWidth: 160,
+                        cellTemplate: function (container, options) {
+                            var cnt = options.data.departmentCount || 0;
+                            var summary = options.data.departmentSummary || "";
+                            var badge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-teal-50 text-teal-700 dark:bg-teal-950/50 dark:text-teal-300 border border-teal-200 dark:border-teal-800">${cnt} Dept${cnt !== 1 ? 's' : ''}</span>`;
+                            var text = summary ? `<span class="text-[11px] text-slate-500 block truncate max-w-xs mt-0.5" title="${summary}">${summary}</span>` : "";
+                            $(`<div>${badge}${text}</div>`).appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "estimateAmt",
+                        caption: "Estimate Amt",
+                        width: 140,
+                        alignment: "right",
+                        customizeText: function (cell) {
+                            return "\u20B9 " + formatIndianInteger(cell.value);
+                        }
+                    },
+                    {
+                        dataField: "allocationPer",
+                        caption: "Header %",
+                        width: 95,
+                        alignment: "right",
+                        customizeText: function (cell) {
+                            return cell.value !== null && cell.value !== undefined ? Math.round(cell.value) + " %" : "\u2014";
+                        }
+                    },
+                    {
+                        dataField: "allocationAmt",
+                        caption: "Header Alloc Amt",
+                        width: 140,
+                        alignment: "right",
+                        customizeText: function (cell) {
+                            return "\u20B9 " + formatIndianInteger(cell.value);
+                        }
+                    },
+                    {
+                        dataField: "usedAmount",
+                        caption: "Breakup (Used)",
+                        width: 130,
+                        alignment: "right",
+                        customizeText: function (cell) {
+                            return "\u20B9 " + formatIndianInteger(cell.value || 0);
+                        }
+                    },
+                    {
+                        dataField: "remainingAmount",
+                        caption: "Remaining Amt",
+                        width: 135,
+                        alignment: "right",
+                        customizeText: function (cell) {
+                            return "\u20B9 " + formatIndianInteger(cell.value || 0);
+                        }
+                    },
+                    {
+                        dataField: "createdDate",
+                        caption: "Date",
+                        width: 105,
+                        alignment: "center",
+                        customizeText: function (cell) {
+                            if (!cell.value) return "\u2014";
+                            var d = new Date(cell.value);
+                            return d.toLocaleDateString('en-GB');
+                        }
+                    }
+                ],
+                masterDetail: {
+                    enabled: true,
+                    template: function (container, options) {
+                        var items = options.data.items || [];
+                        var $wrapper = $(`
+                            <div class="p-3 bg-slate-50/90 dark:bg-slate-800/90 rounded-xl border border-slate-200 dark:border-slate-700 shadow-inner my-1.5">
+                                <div class="text-xs font-bold text-teal-700 dark:text-teal-300 mb-2.5 flex items-center gap-2">
+                                    <i class="fas fa-sitemap"></i>
+                                    <span>Department-wise Breakdown for ${options.data.projectName} (${items.length} records)</span>
+                                </div>
+                                <div class="subgridContainer"></div>
+                            </div>
+                        `).appendTo(container);
+
+                        $wrapper.find(".subgridContainer").dxDataGrid({
+                            dataSource: items,
+                            keyExpr: "otherCostMasId",
+                            showBorders: true,
+                            showRowLines: true,
+                            columnAutoWidth: true,
+                            columns: [
+                                { dataField: "deptName", caption: "Department", minWidth: 160 },
+                                {
+                                    dataField: "serviceGroupName",
+                                    caption: "Other Cost Name (Service Group)",
+                                    minWidth: 180,
+                                    cellTemplate: function (c, o) {
+                                        var sName = o.data.serviceGroupName || "\u2014";
+                                        $(`<span class="font-bold text-teal-700 dark:text-teal-300">${sName}</span>`).appendTo(c);
+                                    }
+                                },
+                                {
+                                    dataField: "serviceAllocationPer",
+                                    caption: "Allocation %",
+                                    width: 110,
+                                    alignment: "right",
+                                    customizeText: function (c) {
+                                        return Math.round(c.value || 0) + " %";
+                                    }
+                                },
+                                {
+                                    dataField: "serviceAllocationAmt",
+                                    caption: "Allocation Amount",
+                                    width: 145,
+                                    alignment: "right",
+                                    customizeText: function (c) {
+                                        return "\u20B9 " + formatIndianInteger(c.value || 0);
+                                    }
+                                },
+                                {
+                                    dataField: "usedAmount",
+                                    caption: "Breakup Used",
+                                    width: 130,
+                                    alignment: "right",
+                                    customizeText: function (c) {
+                                        return "\u20B9 " + formatIndianInteger(c.value || 0);
+                                    }
+                                },
+                                {
+                                    dataField: "remainingAmount",
+                                    caption: "Remaining",
+                                    width: 130,
+                                    alignment: "right",
+                                    customizeText: function (c) {
+                                        return "\u20B9 " + formatIndianInteger(c.value || 0);
+                                    }
+                                }
+                            ]
+                        });
+                    }
+                }
+            }).dxDataGrid("instance");
+        }
+
+        function loadGridData() {
+            $.ajax({
+                url: '/OtherCostAllocation/GetAll',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (res && res.success && res.data) {
+                        var grid = $("#dxGridOtherCostAllocation").dxDataGrid("instance");
+                        if (grid) grid.option("dataSource", res.data);
+
+                        var totalProjects = res.data.length;
+                        var totalAlloc = 0;
+                        var totalUsed = 0;
+
+                        res.data.forEach(function (r) {
+                            totalAlloc += parseCurrency(r.allocationAmt);
+                            totalUsed += parseCurrency(r.usedAmount);
+                        });
+
+                        var totalRemaining = totalAlloc - totalUsed;
+                        if (totalRemaining < 0) totalRemaining = 0;
+
+                        $('#badgeTotalRecords').text(totalProjects + ' Project' + (totalProjects !== 1 ? 's' : ''));
+                        $('#statTotalCount').text(totalProjects);
+                        $('#statTotalAllocated').text("\u20B9 " + formatIndianInteger(totalAlloc));
+                        $('#statTotalUsed').text("\u20B9 " + formatIndianInteger(totalUsed));
+                        $('#statTotalRemaining').text("\u20B9 " + formatIndianInteger(totalRemaining));
+                    }
+                }
+            });
+        }
+
+        function deleteProjectAllocation(projectKickoffId, projectName) {
+            if (!projectKickoffId) return;
+
+            var name = projectName || ('Project #' + projectKickoffId);
+
+            Swal.fire({
+                title: 'Delete Cost Allocation?',
+                text: `Are you sure you want to deactivate all allocations for "${name}"? This action cannot be undone.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e11d48',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Yes, Delete Allocation'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/OtherCostAllocation/Delete',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ proectKickOfId: String(projectKickoffId) }),
+                        success: function (res) {
+                            if (res && res.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Deleted!',
+                                    text: res.message || 'Allocation deactivated successfully.',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                                loadGridData();
+                            } else {
+                                Swal.fire('Error', res.message || 'Failed to delete allocation.', 'error');
+                            }
+                        },
+                        error: function () {
+                            Swal.fire('Error', 'Failed to communicate with server.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        // =========================================================================
+        // CALCULATION HELP MODAL CONTROLS
+        // =========================================================================
+
+        function openCalculationHelpModal() {
+            $('#modalCalculationHelp').fadeIn(150);
+        }
+
+        function closeCalculationHelpModal() {
+            $('#modalCalculationHelp').fadeOut(150);
+        }
+
+        // =========================================================================
+        // QUICK ADD / ON-THE-FLY SERVICE GROUP CREATION
+        // =========================================================================
+
+        function getTargetRowId() {
+            if (activeModalRowId && $('#' + activeModalRowId).length > 0) return activeModalRowId;
+            if (lastActiveRowId && $('#' + lastActiveRowId).length > 0) return lastActiveRowId;
+            var $emptyRow = $('#tblOtherCostBody tr').filter(function () {
+                var val = $(this).find('.selServiceGroup').val();
+                return !val || val === '' || val === '__CREATE_NEW__';
+            }).first();
+            if ($emptyRow.length > 0) return $emptyRow.attr('id');
+            var $lastRow = $('#tblOtherCostBody tr:last');
+            if ($lastRow.length > 0) return $lastRow.attr('id');
+            return null;
+        }
+
+        function openAddServiceModal(rowId) {
+            if (rowId && $('#' + rowId).length > 0) {
+                activeModalRowId = rowId;
+                lastActiveRowId = rowId;
+            } else {
+                activeModalRowId = getTargetRowId();
+                if (activeModalRowId) lastActiveRowId = activeModalRowId;
+            }
+            $('#txtModalServiceTypeName').val('');
+            $('#modalAddServiceType').fadeIn(150);
+            setTimeout(function () {
+                $('#txtModalServiceTypeName').focus();
+            }, 100);
+        }
+
+        function closeAddServiceModal() {
+            activeModalRowId = null;
+            $('#modalAddServiceType').fadeOut(150);
+        }
+
+        function createAndSelectServiceGroup(name, targetRowId) {
+            if (!name || name.trim() === '') return;
+            var cleanName = name.trim();
+            var rowId = (targetRowId && $('#' + targetRowId).length > 0) ? targetRowId : getTargetRowId();
+
+            $.ajax({
+                url: '/OtherCostAllocation/SaveServiceGroup',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ serviceGroupName: cleanName }),
+                success: function (res) {
+                    if (res && res.success) {
+                        var newId = res.serviceGroupId;
+                        var newName = res.serviceGroupName || cleanName;
+
+                        loadServiceGroups(function () {
+                            refreshAllServiceDropdowns(newId, rowId, newName);
+                        });
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Other Cost Added',
+                            text: `"${newName}" saved to Project_ServiceGroupMas and selected!`,
+                            timer: 1500,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end'
+                        });
+                    } else {
+                        Swal.fire('Error', res.message || 'Could not save Service Group.', 'error');
+                    }
+                },
+                error: function () {
+                    Swal.fire('Error', 'Server communication error while saving Service Group.', 'error');
+                }
+            });
+        }
+
+        function refreshAllServiceDropdowns(selectIdForTargetRow, targetRowId, newName) {
+            var effectiveTargetId = (targetRowId && $('#' + targetRowId).length > 0) 
+                                    ? targetRowId 
+                                    : (selectIdForTargetRow ? getTargetRowId() : null);
+
+            $('#tblOtherCostBody tr').each(function () {
+                var $row = $(this);
+                var thisRowId = $row.attr('id');
+                var $sel = $row.find('.selServiceGroup');
+                var currentVal = $sel.val();
+                var isTarget = effectiveTargetId && thisRowId === effectiveTargetId;
+
+                $sel.empty();
+                $sel.append(new Option('-- Select or Create Other Cost Name --', '', false, false));
+                $sel.append(new Option('+ Create New Other Cost...', '__CREATE_NEW__', false, false));
+
+                allServiceGroups.forEach(function (sg) {
+                    $sel.append(new Option(sg.serviceGroupName, sg.serviceGroupId, false, false));
+                });
+
+                if (isTarget && selectIdForTargetRow) {
+                    if ($sel.find("option[value='" + selectIdForTargetRow + "']").length === 0 && newName) {
+                        $sel.append(new Option(newName, selectIdForTargetRow, false, false));
+                    }
+                    $sel.val(String(selectIdForTargetRow)).trigger('change.select2');
+                } else if (currentVal && currentVal !== '__CREATE_NEW__') {
+                    $sel.val(currentVal).trigger('change.select2');
+                } else {
+                    $sel.val('').trigger('change.select2');
+                }
+            });
+        }
+
+        function saveQuickServiceType() {
+            var name = $('#txtModalServiceTypeName').val().trim();
+            if (!name) {
+                Swal.fire('Validation Warning', 'Please enter an Other Cost / Service Group name.', 'warning');
+                return;
+            }
+
+            var targetRowId = (activeModalRowId && $('#' + activeModalRowId).length > 0) 
+                              ? activeModalRowId 
+                              : getTargetRowId();
+
+            var mustCreateNewRow = (!targetRowId || $('#' + targetRowId).length === 0);
+
+            closeAddServiceModal();
+
+            $.ajax({
+                url: '/OtherCostAllocation/SaveServiceGroup',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ serviceGroupName: name }),
+                success: function (res) {
+                    if (res && res.success) {
+                        var newId = res.serviceGroupId;
+                        var newName = res.serviceGroupName || name;
+
+                        loadServiceGroups(function () {
+                            if (mustCreateNewRow) {
+                                refreshAllServiceDropdowns();
+                                addNewServiceRow({ serviceGroupId: newId, serviceGroupName: newName });
+                            } else {
+                                refreshAllServiceDropdowns(newId, targetRowId, newName);
+                            }
+                        });
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Created!',
+                            text: `"${newName}" saved to database and selected on row.`,
+                            timer: 1500,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end'
+                        });
+                    } else {
+                        Swal.fire('Error', res.message || 'Could not save Service Group.', 'error');
+                    }
+                },
+                error: function () {
+                    Swal.fire('Error', 'Server communication error while saving Service Group.', 'error');
+                }
+            });
+        }
+    </script>
+}

@@ -11,7 +11,7 @@ namespace VGN_CRM_CORE.Models
         public object ProjectKickoffId { get; set; }
         public string ProjectName { get; set; } = "";
         public object CostCentreId { get; set; }
-        public string Type { get; set; } = "Budget";
+        public string Type { get; set; } = "Plan";
         public string Revision { get; set; } = "Yes";
         public bool ReadyForApproval { get; set; } = false;
         public string Remarks { get; set; } = "";
@@ -32,6 +32,7 @@ namespace VGN_CRM_CORE.Models
 
     public class ProjectIOWResourceModel
     {
+        public object Project_ResourceId { get; set; }
         public object ResourceDetailId { get; set; }
         public object IOWId { get; set; }
         public bool IncExc { get; set; } = true; // true = Inc, false = Exc
@@ -67,6 +68,7 @@ namespace VGN_CRM_CORE.Models
 
     public class ProjectIOWWBSItemModel
     {
+        public object Project_WBSId { get; set; }
         public object WBSId { get; set; }
         public string WBSName { get; set; } = "";
         public string FullWBSName { get; set; } = "";
@@ -75,6 +77,7 @@ namespace VGN_CRM_CORE.Models
 
     public class ProjectIOWItemModel
     {
+        public object Project_IOWId { get; set; }
         public object IOWId { get; set; }
         public object WorkGroupId { get; set; }
         public string WorkGroupName { get; set; } = "";
@@ -95,6 +98,9 @@ namespace VGN_CRM_CORE.Models
         public string LibrarySpecification { get; set; } = "";
         public double? WorkingQty { get; set; } = 1.0;
         public bool NeedMeasurementSheet { get; set; } = false;
+        public bool HasMeasurementSheet { get; set; } = false;
+        public bool IsQtyLocked { get; set; } = false;
+        public ProjectIOWMeasurementSheetModel MeasurementSheet { get; set; }
 
         // Rate Breakdown / Detail Calculations
         public double? TotalWeightagePct { get; set; } = 0.0;
@@ -121,11 +127,28 @@ namespace VGN_CRM_CORE.Models
         public List<ProjectIOWResourceModel> Resources { get; set; } = new List<ProjectIOWResourceModel>();
     }
 
+    public class ProjectIOWMeasurementSheetModel
+    {
+        public int MeasurementSheetId { get; set; } = 0;
+        public int BOQId { get; set; } = 0;
+        public object Project_IOWId { get; set; }
+        public object Project_WBSId { get; set; }
+        public int? TemplateId { get; set; }
+        public string TemplateName { get; set; } = "";
+        public string SelectedColumn { get; set; } = "Qty";
+        public string SheetDataJson { get; set; } = "";
+        public double? TotalQty { get; set; } = 0.0;
+        public string CreatedBy { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string Status { get; set; } = "1";
+    }
+
     public class ProjectIOWSaveModel
     {
         public ProjectIOWHeaderModel Header { get; set; } = new ProjectIOWHeaderModel();
         public List<ProjectIOWWorkGroupModel> WorkGroups { get; set; } = new List<ProjectIOWWorkGroupModel>();
         public List<ProjectIOWItemModel> Items { get; set; } = new List<ProjectIOWItemModel>();
+        public List<ProjectIOWMeasurementSheetModel> MeasurementSheets { get; set; } = new List<ProjectIOWMeasurementSheetModel>();
     }
 
     public class LibraryIOWItemModel

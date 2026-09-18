@@ -16,15 +16,31 @@ namespace VGN_CRM_CORE.Filters
     // ══════════════════════════════════════════════════════════
     public class AuthorizeSessionAttribute : ActionFilterAttribute
     {
+        private static bool IsAjaxRequest(HttpRequest request)
+        {
+            if (request == null) return false;
+            if (request.Headers != null)
+            {
+                if (request.Headers["X-Requested-With"] == "XMLHttpRequest") return true;
+                string accept = request.Headers["Accept"].ToString();
+                if (!string.IsNullOrEmpty(accept) && accept.IndexOf("application/json", StringComparison.OrdinalIgnoreCase) >= 0) return true;
+            }
+            return false;
+        }
+
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             var session = context.HttpContext.Session;
 
             if (!SessionHelper.IsLoggedIn(session))
             {
+                if (IsAjaxRequest(context.HttpContext.Request))
+                {
+                    context.Result = new StatusCodeResult(401);
+                    return;
+                }
                 var returnUrl = context.HttpContext.Request.Path + context.HttpContext.Request.QueryString;
-                context.Result = new RedirectResult(
-                    $"/Account/Login?ReturnUrl={Uri.EscapeDataString(returnUrl)}");
+                context.Result = new RedirectToActionResult("Login", "Account", new { ReturnUrl = returnUrl });
                 return;
             }
 
@@ -41,15 +57,17 @@ namespace VGN_CRM_CORE.Filters
 
                 if (result == SessionCheckResult.Invalidated)
                 {
-                    // Genuine forced logout or timeout from another device.
-                    // Use TempData (not query string) so the message cannot be
-                    // triggered by a browser refresh or a bookmarked URL.
                     SessionHelper.ClearSession(session);
+                    if (IsAjaxRequest(context.HttpContext.Request))
+                    {
+                        context.Result = new StatusCodeResult(401);
+                        return;
+                    }
                     var tempData = context.HttpContext.RequestServices
                         .GetService(typeof(ITempDataDictionaryFactory)) as ITempDataDictionaryFactory;
                     var td = tempData?.GetTempData(context.HttpContext);
                     if (td != null) td["SessionExpired"] = "true";
-                    context.Result = new RedirectResult("/Account/Login");
+                    context.Result = new RedirectToActionResult("Login", "Account", null);
                     return;
                 }
 
@@ -57,9 +75,13 @@ namespace VGN_CRM_CORE.Filters
                 {
                     // No DB record — stale cookie or missing entry; clear quietly, plain login
                     SessionHelper.ClearSession(session);
+                    if (IsAjaxRequest(context.HttpContext.Request))
+                    {
+                        context.Result = new StatusCodeResult(401);
+                        return;
+                    }
                     var returnUrl = context.HttpContext.Request.Path + context.HttpContext.Request.QueryString;
-                    context.Result = new RedirectResult(
-                        $"/Account/Login?ReturnUrl={Uri.EscapeDataString(returnUrl)}");
+                    context.Result = new RedirectToActionResult("Login", "Account", new { ReturnUrl = returnUrl });
                     return;
                 }
             }
