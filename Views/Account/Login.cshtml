@@ -7,14 +7,13 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Login — VGN360</title>
+    <title>Login &mdash; VGN360 Enterprise</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <link href="~/css/tailwind.css" rel="stylesheet" />
     <link href="~/css/font-awesome.css" rel="stylesheet" />
     <style>
-        /* Bootstrap Icons → Font Awesome 6 shim for login page */
         .bi { display: inline-block; font-style: normal; font-variant: normal; line-height: 1; text-rendering: auto; -webkit-font-smoothing: antialiased; font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome"; font-weight: 900; }
         .bi-person::before { content: "\f007"; }
         .bi-lock::before { content: "\f023"; }
@@ -24,136 +23,1706 @@
         .bi-chevron-down::before { content: "\f078"; }
         .bi-box-arrow-in-right::before { content: "\f2f6"; }
         .bi-exclamation-triangle-fill::before { content: "\f071"; }
+        .bi-shield-check::before { content: "\f3ed"; }
+
         :root {
-            --primary: #4680FF;
-            --primary-rgb: 70,128,255;
+            --primary: #d10000;
+            --primary-glow: rgba(209, 0, 0, 0.4);
+            --primary-dark: #a80000;
+            --bg-outer-c1: #2e0b1d;
+            --bg-outer-c2: #140510;
+            --bg-stage-c1: #250918;
+            --bg-stage-c2: #0d0309;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --card-shadow: 0 30px 80px rgba(0, 0, 0, 0.3), 0 0 40px rgba(209, 0, 0, 0.12);
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; overflow: hidden; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex; align-items: center; justify-content: center;
+            background: radial-gradient(circle at 50% 50%, var(--bg-outer-c1) 0%, var(--bg-outer-c2) 100%);
+            min-height: 100vh;
+            color: var(--text-main);
+            transition: background 1.5s ease;
+        }
+
+        /* Master Dual-Panel Executive Card */
+        .login-card {
+            display: grid;
+            grid-template-columns: 1fr 440px;
+            width: 98vw;
+            max-width: 1280px;
+            height: 96vh;
+            max-height: 740px;
+            border-radius: 28px;
+            overflow: hidden;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+
+        /* LEFT PANEL: Pure Cinematic Galaxy Travel Canvas (Zero Overlay Text) */
+        .panel-left {
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at 50% 50%, var(--bg-stage-c1) 0%, var(--bg-stage-c2) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid var(--card-border);
+            transition: background 1.5s ease;
+        }
+
+        #webglCanvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            cursor: grab;
+        }
+        #webglCanvas:active {
+            cursor: grabbing;
+        }
+
+        /* Atmospheric vignette */
+        .galaxy-vignette {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2;
+            background: radial-gradient(circle at center, transparent 40%, rgba(0, 0, 0, 0.25) 100%);
+        }
+
+        /* RIGHT PANEL: Executive White Mode Form */
+        .panel-right {
+            background: radial-gradient(circle at 100% 0%, rgba(209, 0, 0, 0.04) 0%, transparent 60%), #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 46px 42px;
+            position: relative;
+            z-index: 10;
+        }
+        .panel-right::before {
+            content: '';
+            position: absolute;
+            top: -70px;
+            right: -70px;
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(209, 0, 0, 0.06), transparent 70%);
+            pointer-events: none;
+        }
+
+        .logo-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 6px;
+        }
+        .logo-row img {
+            height: 52px;
+            object-fit: contain;
+        }
+        .welcome-title {
+            font-size: 1.65rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+        }
+        .welcome-sub {
+            color: #64748b;
+            font-size: 0.86rem;
+            margin-bottom: 26px;
+            font-weight: 400;
+        }
+
+        .field-wrap {
+            margin-bottom: 16px;
+        }
+        .field-label {
+            display: flex;
+            align-items: center;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 6px;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+        .input-shell {
+            display: flex;
+            align-items: center;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            background: #f8fafc;
+            transition: all 0.25s ease;
+        }
+        .input-shell:focus-within {
+            border-color: #d10000;
+            box-shadow: 0 0 0 4px rgba(209, 0, 0, 0.12);
+            background: #ffffff;
+        }
+        .input-icon {
+            padding: 0 12px 0 15px;
+            color: #94a3b8;
+            font-size: 0.92rem;
+            transition: color 0.25s;
+        }
+        .input-shell:focus-within .input-icon {
+            color: #d10000;
+        }
+        .input-shell input, .input-shell select {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 12.5px 14px 12.5px 0;
+            font-size: 0.94rem;
+            color: #0f172a;
+            font-weight: 500;
+        }
+        .input-shell select {
+            appearance: none;
+            cursor: pointer;
+        }
+        .input-shell select option {
+            background: #ffffff;
+            color: #0f172a;
+            padding: 10px;
+        }
+        .input-shell input::placeholder {
+            color: #94a3b8;
+        }
+
+        .pos-rel { position: relative; }
+        .eye-btn {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #94a3b8;
+            font-size: 0.92rem;
+            padding: 4px;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .eye-btn:hover { color: #d10000; }
+        .err-msg {
+            color: #d10000;
+            font-size: 0.74rem;
+            margin-top: 4px;
+            display: block;
+            font-weight: 600;
+        }
+
+        /* High-Impact Signature #d10000 CTA */
+        .btn-signin {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #e60000 0%, #d10000 55%, #a80000 100%);
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            box-shadow: 0 10px 28px rgba(209, 0, 0, 0.35);
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-signin::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            transition: left 0.6s ease;
+        }
+        .btn-signin:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 34px rgba(209, 0, 0, 0.45);
+            filter: brightness(1.05);
+        }
+        .btn-signin:hover::before {
+            left: 100%;
+        }
+        .btn-signin:active {
+            transform: translateY(0);
+            box-shadow: 0 6px 18px rgba(209, 0, 0, 0.3);
+        }
+
+        .alert-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 0.82rem;
+            color: #b91c1c;
+            margin-bottom: 14px;
+            transition: opacity 0.4s;
+        }
+
+        .security-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.68rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-top: 20px;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 12px;
+            color: #94a3b8;
+            font-size: 0.72rem;
+        }
+
+        @@media (max-width: 860px) {
+            .login-card {
+                grid-template-columns: 1fr;
+                height: auto;
+                max-height: none;
+                margin: 16px;
+            }
+            .panel-left {
+                height: 420px;
+            }
+            .panel-right {
+                padding: 34px 26px;
+            }
         }
     </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-[#e8eeff] via-[#f8f0ff] to-[#e8f4ff] flex items-center justify-center font-[system-ui,sans-serif]">
-    <div class="grid grid-cols-1 lg:grid-cols-[8fr_4fr] w-[1100px] max-w-[95vw] max-h-[96vh] min-h-[480px] rounded-[24px] overflow-hidden shadow-[0_32px_80px_rgba(70,128,255,.18),_0_4px_16px_rgba(0,0,0,.08)]">
-        
-        <!-- LEFT: Video -->
-        <div class="relative overflow-hidden hidden lg:block">
-            <video autoplay muted loop playsinline class="absolute inset-0 w-full h-full object-cover">
-                <source src="~/videos/VGN Aspire.mp4" type="video/mp4" />
-            </video>
-            <div class="absolute inset-0 bg-black/30 flex flex-col items-center justify-center">
-            </div>
-        </div>
+<body id="pageBody">
 
-        <!-- RIGHT: Form -->
-        <div class="bg-white flex flex-col justify-center py-12 px-8 md:px-14">
-            <div class="flex items-center justify-center gap-3 mb-1">
-                <img src="~/images/VGN360.png" alt="VGN360" class="h-14 object-contain" />
-                <div class="text-[1.75rem] font-bold text-[#1a1a2e]">Welcome Back &#128075;</div>
-            </div>
-            <div class="text-[#6c757d] text-[0.9rem] mt-1 mb-8 text-center">Sign in to your VGN360 account</div>
-
-            @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ContainsKey(""))
-            {
-                <div class="bg-[#fff5f5] border border-[#fecaca] rounded-[10px] py-3 px-4 text-[0.88rem] text-[#dc3545] mb-4 flex items-center gap-2 transition-opacity duration-500" id="alertBox">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
-                    @foreach (var err in ViewData.ModelState[""].Errors)
-                    {<span>@err.ErrorMessage</span>}
-                </div>
-            }
-
-            <form asp-action="Login" asp-controller="Account" method="post">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl" />
-
-                <!-- User ID -->
-                <div class="mb-5">
-                    <label class="block text-[0.85rem] font-semibold text-[#374151] mb-1"><i class="bi bi-person mr-1"></i>User ID</label>
-                    <div class="flex items-center border-[1.5px] border-[#e2e8f0] rounded-xl bg-white focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/20 transition-all duration-200">
-                        <span class="pl-4 pr-3 text-[#6c757d]"><i class="bi bi-person"></i></span>
-                        <input asp-for="UserId" id="UserId" class="w-full bg-transparent border-none py-2.5 pr-4 text-[0.95rem] focus:outline-none focus:ring-0"
-                               placeholder="Enter your User ID" autocomplete="username" />
-                    </div>
-                    <span asp-validation-for="UserId" class="text-[#dc3545] text-[0.82rem] mt-1 block"></span>
-                </div>
-
-                <!-- Password -->
-                <div class="mb-5">
-                    <label class="block text-[0.85rem] font-semibold text-[#374151] mb-1"><i class="bi bi-lock mr-1"></i>Password</label>
-                    <div class="relative flex items-center border-[1.5px] border-[#e2e8f0] rounded-xl bg-white focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/20 transition-all duration-200">
-                        <span class="pl-4 pr-3 text-[#6c757d]"><i class="bi bi-lock"></i></span>
-                        <input asp-for="Password" id="PasswordInput" class="w-full bg-transparent border-none py-2.5 pr-10 text-[0.95rem] focus:outline-none focus:ring-0"
-                               placeholder="Enter your password"
-                               autocomplete="current-password" />
-                        <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-gray-600 cursor-pointer p-0 text-base z-10 bg-transparent border-none" onclick="togglePwd()">
-                            <i class="bi bi-eye-slash" id="pwdIcon"></i>
-                        </button>
-                    </div>
-                    <span asp-validation-for="Password" class="text-[#dc3545] text-[0.82rem] mt-1 block"></span>
-                </div>
-
-                <!-- Login Type -->
-                <div class="mb-8">
-                    <label class="block text-[0.85rem] font-semibold text-[#374151] mb-1"><i class="bi bi-people mr-1"></i>Login Type</label>
-                    <div class="relative flex items-center border-[1.5px] border-[#e2e8f0] rounded-xl bg-white focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/20 transition-all duration-200">
-                        <span class="pl-4 pr-3 text-[#6c757d]"><i class="bi bi-people"></i></span>
-                        <select name="LoginType" id="LoginType" class="w-full bg-transparent border-none py-2.5 pr-10 text-[0.95rem] focus:outline-none focus:ring-0 appearance-none">
-                            <option value="CORPORATE">CORPORATE</option>
-                            <option value="CHANNELPARTNER">CHANNEL PARTNER</option>
-                        </select>
-                        <i class="bi bi-chevron-down absolute right-4 pointer-events-none text-[#6c757d] text-sm z-10"></i>
-                    </div>
-                </div>
-
-                <button type="submit" class="w-full bg-gradient-to-br from-primary to-[#6c47ff] hover:opacity-90 text-white border-none rounded-xl py-3 font-semibold text-[1rem] cursor-pointer transition-opacity duration-200">
-                    <i class="bi bi-box-arrow-in-right mr-2"></i>Sign In
-                </button>
-            </form>
-
-            <div class="text-center mt-6 text-[#9ca3af] text-[0.8rem]">&copy; @DateTime.Now.Year VGN360 &mdash; All rights reserved</div>
-        </div>
+<div class="login-card">
+    <!-- LEFT PANEL: 100% Pure Cinematic Traveling Galaxy Stage (No text overlays) -->
+    <div class="panel-left" id="panelLeft">
+        <div id="webglCanvas"></div>
+        <div class="galaxy-vignette"></div>
     </div>
 
-    <script>
-        function togglePwd() {
-            var pwd = document.getElementById('PasswordInput');
-            var icon = document.getElementById('pwdIcon');
-            pwd.type = pwd.type === 'password' ? 'text' : 'password';
-            icon.className = pwd.type === 'text' ? 'bi bi-eye' : 'bi bi-eye-slash';
+    <!-- RIGHT PANEL: Executive White Mode Form -->
+    <div class="panel-right">
+        <div class="logo-row">
+            <img src="~/images/VGN360.png" alt="VGN360" />
+            <div class="welcome-title">Welcome Back</div>
+        </div>
+        <div class="welcome-sub">Sign in to your VGN360 enterprise portal</div>
+
+        @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ContainsKey(""))
+        {
+            <div class="alert-box" id="alertBox">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                @foreach (var err in ViewData.ModelState[""].Errors)
+                {
+                    <span>@err.ErrorMessage</span>
+                }
+            </div>
         }
-        var alertBox = document.getElementById('alertBox');
+
+        <form asp-action="Login" asp-controller="Account" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="ReturnUrl" value="@ViewBag.ReturnUrl" />
+
+            <div class="field-wrap">
+                <label class="field-label"><i class="bi bi-person" style="margin-right:7px;color:#d10000"></i>User ID</label>
+                <div class="input-shell">
+                    <span class="input-icon"><i class="bi bi-person"></i></span>
+                    <input asp-for="UserId" id="UserId" placeholder="Enter your User ID" autocomplete="username" />
+                </div>
+                <span asp-validation-for="UserId" class="err-msg"></span>
+            </div>
+
+            <div class="field-wrap">
+                <label class="field-label"><i class="bi bi-lock" style="margin-right:7px;color:#d10000"></i>Password</label>
+                <div class="input-shell pos-rel">
+                    <span class="input-icon"><i class="bi bi-lock"></i></span>
+                    <input asp-for="Password" id="PasswordInput" placeholder="Enter your password" autocomplete="current-password" style="padding-right:42px" />
+                    <button type="button" class="eye-btn" onclick="togglePwd()" title="Toggle password visibility">
+                        <i class="bi bi-eye-slash" id="pwdIcon"></i>
+                    </button>
+                </div>
+                <span asp-validation-for="Password" class="err-msg"></span>
+            </div>
+
+            <div class="field-wrap" style="margin-bottom:24px">
+                <label class="field-label"><i class="bi bi-people" style="margin-right:7px;color:#d10000"></i>Login Type</label>
+                <div class="input-shell pos-rel">
+                    <span class="input-icon"><i class="bi bi-people"></i></span>
+                    <select name="LoginType" id="LoginType">
+                        <option value="CORPORATE">CORPORATE</option>
+                        <option value="CHANNELPARTNER">CHANNEL PARTNER</option>
+                    </select>
+                    <i class="bi bi-chevron-down" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:#94a3b8;font-size:0.75rem"></i>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-signin">
+                <i class="bi bi-box-arrow-in-right"></i>
+                <span>Sign In to VGN 360</span>
+            </button>
+        </form>
+
+        <div class="security-row">
+            <i class="bi bi-shield-check" style="color:#d10000"></i>
+            <span>256-Bit SSL Secured Enterprise Access</span>
+        </div>
+
+        <div class="footer-note">
+            &copy; @DateTime.Now.Year VGN360 &mdash; All rights reserved
+        </div>
+    </div>
+</div>
+
+<!-- Three.js (Local with CDN fallback) -->
+<script src="~/js/three.min.js"></script>
+<script>
+if (typeof THREE === 'undefined') {
+    document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
+}
+</script>
+
+<!-- Real Human Galaxy Travel Engine: One Animated Rotating Circle, Automatic Atmospheric Shifts, 23 Department Icons -->
+<script>
+(function() {
+    'use strict';
+
+    // 23 Distinct Enterprise Departments with tailored colorful themes & vector icons
+    var DEPARTMENT_CONFIG = [
+        // ARM 1: Commercial & Growth Stream (8 departments)
+        { arm: 0, r: 135, name: 'SALES',                      icon: 'growth',    color: '#10b981', glow: 'rgba(16, 185, 129, 0.45)' },
+        { arm: 0, r: 175, name: 'PRESALES',                   icon: 'target',    color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.45)' },
+        { arm: 0, r: 215, name: 'TELECALLER',                 icon: 'headset',   color: '#d946ef', glow: 'rgba(217, 70, 239, 0.45)' },
+        { arm: 0, r: 255, name: 'MARKETING',                  icon: 'megaphone', color: '#f97316', glow: 'rgba(249, 115, 22, 0.45)' },
+        { arm: 0, r: 295, name: 'CRM',                        icon: 'heart',     color: '#d10000', glow: 'rgba(209, 0, 0, 0.5)' },
+        { arm: 0, r: 335, name: 'BUSINESS ANALYST',           icon: 'chart',     color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.45)' },
+        { arm: 0, r: 375, name: 'FINANCE & ACCOUNTS',         icon: 'card',      color: '#eab308', glow: 'rgba(234, 179, 8, 0.5)' },
+        { arm: 0, r: 418, name: 'LAND PURCHASE',              icon: 'map',       color: '#16a34a', glow: 'rgba(22, 163, 74, 0.45)' },
+
+        // ARM 2: Operations & Engineering Stream (8 departments)
+        { arm: 1, r: 145, name: 'CIVIL PLANNING & MONITORING', icon: 'ruler',     color: '#2563eb', glow: 'rgba(37, 99, 235, 0.45)' },
+        { arm: 1, r: 185, name: 'CIVIL EXECUTION',             icon: 'crane',     color: '#ea580c', glow: 'rgba(234, 88, 12, 0.5)' },
+        { arm: 1, r: 225, name: 'PURCHASE',                    icon: 'cart',      color: '#0d9488', glow: 'rgba(13, 148, 136, 0.45)' },
+        { arm: 1, r: 265, name: 'STORES',                      icon: 'box',       color: '#b45309', glow: 'rgba(180, 83, 9, 0.45)' },
+        { arm: 1, r: 305, name: 'TRANSPORT',                   icon: 'truck',     color: '#84cc16', glow: 'rgba(132, 204, 22, 0.45)' },
+        { arm: 1, r: 345, name: 'LIAISON',                     icon: 'handshake', color: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.45)' },
+        { arm: 1, r: 385, name: 'DOCUMENTATION',               icon: 'doc',       color: '#0284c7', glow: 'rgba(2, 132, 199, 0.45)' },
+        { arm: 1, r: 425, name: 'LEGAL',                       icon: 'scales',    color: '#dc2626', glow: 'rgba(220, 38, 38, 0.5)' },
+
+        // ARM 3: Technology, Human Resources & Governance Stream (7 departments)
+        { arm: 2, r: 155, name: 'IT',                          icon: 'chip',      color: '#00d2ff', glow: 'rgba(0, 210, 255, 0.5)' },
+        { arm: 2, r: 195, name: 'HR',                          icon: 'users',     color: '#f43f5e', glow: 'rgba(244, 63, 94, 0.45)' },
+        { arm: 2, r: 235, name: 'ADMIN',                       icon: 'building',  color: '#6366f1', glow: 'rgba(99, 102, 241, 0.45)' },
+        { arm: 2, r: 275, name: 'SECURITY',                    icon: 'shield',    color: '#059669', glow: 'rgba(5, 150, 105, 0.45)' },
+        { arm: 2, r: 315, name: 'FILE MANAGEMENT',             icon: 'folder',    color: '#14b8a6', glow: 'rgba(20, 184, 166, 0.45)' },
+        { arm: 2, r: 355, name: 'SECRETARIAT',                 icon: 'seal',      color: '#9333ea', glow: 'rgba(147, 51, 234, 0.45)' },
+        { arm: 2, r: 400, name: 'COMMITTEE',                   icon: 'pillar',    color: '#d97706', glow: 'rgba(217, 119, 6, 0.45)' }
+    ];
+
+    var container = document.getElementById('webglCanvas');
+    var panelLeft = document.getElementById('panelLeft');
+    var pageBody = document.getElementById('pageBody');
+    if (!container) return;
+
+    var scene, camera, renderer;
+    var galaxyGroup, nodesGroup, arcsGroup, coreGroup;
+    var singleRotatingCircle, circleBeads = [];
+    var spiralStarSystem, warpStarSystem, warpPositions, warpVelocities;
+    var departmentNodes = [];
+    var activeBolts = [];
+    // Atomic Particle Flow System — living energy streams from VGN 360 to every department
+    var atomFlowGeo, atomFlowPositions, atomFlowColors, atomFlowSizes;
+    var atomFlowData = [];   // per-particle metadata
+    var atomFlowSystem = null;
+    var clock = new THREE.Clock();
+
+    var mouseX = 0, mouseY = 0;
+    var targetRotX = 0.32, targetRotY = 0;
+
+    // Vector Icon Drawing Routine on Canvas
+    function drawVectorIcon(ctx, iconType, cx, cy, size, color) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.strokeStyle = '#ffffff';
+        ctx.fillStyle = '#ffffff';
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        var s = size / 24;
+
+        switch (iconType) {
+            case 'growth':
+                ctx.beginPath();
+                ctx.moveTo(-9 * s, 8 * s);
+                ctx.lineTo(-3 * s, 2 * s);
+                ctx.lineTo(2 * s, 6 * s);
+                ctx.lineTo(9 * s, -6 * s);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(4 * s, -6 * s);
+                ctx.lineTo(9 * s, -6 * s);
+                ctx.lineTo(9 * s, -1 * s);
+                ctx.stroke();
+                break;
+
+            case 'target':
+                ctx.beginPath();
+                ctx.arc(0, 0, 9 * s, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(0, 0, 4.5 * s, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(0, 0, 1.8 * s, 0, Math.PI * 2);
+                ctx.fill();
+                break;
+
+            case 'headset':
+                ctx.beginPath();
+                ctx.arc(0, -1 * s, 8 * s, Math.PI, 0);
+                ctx.stroke();
+                ctx.fillRect(-9 * s, -1 * s, 3 * s, 6 * s);
+                ctx.fillRect(6 * s, -1 * s, 3 * s, 6 * s);
+                ctx.beginPath();
+                ctx.moveTo(7 * s, 5 * s);
+                ctx.lineTo(4 * s, 8 * s);
+                ctx.lineTo(0, 8 * s);
+                ctx.stroke();
+                break;
+
+            case 'megaphone':
+                ctx.beginPath();
+                ctx.moveTo(-8 * s, -3 * s);
+                ctx.lineTo(2 * s, -7 * s);
+                ctx.lineTo(2 * s, 7 * s);
+                ctx.lineTo(-8 * s, 3 * s);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(-4 * s, 3 * s);
+                ctx.lineTo(-4 * s, 7 * s);
+                ctx.lineTo(-1 * s, 7 * s);
+                ctx.lineTo(-1 * s, 4 * s);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(5 * s, 0, 4 * s, -Math.PI / 3, Math.PI / 3);
+                ctx.stroke();
+                break;
+
+            case 'card':
+                ctx.strokeRect(-9 * s, -6 * s, 18 * s, 12 * s);
+                ctx.beginPath();
+                ctx.moveTo(-9 * s, -2 * s);
+                ctx.lineTo(9 * s, -2 * s);
+                ctx.stroke();
+                ctx.fillRect(-6 * s, 2 * s, 4 * s, 2 * s);
+                break;
+
+            case 'map':
+                ctx.beginPath();
+                ctx.moveTo(-8 * s, -7 * s);
+                ctx.lineTo(-2 * s, -4 * s);
+                ctx.lineTo(3 * s, -7 * s);
+                ctx.lineTo(8 * s, -4 * s);
+                ctx.lineTo(8 * s, 7 * s);
+                ctx.lineTo(3 * s, 4 * s);
+                ctx.lineTo(-2 * s, 7 * s);
+                ctx.lineTo(-8 * s, 4 * s);
+                ctx.closePath();
+                ctx.stroke();
+                break;
+
+            case 'doc':
+                ctx.beginPath();
+                ctx.moveTo(-6 * s, -9 * s);
+                ctx.lineTo(3 * s, -9 * s);
+                ctx.lineTo(7 * s, -5 * s);
+                ctx.lineTo(7 * s, 9 * s);
+                ctx.lineTo(-6 * s, 9 * s);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(-3 * s, -2 * s); ctx.lineTo(4 * s, -2 * s);
+                ctx.moveTo(-3 * s, 2 * s); ctx.lineTo(4 * s, 2 * s);
+                ctx.moveTo(-3 * s, 5 * s); ctx.lineTo(1 * s, 5 * s);
+                ctx.stroke();
+                break;
+
+            case 'users':
+                ctx.beginPath();
+                ctx.arc(-3 * s, -4 * s, 3.5 * s, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(-3 * s, 8 * s, 6 * s, Math.PI, 0);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(5 * s, -2 * s, 2.8 * s, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(5 * s, 8 * s, 4.5 * s, Math.PI, 0);
+                ctx.stroke();
+                break;
+
+            case 'building':
+                ctx.strokeRect(-8 * s, -9 * s, 9 * s, 18 * s);
+                ctx.strokeRect(1 * s, -3 * s, 7 * s, 12 * s);
+                ctx.fillRect(-6 * s, -6 * s, 2 * s, 2 * s);
+                ctx.fillRect(-2 * s, -6 * s, 2 * s, 2 * s);
+                ctx.fillRect(-6 * s, -1 * s, 2 * s, 2 * s);
+                ctx.fillRect(-2 * s, -1 * s, 2 * s, 2 * s);
+                break;
+
+            case 'chip':
+                ctx.strokeRect(-6 * s, -6 * s, 12 * s, 12 * s);
+                ctx.fillRect(-3 * s, -3 * s, 6 * s, 6 * s);
+                ctx.beginPath();
+                ctx.moveTo(-3 * s, -9 * s); ctx.lineTo(-3 * s, -6 * s);
+                ctx.moveTo(3 * s, -9 * s); ctx.lineTo(3 * s, -6 * s);
+                ctx.moveTo(-3 * s, 6 * s); ctx.lineTo(-3 * s, 9 * s);
+                ctx.moveTo(3 * s, 6 * s); ctx.lineTo(3 * s, 9 * s);
+                ctx.moveTo(-9 * s, -3 * s); ctx.lineTo(-6 * s, -3 * s);
+                ctx.moveTo(-9 * s, 3 * s); ctx.lineTo(-6 * s, 3 * s);
+                ctx.moveTo(6 * s, -3 * s); ctx.lineTo(9 * s, -3 * s);
+                ctx.moveTo(6 * s, 3 * s); ctx.lineTo(9 * s, 3 * s);
+                ctx.stroke();
+                break;
+
+            case 'heart':
+                ctx.beginPath();
+                ctx.moveTo(0, 6 * s);
+                ctx.bezierCurveTo(-9 * s, 0, -9 * s, -7 * s, 0, -5 * s);
+                ctx.bezierCurveTo(9 * s, -7 * s, 9 * s, 0, 0, 6 * s);
+                ctx.fill();
+                break;
+
+            case 'box':
+                ctx.beginPath();
+                ctx.moveTo(0, -8 * s);
+                ctx.lineTo(8 * s, -4 * s);
+                ctx.lineTo(8 * s, 5 * s);
+                ctx.lineTo(0, 9 * s);
+                ctx.lineTo(-8 * s, 5 * s);
+                ctx.lineTo(-8 * s, -4 * s);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, -8 * s); ctx.lineTo(0, 9 * s);
+                ctx.moveTo(0, 0); ctx.lineTo(-8 * s, -4 * s);
+                ctx.moveTo(0, 0); ctx.lineTo(8 * s, -4 * s);
+                ctx.stroke();
+                break;
+
+            case 'ruler':
+                ctx.beginPath();
+                ctx.moveTo(-8 * s, 7 * s);
+                ctx.lineTo(7 * s, 7 * s);
+                ctx.lineTo(-8 * s, -8 * s);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(-4 * s, 3 * s);
+                ctx.lineTo(1 * s, 3 * s);
+                ctx.lineTo(-4 * s, -2 * s);
+                ctx.closePath();
+                ctx.stroke();
+                break;
+
+            case 'cart':
+                ctx.beginPath();
+                ctx.moveTo(-9 * s, -7 * s);
+                ctx.lineTo(-6 * s, -7 * s);
+                ctx.lineTo(-3 * s, 4 * s);
+                ctx.lineTo(7 * s, 4 * s);
+                ctx.lineTo(9 * s, -3 * s);
+                ctx.lineTo(-4 * s, -3 * s);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(-2 * s, 7 * s, 1.8 * s, 0, Math.PI * 2);
+                ctx.arc(5 * s, 7 * s, 1.8 * s, 0, Math.PI * 2);
+                ctx.fill();
+                break;
+
+            case 'seal':
+                ctx.beginPath();
+                ctx.arc(0, -2 * s, 6.5 * s, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(-3 * s, 4 * s);
+                ctx.lineTo(-5 * s, 9 * s);
+                ctx.lineTo(-1 * s, 7 * s);
+                ctx.lineTo(0, 9 * s);
+                ctx.lineTo(3 * s, 7 * s);
+                ctx.lineTo(5 * s, 9 * s);
+                ctx.lineTo(3 * s, 4 * s);
+                ctx.fill();
+                break;
+
+            case 'chart':
+                ctx.strokeRect(-8 * s, 1 * s, 3.5 * s, 7 * s);
+                ctx.strokeRect(-2 * s, -4 * s, 3.5 * s, 12 * s);
+                ctx.strokeRect(4 * s, -8 * s, 3.5 * s, 16 * s);
+                break;
+
+            case 'pillar':
+                ctx.fillRect(-8 * s, 6 * s, 16 * s, 2.5 * s);
+                ctx.fillRect(-7 * s, -7 * s, 14 * s, 2.5 * s);
+                ctx.fillRect(-6 * s, -4 * s, 2.5 * s, 9 * s);
+                ctx.fillRect(-1.2 * s, -4 * s, 2.5 * s, 9 * s);
+                ctx.fillRect(3.5 * s, -4 * s, 2.5 * s, 9 * s);
+                break;
+
+            case 'truck':
+                ctx.strokeRect(-9 * s, -4 * s, 11 * s, 8 * s);
+                ctx.beginPath();
+                ctx.moveTo(2 * s, 4 * s);
+                ctx.lineTo(7 * s, 4 * s);
+                ctx.lineTo(8 * s, 0);
+                ctx.lineTo(5 * s, 0);
+                ctx.lineTo(2 * s, -4 * s);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(-4 * s, 6 * s, 2 * s, 0, Math.PI * 2);
+                ctx.arc(5 * s, 6 * s, 2 * s, 0, Math.PI * 2);
+                ctx.fill();
+                break;
+
+            case 'crane':
+                ctx.beginPath();
+                ctx.moveTo(-6 * s, 8 * s); ctx.lineTo(-6 * s, -8 * s);
+                ctx.moveTo(-8 * s, 8 * s); ctx.lineTo(-4 * s, 8 * s);
+                ctx.moveTo(-6 * s, -6 * s); ctx.lineTo(8 * s, -6 * s);
+                ctx.moveTo(-6 * s, -8 * s); ctx.lineTo(-2 * s, -6 * s);
+                ctx.moveTo(5 * s, -6 * s); ctx.lineTo(5 * s, 3 * s);
+                ctx.stroke();
+                ctx.fillRect(4 * s, 3 * s, 2 * s, 3 * s);
+                break;
+
+            case 'folder':
+                ctx.beginPath();
+                ctx.moveTo(-8 * s, -6 * s);
+                ctx.lineTo(-3 * s, -6 * s);
+                ctx.lineTo(-1 * s, -4 * s);
+                ctx.lineTo(8 * s, -4 * s);
+                ctx.lineTo(8 * s, 6 * s);
+                ctx.lineTo(-8 * s, 6 * s);
+                ctx.closePath();
+                ctx.stroke();
+                break;
+
+            case 'handshake':
+                ctx.beginPath();
+                ctx.arc(-3 * s, 0, 4.5 * s, -Math.PI / 2, Math.PI / 2);
+                ctx.arc(3 * s, 0, 4.5 * s, Math.PI / 2, -Math.PI / 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(-7 * s, -3 * s); ctx.lineTo(-3 * s, 0);
+                ctx.moveTo(7 * s, -3 * s); ctx.lineTo(3 * s, 0);
+                ctx.stroke();
+                break;
+
+            case 'shield':
+                ctx.beginPath();
+                ctx.moveTo(0, -8 * s);
+                ctx.lineTo(7 * s, -4 * s);
+                ctx.lineTo(7 * s, 2 * s);
+                ctx.bezierCurveTo(7 * s, 7 * s, 0, 9 * s, 0, 9 * s);
+                ctx.bezierCurveTo(0, 9 * s, -7 * s, 7 * s, -7 * s, 2 * s);
+                ctx.lineTo(-7 * s, -4 * s);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(-2 * s, 0); ctx.lineTo(0, 2 * s); ctx.lineTo(3.5 * s, -2 * s);
+                ctx.stroke();
+                break;
+
+            case 'scales':
+                ctx.beginPath();
+                ctx.moveTo(0, -8 * s); ctx.lineTo(0, 8 * s);
+                ctx.moveTo(-4 * s, 8 * s); ctx.lineTo(4 * s, 8 * s);
+                ctx.moveTo(-7 * s, -5 * s); ctx.lineTo(7 * s, -5 * s);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(-7 * s, -5 * s); ctx.lineTo(-9 * s, 0); ctx.lineTo(-5 * s, 0); ctx.closePath();
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(7 * s, -5 * s); ctx.lineTo(5 * s, 0); ctx.lineTo(9 * s, 0); ctx.closePath();
+                ctx.stroke();
+                break;
+        }
+
+        ctx.restore();
+    }
+
+    // Helper: Create High-Resolution Star Texture
+    function createStarTexture() {
+        var canvas = document.createElement('canvas');
+        canvas.width = 64;
+        canvas.height = 64;
+        var ctx = canvas.getContext('2d');
+        var grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+        grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+        grad.addColorStop(0.25, 'rgba(255, 140, 140, 0.9)');
+        grad.addColorStop(0.65, 'rgba(209, 0, 0, 0.4)');
+        grad.addColorStop(1, 'rgba(209, 0, 0, 0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 64, 64);
+        var tex = new THREE.CanvasTexture(canvas);
+        tex.minFilter = THREE.LinearFilter;
+        return tex;
+    }
+
+    // ULTRA-HIGH-RES VGN 360 EMBLEM — Combined dark backdrop + multi-pass glow text
+    // Always blazing clearly in every climate mode
+    function createVGN360PureTypography() {
+        var W = 1024, H = 480;
+        var canvas = document.createElement('canvas');
+        canvas.width  = W;
+        canvas.height = H;
+        var ctx = canvas.getContext('2d');
+        var cx = W / 2, cy = H / 2;
+
+        ctx.clearRect(0, 0, W, H);
+
+        // ── STEP 1: Bake a deep, rich dark pill/oval backdrop directly on canvas ──
+        // This guarantees total visibility regardless of scene background colour
+        var bgW = W * 0.92, bgH = H * 0.88;
+        var bgX = (W - bgW) / 2, bgY = (H - bgH) / 2;
+        var bgR  = bgH / 2;
+
+        // Outer soft crimson bloom (large feathered halo)
+        var outerHalo = ctx.createRadialGradient(cx, cy, 0, cx, cy, bgW * 0.55);
+        outerHalo.addColorStop(0.0, 'rgba(180, 0, 0, 0.32)');
+        outerHalo.addColorStop(0.6, 'rgba(120, 0, 0, 0.16)');
+        outerHalo.addColorStop(1.0, 'rgba(0,   0, 0, 0.00)');
+        ctx.fillStyle = outerHalo;
+        ctx.fillRect(0, 0, W, H);
+
+        // Solid dark pill body
+        ctx.beginPath();
+        ctx.moveTo(bgX + bgR, bgY);
+        ctx.lineTo(bgX + bgW - bgR, bgY);
+        ctx.arcTo(bgX + bgW, bgY, bgX + bgW, bgY + bgR, bgR);
+        ctx.lineTo(bgX + bgW, bgY + bgH - bgR);
+        ctx.arcTo(bgX + bgW, bgY + bgH, bgX + bgW - bgR, bgY + bgH, bgR);
+        ctx.lineTo(bgX + bgR, bgY + bgH);
+        ctx.arcTo(bgX, bgY + bgH, bgX, bgY + bgH - bgR, bgR);
+        ctx.lineTo(bgX, bgY + bgR);
+        ctx.arcTo(bgX, bgY, bgX + bgR, bgY, bgR);
+        ctx.closePath();
+
+        // Deep obsidian fill
+        var pillGrad = ctx.createLinearGradient(cx, bgY, cx, bgY + bgH);
+        pillGrad.addColorStop(0.0, 'rgba(10,  2, 18, 0.97)');
+        pillGrad.addColorStop(0.5, 'rgba(4,   0, 10, 0.99)');
+        pillGrad.addColorStop(1.0, 'rgba(12,  2, 22, 0.97)');
+        ctx.fillStyle = pillGrad;
+        ctx.fill();
+
+        // Crisp crimson inner border on the pill
+        ctx.strokeStyle = 'rgba(209, 0, 0, 0.80)';
+        ctx.lineWidth = 5;
+        ctx.stroke();
+
+        // ── STEP 2: Paint "V G N" — multi-pass for super-bright crisp look ──
+        ctx.textAlign    = 'center';
+        ctx.textBaseline = 'middle';
+        var vgnY = cy - 115;
+        ctx.font = '800 60px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+
+        // Pass 1: wide white glow halo
+        ctx.shadowColor  = 'rgba(255,255,255,0.6)';
+        ctx.shadowBlur   = 40;
+        ctx.fillStyle    = 'rgba(255,255,255,0.2)';
+        ctx.fillText('V  G  N', cx, vgnY);
+
+        // Pass 2: crimson mid-glow
+        ctx.shadowColor  = 'rgba(255, 60, 0, 1)';
+        ctx.shadowBlur   = 28;
+        ctx.fillStyle    = '#ff3300';
+        ctx.fillText('V  G  N', cx, vgnY);
+
+        // Pass 3: bright white + crimson gradient crisp fill (drawn last = on top)
+        ctx.shadowBlur   = 8;
+        ctx.shadowColor  = 'rgba(255,120,120,1)';
+        var vgnGrad      = ctx.createLinearGradient(cx - 120, vgnY, cx + 120, vgnY);
+        vgnGrad.addColorStop(0.0,  '#ffffff');
+        vgnGrad.addColorStop(0.3,  '#ff8888');
+        vgnGrad.addColorStop(0.55, '#ff2222');
+        vgnGrad.addColorStop(0.8,  '#ff8888');
+        vgnGrad.addColorStop(1.0,  '#ffffff');
+        ctx.fillStyle    = vgnGrad;
+        ctx.fillText('V  G  N', cx, vgnY);
+
+        // ── STEP 3: Paint giant "360" — cinematic 3-pass technique ──
+        var numY = cy + 30;
+        ctx.font = '900 260px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+
+        // Pass 1: Huge super-diffuse red corona (makes it look like it's glowing)
+        ctx.shadowColor  = 'rgba(255, 0, 0, 0.9)';
+        ctx.shadowBlur   = 80;
+        ctx.fillStyle    = 'rgba(200, 0, 0, 0.15)';
+        ctx.fillText('360', cx, numY);
+
+        // Pass 2: Medium crimson glow bloom
+        ctx.shadowColor  = 'rgba(255, 50, 50, 1)';
+        ctx.shadowBlur   = 45;
+        ctx.fillStyle    = 'rgba(220, 0, 0, 0.55)';
+        ctx.fillText('360', cx, numY);
+
+        // Pass 3: Final vivid crisp gradient fill — WHITE center, fiery crimson edges
+        ctx.shadowColor  = 'rgba(255, 100, 100, 1)';
+        ctx.shadowBlur   = 20;
+        var numGrad      = ctx.createLinearGradient(cx - 200, numY - 110, cx + 200, numY + 110);
+        numGrad.addColorStop(0.00, '#ffffff');
+        numGrad.addColorStop(0.18, '#ffcccc');
+        numGrad.addColorStop(0.38, '#ff4444');
+        numGrad.addColorStop(0.50, '#d10000');
+        numGrad.addColorStop(0.62, '#ff4444');
+        numGrad.addColorStop(0.82, '#ffcccc');
+        numGrad.addColorStop(1.00, '#ffffff');
+        ctx.fillStyle    = numGrad;
+        ctx.fillText('360', cx, numY);
+
+        // ── STEP 4: "ENTERPRISE" thin subtitle below ──
+        ctx.shadowBlur   = 0;
+        var subFont      = '500 32px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        ctx.font         = subFont;
+        ctx.letterSpacing = '0.18em';
+        ctx.shadowColor  = 'rgba(209,0,0,0.5)';
+        ctx.shadowBlur   = 10;
+        ctx.fillStyle    = 'rgba(255,150,150,0.85)';
+        ctx.fillText('E N T E R P R I S E', cx, cy + 186);
+
+        var tex = new THREE.CanvasTexture(canvas);
+        tex.minFilter = THREE.LinearFilter;
+        tex.magFilter = THREE.LinearFilter;
+        // NormalBlending — the opaque dark pill on canvas guarantees visibility
+        var mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, blending: THREE.NormalBlending });
+        var sprite = new THREE.Sprite(mat);
+        sprite.scale.set(110, 52, 1);
+        return sprite;
+    }
+
+    // Backdrop kept minimal — the canvas pill now handles dark bg internally
+    function createVGN360Backdrop() {
+        // Return a tiny invisible placeholder (backdrop now baked into main canvas)
+        var canvas = document.createElement('canvas');
+        canvas.width = 4; canvas.height = 4;
+        var tex = new THREE.CanvasTexture(canvas);
+        var mat = new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: 0 });
+        return new THREE.Sprite(mat);
+    }
+
+    // ONE SINGLE ANIMATED SLOWLY ROTATING CIRCLE AROUND VGN 360
+    function buildSingleAnimatedCircle() {
+        var group = new THREE.Group();
+
+        // 1. Primary luminous crimson ring
+        var radius = 50;
+        var ringGeo = new THREE.TorusGeometry(radius, 1.1, 20, 140);
+        var ringMat = new THREE.MeshBasicMaterial({
+            color: 0xff2222,
+            transparent: true,
+            opacity: 0.90
+        });
+        var ringMesh = new THREE.Mesh(ringGeo, ringMat);
+        group.add(ringMesh);
+
+        // 2. Outer diffuse halo ring (slightly larger, lower opacity)
+        var haloGeo = new THREE.TorusGeometry(54, 0.6, 16, 120);
+        var haloMat = new THREE.MeshBasicMaterial({
+            color: 0xff6666,
+            transparent: true,
+            opacity: 0.35
+        });
+        var haloMesh = new THREE.Mesh(haloGeo, haloMat);
+        group.add(haloMesh);
+
+        // 3. Animated luminous energy beads that glide along the circle
+        var beadCount = 6;
+        for (var i = 0; i < beadCount; i++) {
+            var beadSize = (i % 3 === 0) ? 3.0 : 1.8;
+            var beadGeo = new THREE.SphereGeometry(beadSize, 16, 16);
+            var beadMat = new THREE.MeshBasicMaterial({
+                color: (i % 2 === 0) ? 0xffffff : 0xff4444
+            });
+            var bead = new THREE.Mesh(beadGeo, beadMat);
+            group.add(bead);
+            circleBeads.push({
+                mesh: bead,
+                phase: (i * (Math.PI * 2)) / beadCount,
+                orbitRadius: (i % 3 === 0) ? 50 : 50,
+                speed: (i % 3 === 0) ? 0.9 : 1.4
+            });
+        }
+
+        // Slight 3D inclination for majestic perspective
+        group.rotation.x = Math.PI / 2.6;
+        return group;
+    }
+
+    // Create Large Department Capsule with Dedicated Colorful Icon Badge
+    function createDepartmentCapsule(dept) {
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d');
+
+        var fontSize = 42;
+        if (dept.name.length > 18) fontSize = 36;
+        if (dept.name.length > 25) fontSize = 30;
+        ctx.font = 'bold ' + fontSize + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+
+        var metrics = ctx.measureText(dept.name);
+        var textW = metrics.width;
+        var iconBoxW = 60;
+        var padLeft = 18;
+        var padRight = 32;
+        var pillW = Math.max(280, Math.ceil(textW + iconBoxW + padLeft + padRight));
+        var pillH = 92;
+
+        canvas.width = pillW;
+        canvas.height = pillH;
+
+        ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, pillW, pillH);
+
+        var r = pillH / 2;
+
+        // Rounded pill body
+        ctx.beginPath();
+        ctx.moveTo(r, 4);
+        ctx.lineTo(pillW - r, 4);
+        ctx.arcTo(pillW - 4, 4, pillW - 4, 4 + r, r);
+        ctx.lineTo(pillW - 4, pillH - 4 - r);
+        ctx.arcTo(pillW - 4, pillH - 4, pillW - 4 - r, pillH - 4, r);
+        ctx.lineTo(r, pillH - 4);
+        ctx.arcTo(4, pillH - 4, 4, pillH - 4 - r, r);
+        ctx.lineTo(4, 4 + r);
+        ctx.arcTo(4, 4, r, 4, r);
+        ctx.closePath();
+
+        // High-contrast clean white surface
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = 'rgba(15, 23, 42, 0.16)';
+        ctx.shadowBlur = 16;
+        ctx.shadowOffsetY = 4;
+        ctx.fill();
+
+        // Dedicated department colored border
+        ctx.strokeStyle = dept.color;
+        ctx.lineWidth = 4.5;
+        ctx.shadowColor = dept.glow;
+        ctx.shadowBlur = 12;
+        ctx.stroke();
+
+        // Department Colored Circular Icon Badge
+        var badgeCx = padLeft + 26;
+        var badgeCy = pillH / 2;
+        var badgeR = 26;
+
+        ctx.shadowColor = dept.glow;
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = dept.color;
+        ctx.beginPath();
+        ctx.arc(badgeCx, badgeCy, badgeR, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw dedicated vector icon inside badge
+        drawVectorIcon(ctx, dept.icon, badgeCx, badgeCy, 30, '#ffffff');
+
+        // Crisp ALL CAPS Department Label
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold ' + fontSize + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'left';
+        ctx.fillText(dept.name, badgeCx + badgeR + 18, pillH / 2 + 1);
+
+        var texture = new THREE.CanvasTexture(canvas);
+        texture.minFilter = THREE.LinearFilter;
+
+        var mat = new THREE.SpriteMaterial({
+            map: texture,
+            transparent: true,
+            depthTest: false
+        });
+
+        var sprite = new THREE.Sprite(mat);
+        var scale = 0.16;
+        sprite.scale.set(pillW * scale, pillH * scale, 1);
+
+        return { sprite: sprite, width: pillW * scale, height: pillH * scale };
+    }
+
+    // Initialize 3D Traveling Galaxy Engine
+    function initScene() {
+        var w = container.clientWidth || 800;
+        var h = container.clientHeight || 700;
+
+        scene = new THREE.Scene();
+
+        // Camera positioned for authentic human cockpit flight perspective
+        camera = new THREE.PerspectiveCamera(48, w / h, 1, 4000);
+        camera.position.set(0, 150, 500);
+        camera.lookAt(0, 0, 0);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(w, h);
+        renderer.setClearColor(0x000000, 0);
+        container.appendChild(renderer.domElement);
+
+        galaxyGroup = new THREE.Group();
+        scene.add(galaxyGroup);
+
+        coreGroup = new THREE.Group();
+        galaxyGroup.add(coreGroup);
+
+        nodesGroup = new THREE.Group();
+        galaxyGroup.add(nodesGroup);
+
+        arcsGroup = new THREE.Group();
+        galaxyGroup.add(arcsGroup);
+
+        // Ambient and Core Lighting
+        var ambLight = new THREE.AmbientLight(0xffffff, 1.1);
+        scene.add(ambLight);
+
+        var coreLight = new THREE.PointLight(0xd10000, 4.5, 1500);
+        coreLight.position.set(0, 0, 0);
+        scene.add(coreLight);
+
+        // 1. Dark frosted backdrop disc (ensures VGN 360 is ALWAYS visible in all climates)
+        var vgnBackdrop = createVGN360Backdrop();
+        vgnBackdrop.position.set(0, 0, 4);
+        coreGroup.add(vgnBackdrop);
+
+        // 2. Pure VGN 360 Center Point Typography (on top of backdrop)
+        var pureVgn360 = createVGN360PureTypography();
+        pureVgn360.position.set(0, 0, 10);
+        coreGroup.add(pureVgn360);
+
+        // 3. ONE Single Animated Rotating Circle around VGN 360
+        singleRotatingCircle = buildSingleAnimatedCircle();
+        coreGroup.add(singleRotatingCircle);
+
+        // 3. 7,500 Star Rotating Spiral Galaxy
+        buildSpiralGalaxy();
+
+        // 4. Authentic Human Spaceflight Forward Warp Stream (2,200 Stars)
+        buildHumanTravelWarpStream();
+
+        // 5. 23 Connected Orbiting Departments with Colorful Icons
+        buildDepartmentNodes();
+
+        // 6. Electric Fractal Lightning Arcs
+        setupElectricArcs();
+
+        // 7. ATOMIC PARTICLE FLOW — living energy streams from VGN 360 to every department
+        buildAtomicFlowStreams();
+
+        // Interaction Listeners
+        container.addEventListener('mousemove', onMouseMove, false);
+        window.addEventListener('resize', onResize, false);
+    }
+
+    // 3. Spiral Galaxy
+    function buildSpiralGalaxy() {
+        var count = 7500;
+        var pos = new Float32Array(count * 3);
+        var col = new Float32Array(count * 3);
+
+        var starTex = createStarTexture();
+
+        for (var i = 0; i < count; i++) {
+            var r = Math.pow(Math.random(), 1.3) * 440;
+            var arm = i % 3;
+            var baseAngle = (arm * Math.PI * 2) / 3;
+            var spin = r * 0.0092;
+            var angle = baseAngle + spin;
+
+            var spread = (Math.random() - 0.5) * (18 + r * 0.16);
+            var spreadZ = (Math.random() - 0.5) * (18 + r * 0.16);
+            var height = (Math.random() - 0.5) * (12 + (1 - r / 440) * 36);
+
+            pos[i * 3] = Math.cos(angle) * r + spread;
+            pos[i * 3 + 1] = height;
+            pos[i * 3 + 2] = Math.sin(angle) * r + spreadZ;
+
+            var normR = r / 440;
+            if (normR < 0.2) {
+                // Core
+                col[i * 3] = 0.85; col[i * 3 + 1] = 0.02; col[i * 3 + 2] = 0.02;
+            } else if (normR < 0.65) {
+                // Mid Arms
+                if (Math.random() > 0.6) {
+                    col[i * 3] = 0.22; col[i * 3 + 1] = 0.28; col[i * 3 + 2] = 0.42;
+                } else {
+                    col[i * 3] = 0.92; col[i * 3 + 1] = 0.12; col[i * 3 + 2] = 0.18;
+                }
+            } else {
+                // Outer
+                col[i * 3] = 0.45; col[i * 3 + 1] = 0.55; col[i * 3 + 2] = 0.68;
+            }
+        }
+
+        var geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+
+        var mat = new THREE.PointsMaterial({
+            size: 4.6,
+            map: starTex,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.88,
+            blending: THREE.NormalBlending,
+            depthWrite: false
+        });
+
+        spiralStarSystem = new THREE.Points(geo, mat);
+        galaxyGroup.add(spiralStarSystem);
+    }
+
+    // 4. Authentic Human Spaceflight Forward Warp Stream
+    function buildHumanTravelWarpStream() {
+        var warpCount = 2200;
+        warpPositions = new Float32Array(warpCount * 3);
+        warpVelocities = new Float32Array(warpCount);
+
+        for (var i = 0; i < warpCount; i++) {
+            warpPositions[i * 3] = (Math.random() - 0.5) * 1500;     // X
+            warpPositions[i * 3 + 1] = (Math.random() - 0.5) * 1000; // Y
+            warpPositions[i * 3 + 2] = -1400 + Math.random() * 2000; // Z forward flight
+            warpVelocities[i] = 140 + Math.random() * 320;           // human travel speed
+        }
+
+        var geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(warpPositions, 3));
+
+        var starTex = createStarTexture();
+        var mat = new THREE.PointsMaterial({
+            size: 5.6,
+            map: starTex,
+            color: 0xff3333,
+            transparent: true,
+            opacity: 0.85,
+            blending: THREE.NormalBlending,
+            depthWrite: false
+        });
+
+        warpStarSystem = new THREE.Points(geo, mat);
+        scene.add(warpStarSystem); // In scene space so human camera flies through it
+    }
+
+    // 5. 23 Connected Orbiting Departments
+    function buildDepartmentNodes() {
+        DEPARTMENT_CONFIG.forEach(function(item, idx) {
+            var armAngleOffset = (item.arm * Math.PI * 2) / 3;
+            var spin = item.r * 0.0092;
+            var angle = armAngleOffset + spin;
+
+            var x = Math.cos(angle) * item.r;
+            var z = Math.sin(angle) * item.r;
+            var y = Math.sin(idx * 0.8) * 18;
+
+            // Colored 3D Bead Anchor
+            var beadGeo = new THREE.SphereGeometry(4.2, 16, 16);
+            var beadMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(item.color) });
+            var bead = new THREE.Mesh(beadGeo, beadMat);
+            bead.position.set(x, y, z);
+            nodesGroup.add(bead);
+
+            // Large High-Contrast Capsule Billboard with Vector Icon
+            var capsule = createDepartmentCapsule(item);
+            capsule.sprite.position.set(x, y + 13, z);
+            nodesGroup.add(capsule.sprite);
+
+            departmentNodes.push({
+                name: item.name,
+                color: item.color,
+                position: new THREE.Vector3(x, y, z),
+                sprite: capsule.sprite,
+                bead: bead,
+                baseScale: capsule.sprite.scale.clone(),
+                pulse: 0
+            });
+        });
+    }
+
+    // 6. Electric Fractal Lightning
+    function generateFractalBolt(start, end, segments, jitter) {
+        var points = [start.clone()];
+        var diff = new THREE.Vector3().subVectors(end, start);
+        var up = new THREE.Vector3(0, 1, 0);
+        if (Math.abs(diff.clone().normalize().dot(up)) > 0.9) up.set(1, 0, 0);
+
+        var perp1 = new THREE.Vector3().crossVectors(diff, up).normalize();
+        var perp2 = new THREE.Vector3().crossVectors(diff, perp1).normalize();
+
+        for (var i = 1; i < segments; i++) {
+            var t = i / segments;
+            var pos = new THREE.Vector3().lerpVectors(start, end, t);
+            var bell = Math.sin(t * Math.PI);
+            var j1 = (Math.random() - 0.5) * 2 * jitter * bell;
+            var j2 = (Math.random() - 0.5) * 2 * jitter * bell;
+            pos.addScaledVector(perp1, j1);
+            pos.addScaledVector(perp2, j2);
+            points.push(pos);
+        }
+        points.push(end.clone());
+        return points;
+    }
+
+    function ElectricBolt() {
+        this.segments = 14;
+        this.jitter = 20;
+        this.targetNode = null;
+        this.life = 0;
+        this.maxLife = 0.16;
+
+        var lineGeo = new THREE.BufferGeometry();
+        var lineMat = new THREE.LineBasicMaterial({
+            color: 0xd10000,
+            transparent: true,
+            opacity: 0.85,
+            linewidth: 2.5
+        });
+        this.line = new THREE.Line(lineGeo, lineMat);
+        arcsGroup.add(this.line);
+
+        this.reset();
+    }
+
+    ElectricBolt.prototype.reset = function(target) {
+        this.targetNode = target || departmentNodes[Math.floor(Math.random() * departmentNodes.length)];
+        this.life = 0;
+        this.maxLife = 0.12 + Math.random() * 0.14;
+        this.jitter = 15 + Math.random() * 15;
+
+        if (this.targetNode) {
+            this.targetNode.pulse = 1.0;
+            this.line.material.color.set(this.targetNode.color);
+        }
+    };
+
+    ElectricBolt.prototype.update = function(delta) {
+        this.life += delta;
+        if (this.life >= this.maxLife) {
+            this.reset();
+        }
+
+        if (!this.targetNode) return;
+
+        var start = new THREE.Vector3(0, 0, 0); // VGN 360 Center
+        var end = this.targetNode.position;
+
+        var pts = generateFractalBolt(start, end, this.segments, this.jitter);
+        this.line.geometry.setFromPoints(pts);
+
+        var fade = 1 - (this.life / this.maxLife);
+        this.line.material.opacity = fade * 0.85;
+    };
+
+    function setupElectricArcs() {
+        for (var i = 0; i < 5; i++) {
+            var bolt = new ElectricBolt();
+            bolt.life = Math.random() * bolt.maxLife;
+            activeBolts.push(bolt);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  ATOMIC PARTICLE FLOW SYSTEM
+    //  Living energy atoms stream from VGN 360 ➜ every department
+    //  and back — like blood flowing through a living organism
+    // ═══════════════════════════════════════════════════════════════
+    function buildAtomicFlowStreams() {
+        if (!departmentNodes.length) return;
+
+        var PARTICLES_PER_DEPT = 32;   // atoms per department stream
+        var TOTAL = departmentNodes.length * PARTICLES_PER_DEPT;
+
+        atomFlowPositions = new Float32Array(TOTAL * 3);
+        atomFlowColors    = new Float32Array(TOTAL * 3);
+
+        // Seed all positions at origin (they'll be placed on first frame)
+        for (var i = 0; i < TOTAL * 3; i++) atomFlowPositions[i] = 0;
+
+        atomFlowGeo = new THREE.BufferGeometry();
+        atomFlowGeo.setAttribute('position', new THREE.BufferAttribute(atomFlowPositions, 3));
+        atomFlowGeo.setAttribute('color',    new THREE.BufferAttribute(atomFlowColors, 3));
+
+        var atomMat = new THREE.PointsMaterial({
+            size: 5.5,
+            map: createAtomTexture(),
+            vertexColors: true,
+            transparent: true,
+            opacity: 1.0,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            sizeAttenuation: true
+        });
+
+        atomFlowSystem = new THREE.Points(atomFlowGeo, atomMat);
+        galaxyGroup.add(atomFlowSystem);
+
+        // Build per-particle metadata
+        atomFlowData = [];
+        for (var d = 0; d < departmentNodes.length; d++) {
+            var node = departmentNodes[d];
+            var col  = new THREE.Color(node.color);
+
+            // Compute a curved bezier control point perpendicular to the path
+            var midX = node.position.x * 0.5;
+            var midY = node.position.y * 0.5;
+            var midZ = node.position.z * 0.5;
+            // Perpendicular offset in XY plane — curves the path beautifully
+            var perpX = -node.position.z * 0.38;
+            var perpZ =  node.position.x * 0.38;
+            var ctrlPt = new THREE.Vector3(midX + perpX, midY + 25, midZ + perpZ);
+
+            for (var p = 0; p < PARTICLES_PER_DEPT; p++) {
+                var reverse = (p >= PARTICLES_PER_DEPT * 0.72); // 28% flow INWARD
+                var baseSpeed = 0.28 + Math.random() * 0.22;    // atoms travel at different speeds
+                atomFlowData.push({
+                    t:        p / PARTICLES_PER_DEPT,   // staggered start positions
+                    speed:    reverse ? -(baseSpeed * 0.75) : baseSpeed,
+                    deptIdx:  d,
+                    ctrlPt:   ctrlPt,
+                    node:     node,
+                    colR:     col.r,
+                    colG:     col.g,
+                    colB:     col.b,
+                    bufIdx:   (d * PARTICLES_PER_DEPT + p)  // index into flat buffer
+                });
+            }
+        }
+    }
+
+    // Soft glowing atom texture for each particle
+    function createAtomTexture() {
+        var c = document.createElement('canvas');
+        c.width = c.height = 64;
+        var ctx = c.getContext('2d');
+        var g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+        g.addColorStop(0.00, 'rgba(255,255,255,1.0)');
+        g.addColorStop(0.18, 'rgba(255,255,255,0.95)');
+        g.addColorStop(0.45, 'rgba(255,200,200,0.7)');
+        g.addColorStop(0.75, 'rgba(255,100,100,0.25)');
+        g.addColorStop(1.00, 'rgba(0,0,0,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, 64, 64);
+        var tex = new THREE.CanvasTexture(c);
+        tex.minFilter = THREE.LinearFilter;
+        return tex;
+    }
+
+    // Quadratic bezier position: P0=origin, P1=control, P2=destination
+    function qBezier(dest, ctrl, t) {
+        var mt = 1 - t;
+        return new THREE.Vector3(
+            mt * mt * 0 + 2 * mt * t * ctrl.x + t * t * dest.x,
+            mt * mt * 0 + 2 * mt * t * ctrl.y + t * t * dest.y,
+            mt * mt * 0 + 2 * mt * t * ctrl.z + t * t * dest.z
+        );
+    }
+
+    // Mouse Interaction: Human Cockpit Parallax Banking
+    function onMouseMove(e) {
+        var rect = container.getBoundingClientRect();
+        mouseX = (e.clientX - rect.left) - (rect.width / 2);
+        mouseY = (e.clientY - rect.top) - (rect.height / 2);
+
+        targetRotY = (mouseX / (rect.width / 2)) * 0.5;
+        targetRotX = 0.32 - (mouseY / (rect.height / 2)) * 0.3;
+    }
+
+    function onResize() {
+        if (!container || !renderer || !camera) return;
+        var w = container.clientWidth;
+        var h = container.clientHeight;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+    }
+
+    // AUTOMATIC CLIMATE CYCLE (NO TEXT, PURE VISUAL ATMOSPHERE)
+    // Seamless continuous blend through Dawn -> Golden Hour -> Crimson Sunset -> Deep Cosmic Midnight
+    var CLIMATE_PALETTES = [
+        // 0: Morning Dawn — deep cosmic blue with golden edge glow (NOT bright/white)
+        {
+            outer1: [8, 14, 42],   outer2: [2, 5, 20],
+            stage1: [12, 20, 55],  stage2: [4, 8, 28],
+            warpColor: 0xfbbf24  // Golden amber warp trails for dawn
+        },
+        // 1: Evening Crimson Sunset — deep twilight purples and fiery reds
+        {
+            outer1: [46, 11, 29],  outer2: [20, 5, 16],
+            stage1: [37, 9, 24],   stage2: [13, 3, 9],
+            warpColor: 0xff3333  // Ruby red warp trails
+        },
+        // 2: Night Midnight Deep Space — obsidian cosmos
+        {
+            outer1: [2, 6, 23],   outer2: [0, 0, 0],
+            stage1: [3, 7, 18],   stage2: [1, 2, 8],
+            warpColor: 0x38bdf8  // Cyan ice warp trails
+        }
+    ];
+
+    function updateAutomaticClimate(elapsed) {
+        // Full smooth cycle every 48 seconds
+        var cycleDuration = 48.0;
+        var progress = (elapsed % cycleDuration) / cycleDuration; // 0 to 1
+        var scaled = progress * 3; // 0 to 3
+        var idxA = Math.floor(scaled) % 3;
+        var idxB = (idxA + 1) % 3;
+        var t = scaled - Math.floor(scaled); // 0 to 1
+
+        // Smooth cosine ease
+        var easeT = (1 - Math.cos(t * Math.PI)) / 2;
+
+        var palA = CLIMATE_PALETTES[idxA];
+        var palB = CLIMATE_PALETTES[idxB];
+
+        function lerpColor(c1, c2, ratio) {
+            return [
+                Math.round(c1[0] + (c2[0] - c1[0]) * ratio),
+                Math.round(c1[1] + (c2[1] - c1[1]) * ratio),
+                Math.round(c1[2] + (c2[2] - c1[2]) * ratio)
+            ];
+        }
+
+        var out1 = lerpColor(palA.outer1, palB.outer1, easeT);
+        var out2 = lerpColor(palA.outer2, palB.outer2, easeT);
+        var stg1 = lerpColor(palA.stage1, palB.stage1, easeT);
+        var stg2 = lerpColor(palA.stage2, palB.stage2, easeT);
+
+        if (pageBody) {
+            pageBody.style.background = 'radial-gradient(circle at 50% 50%, rgb(' + out1.join(',') + ') 0%, rgb(' + out2.join(',') + ') 100%)';
+        }
+        if (panelLeft) {
+            panelLeft.style.background = 'radial-gradient(circle at 50% 50%, rgb(' + stg1.join(',') + ') 0%, rgb(' + stg2.join(',') + ') 100%)';
+        }
+
+        if (warpStarSystem) {
+            var colA = new THREE.Color(palA.warpColor);
+            var colB = new THREE.Color(palB.warpColor);
+            warpStarSystem.material.color.copy(colA).lerp(colB, easeT);
+        }
+    }
+
+    // Main 60FPS Render Loop: Real Human Galaxy Travel
+    function animate() {
+        requestAnimationFrame(animate);
+
+        var delta = clock.getDelta();
+        var elapsed = clock.getElapsedTime();
+
+        // 1. Continuous Automatic Rotation of Spiral Galaxy
+        galaxyGroup.rotation.y += delta * 0.055;
+
+        // 2. ONE Single Circle Slowly Rotating Around VGN 360 (gentle majestic rotation)
+        if (singleRotatingCircle) {
+            singleRotatingCircle.rotation.z += delta * 0.22; // Very slow, serene rotation
+            singleRotatingCircle.rotation.y = Math.sin(elapsed * 0.4) * 0.18; // Gentle gyroscopic sway
+            singleRotatingCircle.rotation.x = Math.PI / 2.6 + Math.cos(elapsed * 0.3) * 0.06;
+        }
+
+        // Animate luminous energy beads along the single circle (at varying speeds)
+        for (var cb = 0; cb < circleBeads.length; cb++) {
+            var beadObj = circleBeads[cb];
+            beadObj.phase += delta * beadObj.speed;
+            var oR = beadObj.orbitRadius || 50;
+            beadObj.mesh.position.x = Math.cos(beadObj.phase) * oR;
+            beadObj.mesh.position.y = Math.sin(beadObj.phase) * oR;
+            beadObj.mesh.position.z = 0;
+        }
+
+        // 3. Human Cockpit Spaceflight: Fluid forward camera glide and banking
+        var flightRoll = Math.sin(elapsed * 0.7) * 16;
+        var flightSway = Math.cos(elapsed * 0.45) * 12;
+        var flightDepth = Math.sin(elapsed * 0.3) * 20;
+
+        camera.position.y = 150 + flightRoll;
+        camera.position.x = flightSway;
+        camera.position.z = 500 + flightDepth;
+
+        // 4. Smooth Mouse Parallax Tilt
+        galaxyGroup.rotation.x += (targetRotX - galaxyGroup.rotation.x) * 0.05;
+
+        // 5. Update Warp Travel Star Stream (Stars flying past the human traveler)
+        if (warpPositions && warpVelocities && warpStarSystem) {
+            var positionsAttr = warpStarSystem.geometry.attributes.position;
+            var pArr = positionsAttr.array;
+            var totalWarp = warpVelocities.length;
+
+            for (var w = 0; w < totalWarp; w++) {
+                pArr[w * 3 + 2] += warpVelocities[w] * delta; // Rush forward toward traveler
+
+                // Loop stars back into deep cosmic horizon
+                if (pArr[w * 3 + 2] > 540) {
+                    pArr[w * 3 + 2] = -1400;
+                    pArr[w * 3] = (Math.random() - 0.5) * 1500;
+                    pArr[w * 3 + 1] = (Math.random() - 0.5) * 1000;
+                }
+            }
+            positionsAttr.needsUpdate = true;
+        }
+
+        // 6. Update Electric Lightning Arcs from VGN 360 Center
+        for (var b = 0; b < activeBolts.length; b++) {
+            activeBolts[b].update(delta);
+        }
+
+        // 7. Kinetic Pulse Surge on Department Nodes
+        for (var n = 0; n < departmentNodes.length; n++) {
+            var node = departmentNodes[n];
+            if (node.pulse > 0) {
+                node.pulse -= delta * 3.5;
+                if (node.pulse < 0) node.pulse = 0;
+
+                var bump = 1.0 + node.pulse * 0.22;
+                node.sprite.scale.set(
+                    node.baseScale.x * bump,
+                    node.baseScale.y * bump,
+                    1
+                );
+                node.bead.scale.setScalar(1.0 + node.pulse * 1.6);
+            }
+        }
+
+        // 8. ATOMIC PARTICLE FLOW — update every atom's position along its bezier path
+        if (atomFlowSystem && atomFlowData.length) {
+            var posArr = atomFlowGeo.attributes.position.array;
+            var colArr = atomFlowGeo.attributes.color.array;
+
+            for (var af = 0; af < atomFlowData.length; af++) {
+                var atom = atomFlowData[af];
+
+                // Advance the atom along its bezier curve
+                atom.t += delta * atom.speed;
+
+                // Wrap: outward atoms loop 0→1, inward atoms loop 1→0
+                if (atom.t > 1.0) atom.t -= 1.0;
+                if (atom.t < 0.0) atom.t += 1.0;
+
+                // Compute bezier position at current t
+                var tPos = atom.t;
+                var bPos = qBezier(atom.node.position, atom.ctrlPt, tPos);
+
+                var bi = atom.bufIdx * 3;
+                posArr[bi]     = bPos.x;
+                posArr[bi + 1] = bPos.y;
+                posArr[bi + 2] = bPos.z;
+
+                // Brightness: peak at path midpoint, dim near VGN 360 center and at dept end
+                // sinusoidal fade — atoms glow brightest midway through the stream
+                var bright = Math.pow(Math.sin(tPos * Math.PI), 0.55);
+                // Add a sparkle shimmer using elapsed time and particle index
+                bright *= (0.65 + 0.35 * Math.sin(elapsed * 6.5 + af * 0.37));
+
+                colArr[bi]     = atom.colR * bright;
+                colArr[bi + 1] = atom.colG * bright;
+                colArr[bi + 2] = atom.colB * bright;
+            }
+
+            atomFlowGeo.attributes.position.needsUpdate = true;
+            atomFlowGeo.attributes.color.needsUpdate    = true;
+        }
+
+        // 9. Automatic Seamless Climate Atmospheric Transition
+        updateAutomaticClimate(elapsed);
+
+        renderer.render(scene, camera);
+    }
+
+    // Launch Engine
+    initScene();
+    animate();
+})();
+</script>
+
+<!-- Form & Session Scripts -->
+<script>
+function togglePwd() {
+    var p = document.getElementById('PasswordInput');
+    var ic = document.getElementById('pwdIcon');
+    if (!p || !ic) return;
+    if (p.type === 'password') {
+        p.type = 'text';
+        ic.className = 'bi bi-eye';
+    } else {
+        p.type = 'password';
+        ic.className = 'bi bi-eye-slash';
+    }
+}
+
+// Auto-fade error message
+var alertBox = document.getElementById('alertBox');
+if (alertBox) {
+    setTimeout(function() {
+        alertBox.style.opacity = '0';
+        setTimeout(function() { alertBox.style.display = 'none'; }, 500);
+    }, 4000);
+}
+document.querySelectorAll('input[name="UserId"], input[name="Password"]').forEach(function(inp) {
+    inp.addEventListener('input', function() {
         if (alertBox) {
-            setTimeout(function () {
-                alertBox.style.opacity = '0';
-                setTimeout(function () { alertBox.style.display = 'none'; }, 500);
-            }, 4000);
+            alertBox.style.opacity = '0';
+            setTimeout(function() { alertBox.style.display = 'none'; }, 300);
         }
-        var inputs = document.querySelectorAll('input[name="UserId"], input[name="Password"]');
-        inputs.forEach(function (inp) {
-            inp.addEventListener('input', function () {
-                if (alertBox) {
-                    alertBox.style.opacity = '0';
-                    setTimeout(function () { alertBox.style.display = 'none'; }, 300);
+    });
+});
+</script>
+
+@if (ViewBag.KickedOut == true)
+{
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Session Ended',
+                text: 'Same userid logged in using another system.',
+                confirmButtonColor: '#d10000',
+                customClass: {
+                    popup: 'rounded-2xl shadow-2xl border-0 bg-white text-gray-900',
+                    confirmButton: 'inline-flex items-center justify-center rounded-xl px-6 py-2 font-bold text-white cursor-pointer bg-red-600 hover:bg-red-700'
                 }
             });
         });
     </script>
+}
 
-    @if (ViewBag.KickedOut == true)
-    {
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
-        <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Session Ended',
-                    text: 'Same userid logged in using another system.',
-                    confirmButtonColor: '#4680FF',
-                    customClass: {
-                        popup: 'rounded-2xl shadow-2xl border-0',
-                        confirmButton: 'inline-flex items-center justify-center rounded-xl px-6 py-2 font-bold text-white cursor-pointer'
-                    }
-                });
-            });
-        </script>
-    }
 </body>
 </html>
