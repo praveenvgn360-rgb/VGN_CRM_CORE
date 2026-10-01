@@ -415,11 +415,11 @@
                             });
 
                             // Edit button
-                            var $btnEdit = $('<button type="button" class="btn-tree-edit" title="Edit Work Group"><i class="fas fa-edit text-xs"></i></button>');
+                            var $btnEdit = $('<button type="button" class="btn-grid-action btn-action-edit" title="Edit Work Group"><i class="fas fa-edit"></i></button>');
                             $btnEdit.on('click', function () { openEditModal(data); });
 
                             // Delete button
-                            var $btnDel = $('<button type="button" class="btn-tree-del" title="Delete Work Group"><i class="fas fa-trash-alt text-xs"></i></button>');
+                            var $btnDel = $('<button type="button" class="btn-grid-action btn-action-delete" title="Delete Work Group"><i class="fas fa-trash-alt"></i></button>');
                             $btnDel.on('click', function () { deleteWorkGroup(data.workGroupId, data.workGroupName); });
 
                             $wrapper.append($btnAddSub).append($btnEdit).append($btnDel);

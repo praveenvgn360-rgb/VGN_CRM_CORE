@@ -1275,7 +1275,7 @@
                         visibleIndex: 0,
                         cellTemplate: function (container, options) {
                             var $btnEdit = $(`
-                                <button type="button" class="text-sky-600 hover:text-sky-800 dark:text-sky-400 p-1.5 rounded hover:bg-sky-50 dark:hover:bg-slate-700 transition cursor-pointer" title="Edit Allocation">
+                                <button type="button" class="btn-grid-action btn-action-edit mr-1" title="Edit Allocation">
                                     <i class="fas fa-edit"></i>
                                 </button>
                             `).on('click', function () {
@@ -1284,13 +1284,13 @@
 
                             var breakupUrl = '@Url.Action("Index", "OtherCostBreakup")?projectKickoffId=' + encodeURIComponent(options.data.proectKickOfId);
                             var $btnBreakup = $(`
-                                <a href="${breakupUrl}" class="text-teal-600 hover:text-teal-800 dark:text-teal-400 p-1.5 rounded hover:bg-teal-50 dark:hover:bg-slate-700 transition ml-1 cursor-pointer inline-flex items-center" title="Breakdown into Itemized Lines">
+                                <a href="${breakupUrl}" class="btn-grid-action btn-action-view mr-1" title="Breakdown into Itemized Lines">
                                     <i class="fas fa-layer-group"></i>
                                 </a>
                             `);
 
                             var $btnDelete = $(`
-                                <button type="button" class="text-rose-600 hover:text-rose-800 dark:text-rose-400 p-1.5 rounded hover:bg-rose-50 dark:hover:bg-slate-700 transition ml-1 cursor-pointer" title="Delete Allocation">
+                                <button type="button" class="btn-grid-action btn-action-delete" title="Delete Allocation">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             `).on('click', function () {

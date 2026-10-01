@@ -1,0 +1,805 @@
+@{
+    ViewBag.Title = "Qualifier TDS Setting — VGN ERP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <style>
+        /* ══════════════════════════════════════════════════════════════════
+           QUALIFIER TDS SETTING (TDS ENTRY) - THEME INTEGRATED STYLES
+           ══════════════════════════════════════════════════════════════════ */
+        :root {
+            --tds-primary: var(--primary, #a82024);
+            --tds-surface: var(--surface, #ffffff);
+            --tds-bg: var(--bg, #f8fafc);
+            --tds-border: var(--border, #cbd5e1);
+            --tds-border-subtle: #e2e8f0;
+            --tds-text: var(--text, #1e293b);
+            --tds-text-muted: var(--text-muted, #64748b);
+            --tds-acc-header-bg: #e2edf8;
+            --tds-acc-header-hover: #d5e5f5;
+            --tds-acc-header-border: #bcd3eb;
+            --tds-table-header-bg: #e8f0fa;
+        }
+
+        .dark {
+            --tds-surface: #1e293b;
+            --tds-bg: #0f172a;
+            --tds-border: #475569;
+            --tds-border-subtle: #334155;
+            --tds-text: #f8fafc;
+            --tds-text-muted: #94a3b8;
+            --tds-acc-header-bg: #1e293b;
+            --tds-acc-header-hover: #283548;
+            --tds-acc-header-border: #334155;
+            --tds-table-header-bg: #223046;
+        }
+
+        /* ── Top Bar Controls ── */
+        .top-filter-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--tds-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.2rem;
+            display: block;
+        }
+
+        .top-filter-select {
+            height: 34px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            border-radius: 6px;
+            border: 1px solid var(--tds-border);
+            background-color: var(--tds-surface);
+            color: var(--tds-text);
+            outline: none;
+            min-width: 130px;
+            transition: all 0.15s ease;
+        }
+        .top-filter-select:focus {
+            border-color: var(--tds-primary);
+            box-shadow: 0 0 0 3px rgba(168, 32, 36, 0.15);
+        }
+
+        .btn-service-link {
+            background-color: #0284c7 !important;
+            color: #ffffff !important;
+            font-size: 0.8rem !important;
+            font-weight: 700 !important;
+            padding: 0.45rem 1rem !important;
+            border-radius: 6px !important;
+            border: none !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.4rem !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+            transition: all 0.18s ease-in-out !important;
+        }
+        .btn-service-link:hover {
+            background-color: #0369a1 !important;
+            transform: translateY(-1px);
+        }
+
+        /* ── Accordion Panels ── */
+        .tds-accordion-item {
+            background: var(--tds-surface);
+            border: 1px solid var(--tds-acc-header-border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 0.45rem;
+            transition: all 0.18s ease;
+        }
+        .tds-accordion-item:hover {
+            border-color: #93c5fd;
+        }
+        .tds-accordion-item.is-open {
+            border-color: #60a5fa;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .tds-accordion-header {
+            padding: 0.65rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+            background-color: var(--tds-acc-header-bg);
+            transition: background 0.15s ease;
+        }
+        .tds-accordion-header:hover {
+            background-color: var(--tds-acc-header-hover);
+        }
+        .tds-accordion-item.is-open .tds-accordion-header {
+            border-bottom: 1px solid var(--tds-acc-header-border);
+        }
+
+        .tds-accordion-title {
+            font-size: 0.84rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .dark .tds-accordion-title {
+            color: #93c5fd;
+        }
+
+        .tds-accordion-chevron {
+            transition: transform 0.22s ease;
+            color: #475569;
+            font-size: 0.72rem;
+        }
+        .tds-accordion-item.is-open .tds-accordion-chevron {
+            transform: rotate(180deg);
+            color: var(--tds-primary);
+        }
+
+        .tds-accordion-body {
+            display: none;
+            padding: 0.85rem 1rem 1rem;
+            background-color: var(--tds-surface);
+        }
+        .tds-accordion-item.is-open .tds-accordion-body {
+            display: block;
+        }
+
+        /* ── Table Container & Grid ── */
+        .tds-single-table-wrap {
+            border: 1px solid var(--tds-border);
+            border-radius: 6px;
+            overflow-x: auto;
+            background-color: var(--tds-surface);
+        }
+
+        .tds-single-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+        }
+
+        .tds-single-table thead th {
+            background-color: var(--tds-table-header-bg);
+            color: #334155;
+            font-weight: 700;
+            font-size: 0.73rem;
+            text-align: center;
+            padding: 0.5rem 0.4rem;
+            border-bottom: 1px solid var(--tds-border);
+            border-right: 1px solid var(--tds-border-subtle);
+            white-space: nowrap;
+        }
+        .dark .tds-single-table thead th {
+            color: #cbd5e1;
+        }
+        .tds-single-table thead th:last-child {
+            border-right: none;
+        }
+
+        .tds-single-table tbody td {
+            padding: 0.45rem 0.35rem;
+            vertical-align: middle;
+            border-right: 1px solid var(--tds-border-subtle);
+        }
+        .tds-single-table tbody td:last-child {
+            border-right: none;
+        }
+
+        /* ── Input Styling with Clear Visible Borders ── */
+        .tds-cell-input {
+            width: 100%;
+            height: 32px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border-radius: 5px;
+            border: 1px solid #94a3b8 !important;
+            background-color: var(--tds-surface);
+            color: var(--tds-text);
+            outline: none;
+            transition: all 0.15s ease-in-out;
+            text-align: right;
+            box-sizing: border-box;
+        }
+        .dark .tds-cell-input {
+            border: 1px solid #64748b !important;
+        }
+        .tds-cell-input:focus {
+            border-color: #2563eb !important;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+            background-color: #f8fafc;
+        }
+        .dark .tds-cell-input:focus {
+            background-color: #0f172a;
+        }
+
+        .tds-cell-input-text {
+            text-align: left !important;
+        }
+
+        .tds-cell-input-nettax {
+            background-color: #f1f5f9;
+            color: #0f766e;
+            font-weight: 700;
+        }
+        .dark .tds-cell-input-nettax {
+            background-color: #0f172a;
+            color: #2dd4bf;
+        }
+
+        /* ── Section-Level Save Button ── */
+        .btn-section-save {
+            background-color: #0284c7 !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            font-size: 0.78rem !important;
+            padding: 0.42rem 1.1rem !important;
+            border-radius: 6px !important;
+            border: 1px solid transparent !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.4rem !important;
+            transition: all 0.15s ease-in-out !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+        }
+        .btn-section-save:hover {
+            background-color: #0369a1 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15) !important;
+        }
+        .btn-section-save:active {
+            transform: translateY(0);
+        }
+
+        /* ── Bottom Cancel Button ── */
+        .btn-page-cancel {
+            background-color: var(--tds-surface) !important;
+            color: #475569 !important;
+            font-weight: 600 !important;
+            font-size: 0.8rem !important;
+            padding: 0.45rem 1.25rem !important;
+            border-radius: 6px !important;
+            border: 1px solid var(--tds-border) !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.4rem !important;
+            transition: all 0.15s ease !important;
+        }
+        .btn-page-cancel:hover {
+            background-color: #f1f5f9 !important;
+            color: #1e293b !important;
+            border-color: #94a3b8 !important;
+        }
+        .dark .btn-page-cancel:hover {
+            background-color: #334155 !important;
+            color: #f8fafc !important;
+        }
+
+        /* ── Full Page Theme-Adaptive Circular Loader ── */
+        #tds-page-loader {
+            background: rgba(15, 23, 42, 0.72) !important;
+            backdrop-filter: blur(4px) !important;
+        }
+        #tds-page-loader .loader-spinner {
+            width: 48px !important;
+            height: 48px !important;
+            border: 4px solid rgba(255, 255, 255, 0.15) !important;
+            border-top: 4px solid var(--tds-primary) !important;
+            border-right: 4px solid var(--tds-primary) !important;
+            border-radius: 50% !important;
+            animation: spinLoader 0.75s linear infinite !important;
+            box-shadow: 0 0 15px rgba(168, 32, 36, 0.35) !important;
+        }
+
+        @@keyframes spinLoader {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .swal2-container {
+            z-index: 1000000 !important;
+        }
+    </style>
+}
+
+<div class="p-4 sm:p-6 lg:p-7 space-y-4 max-w-[1700px] mx-auto text-[var(--tds-text)]">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- 1. TOP HEADER & FILTER BAR (MATCHING REFERENCE IMAGE)                   -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-[var(--tds-surface)] p-4 sm:p-5 rounded-xl border border-[var(--tds-border)] shadow-xs">
+        <div>
+            <h1 class="text-xl font-bold tracking-tight text-[var(--tds-primary)] flex items-center gap-2">
+                <span>Qualifier TDS Setting</span>
+            </h1>
+            <p class="text-xs text-[var(--tds-text-muted)] mt-0.5">TDS Type and statutory withholding rate configurations</p>
+        </div>
+
+        <div class="flex items-center gap-4 flex-wrap w-full lg:w-auto justify-end">
+            <!-- Country Filter -->
+            <div>
+                <span class="top-filter-label">Country</span>
+                <select id="ddlCountry" class="top-filter-select">
+                    <option value="India" selected>India</option>
+                    <option value="USA">USA</option>
+                    <option value="UAE">UAE</option>
+                    <option value="Mauritius">Mauritius</option>
+                </select>
+            </div>
+
+            <!-- Period Filter -->
+            <div>
+                <span class="top-filter-label">Period</span>
+                <select id="ddlPeriod" class="top-filter-select" style="min-width: 140px;">
+                    <option value="">Select Period</option>
+                    <option value="2024-2025">2024-2025</option>
+                    <option value="2025-2026" selected>2025-2026</option>
+                    <option value="2026-2027">2026-2027</option>
+                </select>
+            </div>
+
+            <!-- Service Link Button -->
+            <div class="pt-4 lg:pt-0">
+                <button type="button" class="btn-service-link" onclick="openServiceLink()">
+                    <i class="fas fa-external-link-alt text-xs"></i>
+                    <span>Service Link</span>
+                </button>
+            </div>
+
+            <!-- Toolbar buttons -->
+            <div class="flex items-center gap-1.5 pt-4 lg:pt-0 border-l border-[var(--tds-border-subtle)] pl-3">
+                <button type="button" onclick="collapseAll()" class="btn-page-cancel !py-1.5 !px-2.5 !text-xs" title="Collapse All Panels">
+                    <i class="fas fa-compress-alt"></i>
+                </button>
+                <button type="button" onclick="expandAll()" class="btn-page-cancel !py-1.5 !px-2.5 !text-xs" title="Expand All Panels">
+                    <i class="fas fa-expand-alt"></i>
+                </button>
+                <button type="button" onclick="loadAllData()" class="btn-page-cancel !py-1.5 !px-2.5 !text-xs" title="Refresh">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- 2. ACCORDION PANELS CONTAINER                                           -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <div id="tdsAccordionContainer" class="space-y-1.5">
+        <div class="text-center py-14 text-[var(--tds-text-muted)] bg-[var(--tds-surface)] rounded-xl border border-[var(--tds-border)]">
+            <i class="fas fa-spinner fa-spin text-2xl mb-2 text-[var(--tds-primary)]"></i>
+            <p class="text-xs font-semibold">Loading TDS Qualifier Types...</p>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- 3. BOTTOM CANCEL BUTTON (MATCHING REFERENCE IMAGE)                      -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="pt-2">
+        <button type="button" onclick="handleBottomCancel()" class="btn-page-cancel">
+            <i class="fas fa-times-circle text-sm text-slate-500"></i>
+            <span>Cancel</span>
+        </button>
+    </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- FULL PAGE THEME-ADAPTIVE CIRCULAR LOADER                                -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div id="tds-page-loader" class="fixed inset-0 z-[99999] flex flex-col items-center justify-center hidden">
+    <div class="loader-spinner"></div>
+    <p class="loader-text text-white text-xs font-semibold mt-4 tracking-wide" id="tds-loader-text">Loading...</p>
+</div>
+
+@section Scripts {
+    <script>
+        // ═══════════════════════════════════════════════════════════════════════
+        // QUALIFIER TDS SETTING CLIENT CONTROLLER - EXACT 1 ROW PER SECTION
+        // ═══════════════════════════════════════════════════════════════════════
+        let tdsTypesCache = [];
+        let allSettingsCache = [];
+        let sectionsCache = [];
+
+        $(document).ready(function () {
+            loadAllData();
+        });
+
+        // ── LOADER HELPERS ──────────────────────────────────────────────────
+        function showLoader(msg) {
+            document.getElementById("tds-loader-text").innerText = msg || "Loading...";
+            document.getElementById("tds-page-loader").classList.remove("hidden");
+        }
+        function hideLoader() {
+            document.getElementById("tds-page-loader").classList.add("hidden");
+        }
+
+        // ── LOAD ALL DATA ──────────────────────────────────────────────────
+        function loadAllData() {
+            showLoader("Loading Qualifier TDS Settings...");
+
+            $.when(
+                $.ajax({ url: '/TDSEntry/GetSections', type: 'GET', dataType: 'json' }),
+                $.ajax({ url: '/TDSEntry/GetAllTypes', type: 'GET', dataType: 'json' }),
+                $.ajax({ url: '/TDSEntry/GetAllSettings', type: 'GET', dataType: 'json' })
+            ).then(function (secRes, typesRes, settingsRes) {
+                hideLoader();
+
+                if (secRes[0] && secRes[0].success && secRes[0].data) {
+                    sectionsCache = secRes[0].data;
+                }
+
+                if (typesRes[0] && typesRes[0].success && typesRes[0].data) {
+                    tdsTypesCache = typesRes[0].data;
+                }
+
+                if (settingsRes[0] && settingsRes[0].success && settingsRes[0].data) {
+                    allSettingsCache = settingsRes[0].data;
+                }
+
+                renderAccordionList();
+            }).fail(function () {
+                hideLoader();
+                showToast("Failed to communicate with server.", "error");
+            });
+        }
+
+        // ── RENDER ACCORDION LIST ───────────────────────────────────────────
+        function renderAccordionList() {
+            const container = document.getElementById("tdsAccordionContainer");
+            container.innerHTML = "";
+
+            if (!tdsTypesCache || tdsTypesCache.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-[var(--tds-text-muted)] bg-[var(--tds-surface)] rounded-xl border border-[var(--tds-border)]">
+                        <i class="fas fa-inbox text-3xl mb-2 opacity-40"></i>
+                        <p class="text-xs font-semibold">No TDS Qualifier Types configured.</p>
+                    </div>`;
+                return;
+            }
+
+            let firstRendered = false;
+
+            tdsTypesCache.forEach(function (type, idx) {
+                // Skip empty or generic 'None' placeholder rows
+                if (type.tdsType && type.tdsType.toLowerCase() === 'none') return;
+
+                // Lookup existing setting for this TDSTypeId
+                const setting = allSettingsCache.find(s => String(s.tdsTypeId) === String(type.tdsTypeId)) || null;
+
+                // Open first item by default (just like Brokerage in the reference image)
+                const isOpen = !firstRendered;
+                if (!firstRendered) firstRendered = true;
+
+                const panel = document.createElement("div");
+                panel.className = `tds-accordion-item ${isOpen ? 'is-open' : ''}`;
+                panel.id = `panel-${type.tdsTypeId}`;
+
+                panel.innerHTML = `
+                    <div class="tds-accordion-header" onclick="toggleAccordion(${type.tdsTypeId})">
+                        <div class="tds-accordion-title">
+                            <span>${escHtml(type.tdsType)}</span>
+                            ${setting ? '<span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Configured</span>' : ''}
+                        </div>
+                        <i class="fas fa-chevron-down tds-accordion-chevron"></i>
+                    </div>
+
+                    <div class="tds-accordion-body" id="body-${type.tdsTypeId}">
+                        <!-- EXACT SINGLE ROW TABLE -->
+                        <div class="tds-single-table-wrap">
+                            <table class="tds-single-table">
+                                <thead>
+                                    <tr>
+                                        <th style="min-width: 150px;">Section</th>
+                                        <th style="min-width: 110px;">Taxable %</th>
+                                        <th style="min-width: 110px;">Tax %</th>
+                                        <th style="min-width: 100px;">Cess %</th>
+                                        <th style="min-width: 110px;">Edu.Cess %</th>
+                                        <th style="min-width: 120px;">H.Edu.cess %</th>
+                                        <th style="min-width: 110px;">Net Tax</th>
+                                        <th style="min-width: 120px;">Limit (FY)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <!-- Hidden SettingId -->
+                                        <input type="hidden" id="settingid_${type.tdsTypeId}" value="${setting ? setting.settingId : 0}" />
+
+                                        <!-- Section input / select -->
+                                        <td>
+                                            <input list="secList_${type.tdsTypeId}" 
+                                                   id="sec_${type.tdsTypeId}" 
+                                                   class="tds-cell-input tds-cell-input-text font-mono font-bold" 
+                                                   value="${escAttr(getInitialSection(setting, type))}" 
+                                                   placeholder="e.g. 194H" />
+                                            <datalist id="secList_${type.tdsTypeId}">
+                                                ${renderSectionOptions()}
+                                            </datalist>
+                                        </td>
+
+                                        <!-- Taxable % -->
+                                        <td>
+                                            <input type="text" 
+                                                   id="taxable_${type.tdsTypeId}" 
+                                                   class="tds-cell-input" 
+                                                   value="${escAttr(setting ? (setting.taxablePer || '') : '100.00')}" 
+                                                   placeholder="100.00" />
+                                        </td>
+
+                                        <!-- Tax % -->
+                                        <td>
+                                            <input type="text" 
+                                                   id="tax_${type.tdsTypeId}" 
+                                                   class="tds-cell-input" 
+                                                   value="${escAttr(setting ? (setting.taxPer || '') : '')}" 
+                                                   oninput="calculateNetTax(${type.tdsTypeId})" 
+                                                   placeholder="0.00" />
+                                        </td>
+
+                                        <!-- Cess % -->
+                                        <td>
+                                            <input type="text" 
+                                                   id="cess_${type.tdsTypeId}" 
+                                                   class="tds-cell-input" 
+                                                   value="${escAttr(setting ? (setting.cessPer || '') : '')}" 
+                                                   oninput="calculateNetTax(${type.tdsTypeId})" 
+                                                   placeholder="0.00" />
+                                        </td>
+
+                                        <!-- Edu.Cess % -->
+                                        <td>
+                                            <input type="text" 
+                                                   id="edu_${type.tdsTypeId}" 
+                                                   class="tds-cell-input" 
+                                                   value="${escAttr(setting ? (setting.edCess || '') : '')}" 
+                                                   oninput="calculateNetTax(${type.tdsTypeId})" 
+                                                   placeholder="0.00" />
+                                        </td>
+
+                                        <!-- H.Edu.cess % -->
+                                        <td>
+                                            <input type="text" 
+                                                   id="hedu_${type.tdsTypeId}" 
+                                                   class="tds-cell-input" 
+                                                   value="${escAttr(setting ? (setting.hedCess || '') : '')}" 
+                                                   oninput="calculateNetTax(${type.tdsTypeId})" 
+                                                   placeholder="0.00" />
+                                        </td>
+
+                                        <!-- Net Tax -->
+                                        <td>
+                                            <input type="text" 
+                                                   id="nettax_${type.tdsTypeId}" 
+                                                   class="tds-cell-input tds-cell-input-nettax" 
+                                                   value="${escAttr(setting ? (setting.netTax || '') : '')}" 
+                                                   placeholder="0.00" />
+                                        </td>
+
+                                        <!-- Limit (FY) -->
+                                        <td>
+                                            <input type="text" 
+                                                   id="limit_${type.tdsTypeId}" 
+                                                   class="tds-cell-input" 
+                                                   value="${escAttr(setting ? (setting.limit || '') : '')}" 
+                                                   placeholder="" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- SECTION-SPECIFIC SAVE BUTTON (RIGHT ALIGNED AS IN IMAGE) -->
+                        <div class="flex justify-end mt-3">
+                            <button type="button" class="btn-section-save" onclick="saveSection(${type.tdsTypeId}, '${escAttr(type.tdsType)}')">
+                                <i class="fas fa-save"></i>
+                                <span>Save</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(panel);
+            });
+        }
+
+        // ── HELPER: INITIAL SECTION STRING ──────────────────────────────────
+        function getInitialSection(setting, type) {
+            if (setting && setting.sectionId && setting.sectionId !== '0') {
+                return setting.sectionName || setting.sectionId;
+            }
+            if (type && type.sectionId && type.sectionId !== '0') {
+                return type.sectionId;
+            }
+            return '';
+        }
+
+        // ── HELPER: RENDER SECTION OPTIONS FOR DATALIST ─────────────────────
+        function renderSectionOptions() {
+            let opts = '';
+            if (sectionsCache && sectionsCache.length > 0) {
+                sectionsCache.forEach(s => {
+                    const desc = s.description ? ` (${s.description.substring(0, 45)})` : '';
+                    opts += `<option value="${escAttr(s.section)}">${escHtml(s.section)}${escHtml(desc)}</option>`;
+                });
+            }
+            return opts;
+        }
+
+        // ── ACCORDION TOGGLE ────────────────────────────────────────────────
+        function toggleAccordion(typeId) {
+            const panel = document.getElementById(`panel-${typeId}`);
+            if (panel) {
+                panel.classList.toggle("is-open");
+            }
+        }
+
+        function expandAll() {
+            document.querySelectorAll(".tds-accordion-item").forEach(p => p.classList.add("is-open"));
+        }
+
+        function collapseAll() {
+            document.querySelectorAll(".tds-accordion-item").forEach(p => p.classList.remove("is-open"));
+        }
+
+        // ── AUTO-CALCULATE NET TAX ──────────────────────────────────────────
+        function calculateNetTax(typeId) {
+            const tax = parseFloat($(`#tax_${typeId}`).val()) || 0;
+            const cess = parseFloat($(`#cess_${typeId}`).val()) || 0;
+            const edu = parseFloat($(`#edu_${typeId}`).val()) || 0;
+            const hedu = parseFloat($(`#hedu_${typeId}`).val()) || 0;
+
+            const sum = tax + cess + edu + hedu;
+            const netTaxInput = document.getElementById(`nettax_${typeId}`);
+            if (netTaxInput) {
+                netTaxInput.value = sum > 0 ? sum.toFixed(2) : (tax > 0 ? tax.toFixed(2) : '');
+            }
+        }
+
+        // ── SAVE A SPECIFIC SECTION'S ROW ───────────────────────────────────
+        function saveSection(typeId, typeName) {
+            const settingIdVal = parseInt($(`#settingid_${typeId}`).val()) || 0;
+            const sectionVal = $(`#sec_${typeId}`).val().trim();
+            const taxableVal = $(`#taxable_${typeId}`).val().trim();
+            const taxVal = $(`#tax_${typeId}`).val().trim();
+            const cessVal = $(`#cess_${typeId}`).val().trim();
+            const eduVal = $(`#edu_${typeId}`).val().trim();
+            const heduVal = $(`#hedu_${typeId}`).val().trim();
+            const nettaxVal = $(`#nettax_${typeId}`).val().trim();
+            const limitVal = $(`#limit_${typeId}`).val().trim();
+
+            if (!sectionVal) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Section Required',
+                    text: `Please enter or select an Income Tax Act Section for ${typeName || 'this category'}.`,
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: 'var(--tds-primary, #a82024)'
+                });
+                $(`#sec_${typeId}`).focus();
+                return;
+            }
+
+            const payload = {
+                settingId: settingIdVal,
+                tdsTypeId: String(typeId),
+                sectionId: sectionVal,
+                taxablePer: taxableVal,
+                taxPer: taxVal,
+                cessPer: cessVal,
+                edCess: eduVal,
+                hedCess: heduVal,
+                netTax: nettaxVal,
+                limit: limitVal,
+                status: '1'
+            };
+
+            showLoader(`Saving TDS Setting for ${typeName}...`);
+
+            fetch('/TDSEntry/Save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(r => r.json())
+            .then(res => {
+                hideLoader();
+
+                if (res.success) {
+                    if (res.id) {
+                        $(`#settingid_${typeId}`).val(res.id);
+                    }
+                    showToast(res.message || `Saved settings for ${typeName}!`, "success");
+
+                    // Refresh cache silently to keep other sections in sync
+                    $.ajax({
+                        url: '/TDSEntry/GetAllSettings',
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function (sRes) {
+                            if (sRes && sRes.success && sRes.data) {
+                                allSettingsCache = sRes.data;
+                            }
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Unable to Save',
+                        text: res.message || 'Error occurred while saving.',
+                        confirmButtonText: 'Review',
+                        confirmButtonColor: 'var(--tds-primary, #a82024)'
+                    });
+                }
+            })
+            .catch(err => {
+                hideLoader();
+                console.error("Save error:", err);
+                showToast("Server communication error.", "error");
+            });
+        }
+
+        // ── BOTTOM CANCEL BUTTON ────────────────────────────────────────────
+        function handleBottomCancel() {
+            Swal.fire({
+                title: 'Cancel Changes?',
+                text: 'All unsaved input changes will be reset to previously saved values.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Reset',
+                cancelButtonText: 'Stay',
+                confirmButtonColor: 'var(--tds-primary, #a82024)',
+                cancelButtonColor: '#64748b'
+            }).then(r => {
+                if (r.isConfirmed) {
+                    loadAllData();
+                }
+            });
+        }
+
+        // ── SERVICE LINK BUTTON ─────────────────────────────────────────────
+        function openServiceLink() {
+            window.open('https://services.gst.gov.in/services/searchtp', '_blank');
+        }
+
+        // ── UTILITY HELPERS ─────────────────────────────────────────────────
+        function escHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+        }
+
+        function escAttr(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function showToast(message, type) {
+            if (typeof Swal !== "undefined") {
+                const iconType = type === "error" ? "error" : (type === "warning" ? "warning" : "success");
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: iconType,
+                    title: message,
+                    showConfirmButton: false,
+                    timer: 3500,
+                    timerProgressBar: true
+                });
+            } else {
+                alert(message);
+            }
+        }
+    </script>
+}

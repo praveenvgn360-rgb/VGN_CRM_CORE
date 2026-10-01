@@ -171,6 +171,37 @@ namespace VGN_CRM_CORE.Controllers
                         ActionName = "Index"
                     });
                 }
+                if (!menuList.Exists(m => m.ControllerName == "IndentRequest"))
+                {
+                    var boqMenu = menuList.FirstOrDefault(m => m.ControllerName == "ProjectIOW");
+                    menuList.Add(new Models.MenuModel
+                    {
+                        Department = boqMenu != null ? boqMenu.Department : "PROJECTS",
+                        ModuleType = boqMenu != null ? boqMenu.ModuleType : "MASTER",
+                        ModuleCaptionName = "Indent Request",
+                        ControllerName = "IndentRequest",
+                        ActionName = "Index"
+                    });
+                }
+                var boq = menuList.FirstOrDefault(m => m.ControllerName == "ProjectIOW");
+                var vmItem = menuList.FirstOrDefault(m => m.ControllerName == "VendorMaster");
+                if (vmItem != null)
+                {
+                    vmItem.ModuleCaptionName = "Vendor Creation";
+                    vmItem.Department = boq != null ? boq.Department : "PROJECTS";
+                    vmItem.ModuleType = boq != null ? boq.ModuleType : "MASTER";
+                }
+                else
+                {
+                    menuList.Add(new Models.MenuModel
+                    {
+                        Department = boq != null ? boq.Department : "PROJECTS",
+                        ModuleType = boq != null ? boq.ModuleType : "MASTER",
+                        ModuleCaptionName = "Vendor Creation",
+                        ControllerName = "VendorMaster",
+                        ActionName = "Index"
+                    });
+                }
                 SessionHelper.SetMenuList(HttpContext.Session, menuList);
             }
         }

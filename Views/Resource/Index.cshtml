@@ -290,10 +290,10 @@
                             var data = options.data;
                             var $wrapper = $('<div class="flex items-center justify-center gap-1.5"></div>');
 
-                            var $btnEdit = $('<button class="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-slate-700 dark:text-blue-400 transition-colors" title="Edit Resource"><i class="fas fa-edit text-xs"></i></button>');
+                            var $btnEdit = $('<button type="button" class="btn-grid-action btn-action-edit" title="Edit Resource"><i class="fas fa-edit"></i></button>');
                             $btnEdit.on('click', function () { openEditModal(data); });
 
-                            var $btnDel = $('<button class="w-7 h-7 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-600 dark:bg-slate-700 dark:text-red-400 transition-colors" title="Delete Resource"><i class="fas fa-trash-alt text-xs"></i></button>');
+                            var $btnDel = $('<button type="button" class="btn-grid-action btn-action-delete" title="Delete Resource"><i class="fas fa-trash-alt"></i></button>');
                             $btnDel.on('click', function () { deleteResource(data.resourceId, data.resourceName); });
 
                             $wrapper.append($btnEdit).append($btnDel);

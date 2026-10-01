@@ -1,0 +1,1004 @@
+@{
+    ViewBag.Title = "Qualifier TDS Setting — VGN ERP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <style>
+        /* ══════════════════════════════════════════════════════════════════
+           QUALIFIER TDS SETTING MASTER - THEME INTEGRATED STYLES
+           ══════════════════════════════════════════════════════════════════ */
+        :root {
+            --qtds-primary: var(--primary, #a82024);
+            --qtds-surface: var(--surface, #ffffff);
+            --qtds-bg: var(--bg, #f8fafc);
+            --qtds-border: var(--border, #e2e8f0);
+            --qtds-text: var(--text, #1e293b);
+            --qtds-text-muted: var(--text-muted, #64748b);
+        }
+
+        .dark {
+            --qtds-surface: #1e293b;
+            --qtds-bg: #0f172a;
+            --qtds-border: #334155;
+            --qtds-text: #f8fafc;
+            --qtds-text-muted: #94a3b8;
+        }
+
+        /* ── Standardized Action Buttons Across ERP Masters ── */
+        .btn-grid-action {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 28px !important;
+            height: 28px !important;
+            border-radius: 7px !important;
+            font-size: 0.76rem !important;
+            transition: all 0.18s ease-in-out !important;
+            border: 1px solid transparent !important;
+            cursor: pointer !important;
+            outline: none !important;
+        }
+
+        .btn-action-view {
+            background-color: #f0fdfa !important;
+            color: #0d9488 !important;
+            border-color: #ccfbf1 !important;
+        }
+        .btn-action-view:hover {
+            background-color: #ccfbf1 !important;
+            color: #0f766e !important;
+            border-color: #99f6e4 !important;
+            transform: translateY(-1px);
+        }
+        .dark .btn-action-view {
+            background-color: rgba(13, 148, 136, 0.18) !important;
+            color: #2dd4bf !important;
+            border-color: rgba(45, 212, 191, 0.3) !important;
+        }
+
+        .btn-action-edit {
+            background-color: #eff6ff !important;
+            color: #2563eb !important;
+            border-color: #bfdbfe !important;
+        }
+        .btn-action-edit:hover {
+            background-color: #dbeafe !important;
+            color: #1d4ed8 !important;
+            border-color: #93c5fd !important;
+            transform: translateY(-1px);
+        }
+        .dark .btn-action-edit {
+            background-color: rgba(37, 99, 235, 0.18) !important;
+            color: #60a5fa !important;
+            border-color: rgba(96, 165, 250, 0.3) !important;
+        }
+
+        .btn-action-status {
+            background-color: #fffbeb !important;
+            color: #d97706 !important;
+            border-color: #fef3c7 !important;
+        }
+        .btn-action-status:hover {
+            background-color: #fef3c7 !important;
+            color: #b45309 !important;
+            border-color: #fde68a !important;
+            transform: translateY(-1px);
+        }
+        .dark .btn-action-status {
+            background-color: rgba(217, 119, 6, 0.18) !important;
+            color: #fbbf24 !important;
+            border-color: rgba(251, 191, 36, 0.3) !important;
+        }
+
+        .btn-action-delete {
+            background-color: #fff1f2 !important;
+            color: #e11d48 !important;
+            border-color: #ffe4e6 !important;
+        }
+        .btn-action-delete:hover {
+            background-color: #ffe4e6 !important;
+            color: #be123c !important;
+            border-color: #fecdd3 !important;
+            transform: translateY(-1px);
+        }
+        .dark .btn-action-delete {
+            background-color: rgba(225, 29, 72, 0.18) !important;
+            color: #fb7185 !important;
+            border-color: rgba(251, 113, 133, 0.3) !important;
+        }
+
+        /* ── Standard ERP Master Buttons ── */
+        .btn-qtds-primary {
+            background-color: var(--qtds-primary) !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+            border-radius: 8px !important;
+            transition: all 0.2s ease-in-out !important;
+            border: 1px solid transparent !important;
+        }
+        .btn-qtds-primary:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* ── Form Inputs & Textarea ── */
+        .qtds-input, .qtds-select {
+            width: 100%;
+            height: 38px;
+            padding: 0.45rem 0.75rem;
+            font-size: 0.8125rem;
+            border-radius: 8px;
+            border: 1px solid var(--qtds-border);
+            background-color: var(--qtds-surface);
+            color: var(--qtds-text);
+            transition: all 0.18s ease-in-out;
+            outline: none;
+        }
+        .qtds-input:focus, .qtds-select:focus {
+            border-color: var(--qtds-primary) !important;
+            box-shadow: 0 0 0 3px rgba(168, 32, 36, 0.18) !important;
+        }
+
+        .qtds-input.is-invalid, .qtds-select.is-invalid {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18) !important;
+        }
+
+        .select2-container--default .select2-selection.is-invalid {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18) !important;
+        }
+
+        .qtds-val-msg {
+            color: #ef4444;
+            font-size: 0.68rem;
+            font-weight: 600;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        /* ── DevExtreme Grid Customization ── */
+        #dxGridQualifierTDS {
+            background: transparent !important;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        #dxGridQualifierTDS .dx-datagrid-headers {
+            border-bottom: 2px solid var(--qtds-border) !important;
+            background-color: var(--qtds-surface) !important;
+        }
+        #dxGridQualifierTDS .dx-datagrid-headers .dx-header-row > td {
+            background-color: var(--qtds-surface) !important;
+            color: var(--qtds-text-muted) !important;
+            font-weight: 700 !important;
+            font-size: 0.72rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.03em !important;
+            vertical-align: middle !important;
+        }
+        #dxGridQualifierTDS .dx-datagrid-rowsview .dx-row {
+            border-bottom: 1px solid var(--qtds-border) !important;
+        }
+        #dxGridQualifierTDS .dx-datagrid-rowsview .dx-row-alt {
+            background-color: rgba(168, 32, 36, 0.015) !important;
+        }
+        #dxGridQualifierTDS .dx-datagrid-rowsview .dx-data-row.dx-state-hover:not(.dx-selection):not(.dx-row-inserted):not(.dx-row-removed):not(.dx-edit-row) > td {
+            background-color: rgba(168, 32, 36, 0.04) !important;
+        }
+
+        /* ── Pulsing glow for focused invalid field ── */
+        .qtds-focus-pulse {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.4) !important;
+            animation: qtdsPulse 1.2s infinite alternate !important;
+        }
+
+        @@keyframes qtdsPulse {
+            0% { box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25); }
+            100% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.5); }
+        }
+
+        .shake-err {
+            animation: shakeErr 0.35s ease-in-out;
+        }
+
+        @@keyframes shakeErr {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* ── Full Page Theme-Adaptive Circular Loader ── */
+        #qtds-page-loader {
+            background: rgba(15, 23, 42, 0.72) !important;
+            backdrop-filter: blur(4px) !important;
+        }
+        #qtds-page-loader .loader-spinner {
+            width: 48px !important;
+            height: 48px !important;
+            border: 4px solid rgba(255, 255, 255, 0.15) !important;
+            border-top: 4px solid var(--qtds-primary) !important;
+            border-right: 4px solid var(--qtds-primary) !important;
+            border-radius: 50% !important;
+            animation: spinLoader 0.75s linear infinite !important;
+            box-shadow: 0 0 15px rgba(168, 32, 36, 0.35) !important;
+        }
+
+        .swal2-container {
+            z-index: 1000000 !important;
+        }
+    </style>
+}
+
+<div class="p-4 sm:p-6 lg:p-7 space-y-6 max-w-[1700px] mx-auto text-[var(--qtds-text)]">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- 1. TOP EXECUTIVE HEADER BAR                                             -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[var(--qtds-surface)] p-5 sm:p-6 rounded-2xl shadow-sm border border-[var(--qtds-border)]">
+        <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-xl bg-[var(--qtds-primary)]/10 border border-[var(--qtds-primary)]/20 flex items-center justify-center text-[var(--qtds-primary)] text-xl font-bold shadow-xs">
+                <i class="fas fa-file-invoice-dollar"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2.5 flex-wrap">
+                    <h1 class="text-xl font-bold tracking-tight text-[var(--qtds-text)]">Qualifier TDS Setting</h1>
+                    <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[var(--qtds-primary)]/10 text-[var(--qtds-primary)] border border-[var(--qtds-primary)]/20" id="badgeTotalRecords">
+                        0 TDS Types
+                    </span>
+                    <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" id="badgeActiveRecords">
+                        0 Active
+                    </span>
+                </div>
+                <p class="text-xs text-[var(--qtds-text-muted)] mt-1">Manage statutory TDS qualifier types, Income Tax Act section mappings, and procurement tax configurations</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2.5 w-full md:w-auto justify-end flex-wrap">
+            <button type="button" onclick="loadGridData()" class="btn-clear !text-xs !py-2 !px-3.5 cursor-pointer flex items-center gap-1.5 shadow-2xs" title="Refresh TDS Grid">
+                <i class="fas fa-sync-alt text-xs"></i>
+                <span>Refresh</span>
+            </button>
+            <button type="button" onclick="openCreateModal()" class="btn-qtds-primary !text-xs !py-2 !px-4 text-white flex items-center gap-2 shadow-md cursor-pointer">
+                <i class="fas fa-plus text-xs"></i>
+                <span>Add TDS Setting</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- 2. SUMMARY KPI STATS CARDS                                              -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5">
+        <div class="bg-[var(--qtds-surface)] border border-[var(--qtds-border)] rounded-2xl p-4.5 flex items-center justify-between shadow-sm hover:shadow-md transition">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--qtds-text-muted)] uppercase tracking-wider block">Total TDS Qualifiers</span>
+                <span class="text-2xl font-black text-[var(--qtds-text)] mt-1 block" id="statTotalCount">0</span>
+                <span class="text-[10px] text-[var(--qtds-text-muted)] mt-0.5 block">Configured in TDS_TypeMas</span>
+            </div>
+            <div class="w-11 h-11 rounded-xl bg-[var(--qtds-primary)]/10 text-[var(--qtds-primary)] flex items-center justify-center text-lg shadow-xs">
+                <i class="fas fa-list-ol"></i>
+            </div>
+        </div>
+
+        <div class="bg-[var(--qtds-surface)] border border-[var(--qtds-border)] rounded-2xl p-4.5 flex items-center justify-between shadow-sm hover:shadow-md transition">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--qtds-text-muted)] uppercase tracking-wider block">Active Status</span>
+                <span class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block" id="statActiveCount">0</span>
+                <span class="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5 block">Enabled for transactions</span>
+            </div>
+            <div class="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg shadow-xs">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+
+        <div class="bg-[var(--qtds-surface)] border border-[var(--qtds-border)] rounded-2xl p-4.5 flex items-center justify-between shadow-sm hover:shadow-md transition">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--qtds-text-muted)] uppercase tracking-wider block">Section Mapped</span>
+                <span class="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1 block" id="statMappedCount">0</span>
+                <span class="text-[10px] text-blue-600 dark:text-blue-400 mt-0.5 block">Linked to IT Act section</span>
+            </div>
+            <div class="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-lg shadow-xs">
+                <i class="fas fa-link"></i>
+            </div>
+        </div>
+
+        <div class="bg-[var(--qtds-surface)] border border-[var(--qtds-border)] rounded-2xl p-4.5 flex items-center justify-between shadow-sm hover:shadow-md transition">
+            <div>
+                <span class="text-[11px] font-bold text-[var(--qtds-text-muted)] uppercase tracking-wider block">General / Unmapped</span>
+                <span class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1 block" id="statUnmappedCount">0</span>
+                <span class="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5 block">No specific section assigned</span>
+            </div>
+            <div class="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg shadow-xs">
+                <i class="fas fa-layer-group"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- 3. DEVTREME DATAGRID CONTAINER                                          -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="bg-[var(--qtds-surface)] rounded-2xl border border-[var(--qtds-border)] shadow-sm p-4 sm:p-5">
+        <div id="dxGridQualifierTDS"></div>
+    </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL: CREATE / EDIT TDS QUALIFIER SETTING                              -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div id="modalQualifierTDSOverlay" class="fixed inset-0 z-[1050] overflow-y-auto" style="display: none; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);">
+    <div class="min-h-full flex items-center justify-center p-3 sm:p-5 text-center">
+        <div id="modalCardQualifierTDS" class="relative w-full max-w-lg bg-[var(--qtds-surface)] rounded-2xl shadow-2xl border border-[var(--qtds-border)] text-left transform transition-all my-8 overflow-hidden inline-block p-6 sm:p-7">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between border-b border-[var(--qtds-border)] pb-4 mb-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-[var(--qtds-primary)]/10 text-[var(--qtds-primary)] flex items-center justify-center text-lg font-bold">
+                        <i class="fas fa-file-invoice-dollar" id="modalHeaderIcon"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-[var(--qtds-text)]" id="modalTitle">Add TDS Qualifier Setting</h3>
+                        <p class="text-xs text-[var(--qtds-text-muted)] mt-0.5">TDS Type and statutory IT Section mapping</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeModal()" class="text-[var(--qtds-text-muted)] hover:text-[var(--qtds-text)] p-1 cursor-pointer">
+                    <i class="fas fa-times text-base"></i>
+                </button>
+            </div>
+
+            <!-- Form -->
+            <form id="frmQualifierTDS" onsubmit="handleFormSubmit(event)" class="space-y-4.5">
+                <input type="hidden" id="hdnTDSTypeId" value="0" />
+
+                <!-- TDS Qualifier Type Name -->
+                <div>
+                    <label class="block text-xs font-bold text-[var(--qtds-text)] mb-1">
+                        TDS Qualifier Type Name <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="txtTDSType" maxlength="50" class="qtds-input font-semibold" placeholder="e.g. Contract-Individual, Professional Fees, Rent..." required />
+                    <span class="qtds-val-msg" id="msgTDSType">TDS Qualifier Type Name is required</span>
+                    <span class="text-[11px] text-[var(--qtds-text-muted)] mt-1 block">Trade specialty, contract scope, or service definition</span>
+                </div>
+
+                <!-- IT Act Section Selection -->
+                <div>
+                    <label class="block text-xs font-bold text-[var(--qtds-text)] mb-1">
+                        Income Tax Act Section <span class="text-red-500">*</span>
+                    </label>
+                    <select id="ddlSection" class="qtds-select select2 w-full font-semibold">
+                        <option value="0">0 — None / General / Unmapped</option>
+                    </select>
+                    <span class="text-[11px] text-[var(--qtds-text-muted)] mt-1 block">Applicable Income Tax Act deduction section (e.g. 194C, 194J)</span>
+                </div>
+
+                <!-- Custom Section Code (Conditional) -->
+                <div id="divCustomSection" style="display: none;">
+                    <label class="block text-xs font-bold text-[var(--qtds-text)] mb-1">
+                        Custom Section Code <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="txtCustomSection" maxlength="50" class="qtds-input uppercase font-mono font-bold" placeholder="e.g. 194IA or 206C" />
+                    <span class="qtds-val-msg" id="msgCustomSection">Specify custom section code</span>
+                </div>
+
+                <!-- Status Selection -->
+                <div>
+                    <label class="block text-xs font-bold text-[var(--qtds-text)] mb-1">
+                        Active Status <span class="text-red-500">*</span>
+                    </label>
+                    <select id="ddlStatus" class="qtds-select font-semibold">
+                        <option value="1">1 — Active (Enabled for transactions)</option>
+                        <option value="0">0 — Inactive (Disabled)</option>
+                    </select>
+                </div>
+
+                <!-- Footer Buttons -->
+                <div class="pt-4 border-t border-[var(--qtds-border)] flex justify-end gap-2.5 mt-5">
+                    <button type="button" onclick="closeModal()" class="btn-cancel !text-xs !py-2 !px-4 cursor-pointer">Cancel</button>
+                    <button type="submit" id="btnSubmitForm" class="btn-qtds-primary !text-xs !py-2 !px-5 flex items-center gap-2 cursor-pointer shadow-md">
+                        <i class="fas fa-save"></i>
+                        <span id="btnSubmitLabel">Save TDS Setting</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL: VIEW DOSSIER                                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div id="modalViewDossier" class="fixed inset-0 z-[1050] overflow-y-auto" style="display: none; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);">
+    <div class="min-h-full flex items-center justify-center p-3 sm:p-5 text-center">
+        <div class="relative w-full max-w-lg bg-[var(--qtds-surface)] rounded-2xl shadow-2xl border border-[var(--qtds-border)] text-left transform transition-all my-8 overflow-hidden inline-block p-6 sm:p-7">
+            <div class="flex items-center justify-between border-b border-[var(--qtds-border)] pb-4 mb-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center text-lg font-bold">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-[var(--qtds-text)]" id="lblViewTitle">TDS Qualifier Dossier</h3>
+                        <p class="text-xs text-[var(--qtds-text-muted)] mt-0.5" id="lblViewSub">Record ID: 0</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeViewModal()" class="text-[var(--qtds-text-muted)] hover:text-[var(--qtds-text)] p-1 cursor-pointer">
+                    <i class="fas fa-times text-base"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-xs" id="boxViewContent">
+                <!-- Injected via JS -->
+            </div>
+
+            <div class="pt-4 border-t border-[var(--qtds-border)] flex justify-end gap-2.5 mt-5">
+                <button type="button" onclick="closeViewModal()" class="btn-cancel !text-xs !py-2 !px-4 cursor-pointer">Close</button>
+                <button type="button" id="btnEditFromView" class="btn-qtds-primary !text-xs !py-2 !px-4 cursor-pointer flex items-center gap-1.5">
+                    <i class="fas fa-edit mr-1"></i> Edit Setting
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- FULL PAGE LOADER                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div id="qtds-page-loader" class="fixed inset-0 z-[99999] flex flex-col items-center justify-center hidden">
+    <div class="loader-spinner"></div>
+    <p class="loader-text text-white text-xs font-semibold mt-4 tracking-wide" id="qtds-loader-text">Loading...</p>
+</div>
+
+@section Scripts {
+    <script>
+        // ═══════════════════════════════════════════════════════════════════════
+        // QUALIFIER TDS SETTING CLIENT CONTROLLER
+        // ═══════════════════════════════════════════════════════════════════════
+        let gridInstance = null;
+        let tdsDataCache = [];
+        let sectionOptionsCache = [];
+
+        $(document).ready(function () {
+            initSelect2();
+            initGrid();
+            loadSections();
+            loadGridData();
+            initLiveValidation();
+        });
+
+        function initSelect2() {
+            if ($.fn.select2) {
+                $('#ddlSection').select2({
+                    width: '100%',
+                    dropdownParent: $('#modalCardQualifierTDS')
+                });
+
+                $('#ddlSection').on('change', function () {
+                    if (this.value === '__custom__') {
+                        $('#divCustomSection').slideDown(150);
+                    } else {
+                        $('#divCustomSection').slideUp(150);
+                    }
+                    $(this).removeClass('is-invalid');
+                    $(this).next('.select2-container').find('.select2-selection').removeClass('is-invalid qtds-focus-pulse');
+                });
+            }
+        }
+
+        function initLiveValidation() {
+            $(document).on('input', 'input', function () {
+                $(this).removeClass('is-invalid shake-err qtds-focus-pulse');
+                $(this).siblings('.qtds-val-msg').hide();
+            });
+
+            $(document).on('change', 'select', function () {
+                $(this).removeClass('is-invalid shake-err qtds-focus-pulse');
+                $(this).next('.select2-container').find('.select2-selection').removeClass('is-invalid qtds-focus-pulse');
+                $(this).siblings('.qtds-val-msg').hide();
+            });
+        }
+
+        // ── LOADER HELPERS ──────────────────────────────────────────────────
+        function showLoader(msg = "Loading TDS Settings...") {
+            document.getElementById("qtds-loader-text").innerText = msg;
+            document.getElementById("qtds-page-loader").classList.remove("hidden");
+        }
+
+        function hideLoader() {
+            document.getElementById("qtds-page-loader").classList.add("hidden");
+        }
+
+        // ── LOAD SECTIONS ───────────────────────────────────────────────────
+        function loadSections() {
+            $.ajax({
+                url: '/QualifierTDSSetting/GetSections',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (res && res.success && res.data) {
+                        sectionOptionsCache = res.data;
+                        const $ddl = $('#ddlSection');
+                        $ddl.empty();
+                        $ddl.append(new Option("0 — None / General / Unmapped", "0"));
+
+                        res.data.forEach(s => {
+                            const desc = s.description ? ` — ${s.description}` : '';
+                            $ddl.append(new Option(`${s.sectionCode}${desc}`, s.sectionCode));
+                        });
+
+                        $ddl.append(new Option("+ Enter Custom Section...", "__custom__"));
+                        $ddl.trigger('change.select2');
+                    }
+                },
+                error: function (err) {
+                    console.error("Error loading sections:", err);
+                }
+            });
+        }
+
+        // ── LOAD GRID DATA & STATS ──────────────────────────────────────────
+        function loadGridData() {
+            showLoader("Fetching TDS Qualifier Settings...");
+
+            $.ajax({
+                url: '/QualifierTDSSetting/GetAll',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    hideLoader();
+
+                    if (!res || !res.success) {
+                        showToast(res ? res.message : "Error fetching records", "error");
+                        return;
+                    }
+
+                    tdsDataCache = res.data || [];
+                    updateStats(tdsDataCache);
+
+                    if (gridInstance) {
+                        gridInstance.option("dataSource", tdsDataCache);
+                        gridInstance.refresh();
+                    }
+                },
+                error: function (err) {
+                    hideLoader();
+                    console.error("Fetch error:", err);
+                    showToast("Failed to communicate with server.", "error");
+                }
+            });
+        }
+
+        function updateStats(data) {
+            const total = data.length;
+            const active = data.filter(x => x.status === '1' || (x.status || '').toLowerCase() === 'active').length;
+            const mapped = data.filter(x => x.sectionId && x.sectionId !== '0' && x.sectionId.toLowerCase() !== 'none').length;
+            const unmapped = total - mapped;
+
+            document.getElementById("statTotalCount").innerText = total;
+            document.getElementById("statActiveCount").innerText = active;
+            document.getElementById("statMappedCount").innerText = mapped;
+            document.getElementById("statUnmappedCount").innerText = unmapped;
+
+            document.getElementById("badgeTotalRecords").innerText = `${total} TDS Types`;
+            document.getElementById("badgeActiveRecords").innerText = `${active} Active`;
+        }
+
+        // ── INIT DEVTREME GRID ──────────────────────────────────────────────
+        function initGrid() {
+            gridInstance = $("#dxGridQualifierTDS").dxDataGrid({
+                dataSource: [],
+                keyExpr: "tdsTypeId",
+                showBorders: true,
+                showRowLines: true,
+                rowAlternationEnabled: true,
+                hoverStateEnabled: true,
+                columnAutoWidth: true,
+                wordWrapEnabled: false,
+                allowColumnResizing: true,
+                columnResizingMode: "widget",
+                allowColumnReordering: true,
+                searchPanel: {
+                    visible: true,
+                    width: 280,
+                    placeholder: "Search TDS type, section..."
+                },
+                headerFilter: {
+                    visible: true
+                },
+                export: {
+                    enabled: true,
+                    fileName: "Qualifier_TDS_Settings_" + new Date().toISOString().slice(0, 10)
+                },
+                paging: {
+                    pageSize: 15
+                },
+                pager: {
+                    visible: true,
+                    showPageSizeSelector: true,
+                    allowedPageSizes: [10, 15, 25, 50, 100],
+                    showInfo: true,
+                    showNavigationButtons: true
+                },
+                columns: [
+                    {
+                        caption: "Actions",
+                        width: 125,
+                        alignment: "center",
+                        allowFiltering: false,
+                        allowSorting: false,
+                        allowExporting: false,
+                        cellTemplate: function (container, options) {
+                            const d = options.data;
+                            const isAct = d.status === '1' || (d.status || '').toLowerCase() === 'active';
+
+                            const $view = $(`
+                                <button type="button" class="btn-grid-action btn-action-view mr-1.5" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            `).on('click', () => viewRecord(d.tdsTypeId));
+
+                            const $edit = $(`
+                                <button type="button" class="btn-grid-action btn-action-edit mr-1.5" title="Edit Setting">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            `).on('click', () => openEditModal(d.tdsTypeId));
+
+                            const $toggle = $(`
+                                <button type="button" class="btn-grid-action ${isAct ? 'btn-action-status' : 'btn-action-delete'}" title="${isAct ? 'Deactivate' : 'Activate'} Setting">
+                                    <i class="fas ${isAct ? 'fa-toggle-on' : 'fa-toggle-off'}"></i>
+                                </button>
+                            `).on('click', () => confirmToggleStatus(d.tdsTypeId, d.tdsType, isAct));
+
+                            container.append($view).append($edit).append($toggle);
+                        }
+                    },
+                    {
+                        dataField: "tdsTypeId",
+                        caption: "ID",
+                        width: 80,
+                        alignment: "center",
+                        cellTemplate: function (container, options) {
+                            const id = options.data.tdsTypeId || '-';
+                            $(`<span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[var(--qtds-text-muted)] font-mono font-bold text-xs border border-[var(--qtds-border)]">#${id}</span>`).appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "tdsType",
+                        caption: "Qualifier TDS Type Name",
+                        minWidth: 260,
+                        cellTemplate: function (container, options) {
+                            const name = options.data.tdsType || '-';
+                            $(`
+                                <div class="flex items-center gap-2">
+                                    <div class="w-6 h-6 rounded-md bg-[var(--qtds-primary)]/10 text-[var(--qtds-primary)] flex items-center justify-center text-xs shrink-0">
+                                        <i class="fas fa-percentage text-[10px]"></i>
+                                    </div>
+                                    <span class="font-bold text-xs text-[var(--qtds-text)]">${name}</span>
+                                </div>
+                            `).appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "sectionCode",
+                        caption: "IT Act Section",
+                        width: 140,
+                        alignment: "center",
+                        cellTemplate: function (container, options) {
+                            const sec = options.data.sectionCode || options.data.sectionId || '0';
+                            if (sec === '0' || sec.toLowerCase() === 'none') {
+                                $(`<span class="px-2 py-0.5 rounded text-[11px] font-mono text-[var(--qtds-text-muted)] bg-slate-100 dark:bg-slate-800 border border-[var(--qtds-border)]">None</span>`).appendTo(container);
+                            } else {
+                                $(`<span class="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold text-blue-700 bg-blue-50 dark:text-blue-300 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900/60">Sec ${sec}</span>`).appendTo(container);
+                            }
+                        }
+                    },
+                    {
+                        dataField: "sectionDescription",
+                        caption: "Section Description",
+                        minWidth: 280,
+                        cellTemplate: function (container, options) {
+                            const desc = options.data.sectionDescription || 'General / Unmapped';
+                            $(`<span class="text-xs text-[var(--qtds-text-muted)]">${desc}</span>`).appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "status",
+                        caption: "Status",
+                        width: 110,
+                        alignment: "center",
+                        cellTemplate: function (container, options) {
+                            const isAct = options.data.status === '1' || (options.data.status || '').toLowerCase() === 'active';
+                            const badge = isAct
+                                ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/60"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Active</span>`
+                                : `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-900/60"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Inactive</span>`;
+                            $(badge).appendTo(container);
+                        }
+                    }
+                ],
+                onContentReady: function (e) {
+                    if (window.vgnFitGridHeaders) {
+                        window.vgnFitGridHeaders(e.element[0]);
+                    }
+                }
+            }).dxDataGrid("instance");
+        }
+
+        // ── CREATE / EDIT MODAL CONTROLLER ──────────────────────────────────
+        function resetForm() {
+            document.getElementById("hdnTDSTypeId").value = "0";
+            document.getElementById("frmQualifierTDS").reset();
+            document.getElementById("divCustomSection").style.display = "none";
+            document.getElementById("txtCustomSection").value = "";
+            $('#ddlSection').val('0').trigger('change.select2');
+            $('#ddlStatus').val('1');
+
+            document.querySelectorAll(".is-invalid, .shake-err, .qtds-focus-pulse").forEach(el => {
+                el.classList.remove("is-invalid", "shake-err", "qtds-focus-pulse");
+            });
+            document.querySelectorAll(".qtds-val-msg").forEach(el => el.style.display = "none");
+        }
+
+        function openCreateModal() {
+            resetForm();
+            document.getElementById("modalTitle").innerText = "Add TDS Qualifier Setting";
+            document.getElementById("btnSubmitLabel").innerText = "Create TDS Setting";
+            document.getElementById("modalHeaderIcon").className = "fas fa-file-invoice-dollar";
+            document.getElementById("modalQualifierTDSOverlay").style.display = "block";
+            setTimeout(() => document.getElementById("txtTDSType").focus(), 150);
+        }
+
+        function openEditModal(id) {
+            resetForm();
+            showLoader("Loading TDS Setting...");
+
+            $.ajax({
+                url: `/QualifierTDSSetting/GetById?id=${id}`,
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    hideLoader();
+
+                    if (!res || !res.success || !res.data) {
+                        showToast(res ? res.message : "Error loading setting details", "error");
+                        return;
+                    }
+
+                    const d = res.data;
+                    document.getElementById("hdnTDSTypeId").value = d.tdsTypeId;
+                    document.getElementById("txtTDSType").value = d.tdsType || '';
+                    document.getElementById("ddlStatus").value = (d.status === '0') ? '0' : '1';
+
+                    // Section matching
+                    const sec = d.sectionId || '0';
+                    const hasOption = $(`#ddlSection option[value='${sec}']`).length > 0;
+
+                    if (hasOption) {
+                        $('#ddlSection').val(sec).trigger('change.select2');
+                    } else if (sec && sec !== '0') {
+                        // Custom section
+                        $('#ddlSection').val('__custom__').trigger('change.select2');
+                        document.getElementById("txtCustomSection").value = sec;
+                        document.getElementById("divCustomSection").style.display = "block";
+                    } else {
+                        $('#ddlSection').val('0').trigger('change.select2');
+                    }
+
+                    document.getElementById("modalTitle").innerText = `Edit: ${d.tdsType}`;
+                    document.getElementById("btnSubmitLabel").innerText = "Update TDS Setting";
+                    document.getElementById("modalHeaderIcon").className = "fas fa-edit";
+                    document.getElementById("modalQualifierTDSOverlay").style.display = "block";
+                    setTimeout(() => document.getElementById("txtTDSType").focus(), 150);
+                },
+                error: function (err) {
+                    hideLoader();
+                    console.error("Fetch error:", err);
+                    showToast("Error retrieving setting details.", "error");
+                }
+            });
+        }
+
+        function closeModal() {
+            document.getElementById("modalQualifierTDSOverlay").style.display = "none";
+        }
+
+        // ── FORM SUBMIT & VALIDATION ─────────────────────────────────────────
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const nameEl = document.getElementById("txtTDSType");
+            const nameVal = nameEl.value.trim();
+
+            if (!nameVal) {
+                nameEl.classList.add("is-invalid", "shake-err", "qtds-focus-pulse");
+                document.getElementById("msgTDSType").style.display = "block";
+                nameEl.focus();
+                return;
+            }
+
+            const idVal = parseInt(document.getElementById("hdnTDSTypeId").value) || 0;
+            let sectionVal = $('#ddlSection').val();
+
+            if (sectionVal === '__custom__') {
+                const customEl = document.getElementById("txtCustomSection");
+                const customVal = customEl.value.trim().toUpperCase();
+                if (!customVal) {
+                    customEl.classList.add("is-invalid", "shake-err", "qtds-focus-pulse");
+                    document.getElementById("msgCustomSection").style.display = "block";
+                    customEl.focus();
+                    return;
+                }
+                sectionVal = customVal;
+            }
+
+            const statusVal = document.getElementById("ddlStatus").value;
+
+            const payload = {
+                tdsTypeId: idVal,
+                tdsType: nameVal,
+                sectionId: sectionVal,
+                status: statusVal
+            };
+
+            const isNew = idVal === 0;
+            showLoader(isNew ? "Creating TDS Setting..." : "Updating TDS Setting...");
+
+            fetch('/QualifierTDSSetting/Save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(r => r.json())
+            .then(res => {
+                hideLoader();
+
+                if (res.success) {
+                    closeModal();
+                    showToast(res.message || "TDS Setting saved successfully!", "success");
+                    loadGridData();
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Cannot Save TDS Setting',
+                        text: res.message || 'Duplicate entry or invalid data provided.',
+                        confirmButtonText: 'Review Input',
+                        confirmButtonColor: 'var(--qtds-primary, #a82024)'
+                    });
+                }
+            })
+            .catch(err => {
+                hideLoader();
+                console.error("Save error:", err);
+                showToast("Server error during save operation.", "error");
+            });
+        }
+
+        // ── STATUS TOGGLING / DELETION ───────────────────────────────────────
+        function confirmToggleStatus(id, name, isCurrentlyActive) {
+            const actionVerb = isCurrentlyActive ? "deactivate" : "activate";
+            const confirmTitle = isCurrentlyActive ? `Deactivate "${name}"?` : `Activate "${name}"?`;
+            const confirmText = isCurrentlyActive 
+                ? "This TDS Qualifier will be hidden from new transaction selection dropdowns." 
+                : "This TDS Qualifier will be enabled for procurement and BOQ calculations.";
+
+            Swal.fire({
+                title: confirmTitle,
+                text: confirmText,
+                icon: isCurrentlyActive ? 'warning' : 'question',
+                showCancelButton: true,
+                confirmButtonText: `Yes, ${actionVerb}!`,
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: isCurrentlyActive ? '#e11d48' : '#0d9488',
+                cancelButtonColor: '#64748b'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    showLoader("Updating Status...");
+
+                    fetch(`/QualifierTDSSetting/ToggleStatus?id=${id}`, {
+                        method: 'POST'
+                    })
+                    .then(r => r.json())
+                    .then(res => {
+                        hideLoader();
+                        if (res.success) {
+                            showToast(res.message || "Status updated successfully!", "success");
+                            loadGridData();
+                        } else {
+                            showToast(res.message || "Failed to update status", "error");
+                        }
+                    })
+                    .catch(err => {
+                        hideLoader();
+                        console.error("Toggle error:", err);
+                        showToast("Error updating record status.", "error");
+                    });
+                }
+            });
+        }
+
+        // ── VIEW DOSSIER MODAL ──────────────────────────────────────────────
+        function viewRecord(id) {
+            showLoader("Opening TDS Qualifier Dossier...");
+
+            $.ajax({
+                url: `/QualifierTDSSetting/GetById?id=${id}`,
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    hideLoader();
+
+                    if (!res || !res.success || !res.data) {
+                        showToast(res ? res.message : "Error loading setting", "error");
+                        return;
+                    }
+
+                    const d = res.data;
+                    const isAct = d.status === '1' || (d.status || '').toLowerCase() === 'active';
+                    const sec = d.sectionCode || d.sectionId || 'None';
+
+                    document.getElementById("lblViewTitle").innerText = d.tdsType;
+                    document.getElementById("lblViewSub").innerText = `Record #${d.tdsTypeId} • IT Act Sec: ${sec}`;
+
+                    document.getElementById("boxViewContent").innerHTML = `
+                        <div class="grid grid-cols-2 gap-3.5 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-[var(--qtds-border)]">
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-[var(--qtds-text-muted)] tracking-wider block">TDS Type Name</span>
+                                <span class="font-bold text-sm text-[var(--qtds-text)] mt-0.5 block">${d.tdsType}</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-[var(--qtds-text-muted)] tracking-wider block">Status</span>
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 ${isAct ? 'bg-emerald-100 text-emerald-700 border border-emerald-300' : 'bg-rose-100 text-rose-700 border border-rose-300'}">
+                                    <span class="w-1.5 h-1.5 rounded-full ${isAct ? 'bg-emerald-500' : 'bg-rose-500'}"></span>${isAct ? 'Active' : 'Inactive'}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-[var(--qtds-border)] space-y-2">
+                            <span class="text-[10px] uppercase font-bold text-[var(--qtds-text-muted)] tracking-wider block">Income Tax Act Section Mapping</span>
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono font-bold text-xs px-2.5 py-1 rounded bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-200">
+                                    ${(sec === '0' || sec.toLowerCase() === 'none') ? 'No Section Specified' : 'Section ' + sec}
+                                </span>
+                            </div>
+                            <p class="text-xs text-[var(--qtds-text-muted)] mt-1">
+                                ${d.sectionDescription || 'General deduction category. Applicable when no specific statutory withholding section applies.'}
+                            </p>
+                        </div>
+                    `;
+
+                    document.getElementById("btnEditFromView").onclick = function () {
+                        closeViewModal();
+                        openEditModal(d.tdsTypeId);
+                    };
+
+                    document.getElementById("modalViewDossier").style.display = "block";
+                },
+                error: function (err) {
+                    hideLoader();
+                    console.error("View error:", err);
+                    showToast("Error retrieving record details.", "error");
+                }
+            });
+        }
+
+        function closeViewModal() {
+            document.getElementById("modalViewDossier").style.display = "none";
+        }
+
+        function showToast(message, type = "info") {
+            if (typeof Swal !== "undefined") {
+                const iconType = type === "error" ? "error" : (type === "warning" ? "warning" : "success");
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: iconType,
+                    title: message,
+                    showConfirmButton: false,
+                    timer: 3500,
+                    timerProgressBar: true
+                });
+            } else {
+                alert(message);
+            }
+        }
+    </script>
+}

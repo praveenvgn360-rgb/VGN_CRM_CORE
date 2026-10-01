@@ -2130,19 +2130,19 @@
                         var data = options.data;
                         var $wrapper = $('<div class="flex items-center justify-center gap-1.5"></div>');
 
-                        // Edit button
-                        var $btnEdit = $('<button type="button" class="w-7 h-7 flex items-center justify-center rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-slate-700 dark:text-blue-400 transition-colors cursor-pointer" title="Edit BOQ"><i class="fas fa-edit text-xs"></i></button>');
-                        $btnEdit.on('click', function () { editBOQ(data.boqId); });
-
                         // View details button
-                        var $btnView = $('<button type="button" class="w-7 h-7 flex items-center justify-center rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-slate-700 dark:text-emerald-400 transition-colors cursor-pointer" title="Quick View"><i class="fas fa-eye text-xs"></i></button>');
+                        var $btnView = $('<button type="button" class="btn-grid-action btn-action-view" title="Quick View"><i class="fas fa-eye"></i></button>');
                         $btnView.on('click', function () { quickViewBOQ(data.boqId); });
 
+                        // Edit button
+                        var $btnEdit = $('<button type="button" class="btn-grid-action btn-action-edit" title="Edit BOQ"><i class="fas fa-edit"></i></button>');
+                        $btnEdit.on('click', function () { editBOQ(data.boqId); });
+
                         // Delete button
-                        var $btnDel = $('<button type="button" class="w-7 h-7 flex items-center justify-center rounded-lg bg-red-50 hover:bg-red-100 text-red-600 dark:bg-slate-700 dark:text-red-400 transition-colors cursor-pointer" title="Delete BOQ"><i class="fas fa-trash-alt text-xs"></i></button>');
+                        var $btnDel = $('<button type="button" class="btn-grid-action btn-action-delete" title="Delete BOQ"><i class="fas fa-trash-alt"></i></button>');
                         $btnDel.on('click', function () { deleteBOQItem(data.boqId, data.referenceNo); });
 
-                        $wrapper.append($btnEdit).append($btnView).append($btnDel);
+                        $wrapper.append($btnView).append($btnEdit).append($btnDel);
                         container.append($wrapper);
                     }
                 },

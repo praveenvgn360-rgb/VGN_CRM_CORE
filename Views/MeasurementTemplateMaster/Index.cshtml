@@ -411,15 +411,15 @@
                         var row = options.data;
                         var $wrapper = $('<div class="flex items-center justify-center gap-1.5"></div>');
 
-                        // Edit Button (Pencil icon)
-                        var $editBtn = $('<button type="button" class="w-8 h-8 rounded text-sky-600 hover:text-sky-800 hover:bg-sky-50 flex items-center justify-center transition cursor-pointer" title="Edit Template"><i class="fas fa-pencil-alt text-sm"></i></button>');
+                        // Edit Button (Pencil/Edit icon)
+                        var $editBtn = $('<button type="button" class="btn-grid-action btn-action-edit" title="Edit Template"><i class="fas fa-edit"></i></button>');
                         $editBtn.on('click', function () {
                             openEditTemplate(row.templateId);
                         });
                         $wrapper.append($editBtn);
 
                         // Delete Button (Trash icon)
-                        var $delBtn = $('<button type="button" class="w-8 h-8 rounded text-rose-500 hover:text-rose-700 hover:bg-rose-50 flex items-center justify-center transition cursor-pointer" title="Delete Template"><i class="fas fa-trash-alt text-sm"></i></button>');
+                        var $delBtn = $('<button type="button" class="btn-grid-action btn-action-delete" title="Delete Template"><i class="fas fa-trash-alt"></i></button>');
                         $delBtn.on('click', function () {
                             deleteTemplate(row.templateId, row.templateName, row.typeId);
                         });
