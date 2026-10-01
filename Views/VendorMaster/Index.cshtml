@@ -1,0 +1,3342 @@
+@{
+    ViewBag.Title = "Vendor Master — VGN ERP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <style>
+        /* ══════════════════════════════════════════════════════════════════
+           ACTION BUTTONS FOR DEVEXTREME GRID (STANDARDIZED ACROSS ALL MASTERS)
+           ══════════════════════════════════════════════════════════════════ */
+        .btn-grid-action {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 28px !important;
+            height: 28px !important;
+            border-radius: 7px !important;
+            font-size: 0.76rem !important;
+            transition: all 0.18s ease-in-out !important;
+            border: 1px solid transparent !important;
+            cursor: pointer !important;
+            outline: none !important;
+        }
+        .btn-action-view {
+            background-color: #f0fdfa !important; /* teal-50 */
+            color: #0d9488 !important;            /* teal-600 */
+            border-color: #ccfbf1 !important;      /* teal-200 */
+        }
+        .btn-action-view:hover {
+            background-color: #ccfbf1 !important; /* teal-100 */
+            color: #0f766e !important;            /* teal-700 */
+            border-color: #99f6e4 !important;      /* teal-300 */
+            transform: translateY(-1px);
+        }
+        .dark .btn-action-view {
+            background-color: rgba(13, 148, 136, 0.18) !important;
+            color: #2dd4bf !important;
+            border-color: rgba(45, 212, 191, 0.3) !important;
+        }
+        .btn-action-edit {
+            background-color: #eff6ff !important; /* blue-50 */
+            color: #2563eb !important;            /* blue-600 */
+            border-color: #bfdbfe !important;      /* blue-200 */
+        }
+        .btn-action-edit:hover {
+            background-color: #dbeafe !important; /* blue-100 */
+            color: #1d4ed8 !important;            /* blue-700 */
+            border-color: #93c5fd !important;      /* blue-300 */
+            transform: translateY(-1px);
+        }
+        .dark .btn-action-edit {
+            background-color: rgba(37, 99, 235, 0.18) !important;
+            color: #60a5fa !important;
+            border-color: rgba(96, 165, 250, 0.3) !important;
+        }
+        .btn-action-delete {
+            background-color: #fff1f2 !important; /* rose-50 */
+            color: #e11d48 !important;            /* rose-600 */
+            border-color: #fecdd3 !important;      /* rose-200 */
+        }
+        .btn-action-delete:hover {
+            background-color: #ffe4e6 !important; /* rose-100 */
+            color: #be123c !important;            /* rose-700 */
+            border-color: #fda4af !important;      /* rose-300 */
+            transform: translateY(-1px);
+        }
+        .dark .btn-action-delete {
+            background-color: rgba(225, 29, 72, 0.18) !important;
+            color: #fb7185 !important;
+            border-color: rgba(251, 113, 133, 0.3) !important;
+        }
+
+        /* ══════════════════════════════════════════════════════════════════
+           VENDOR MASTER ENTERPRISE THEME & STYLES (ADOPTS VGN ERP SYSTEM)
+           ══════════════════════════════════════════════════════════════════ */
+        :root {
+            --vm-primary: var(--primary, #a82024);
+            --vm-primary-rgb: var(--primary-rgb, 168, 32, 36);
+            --vm-surface: var(--surface, #ffffff);
+            --vm-bg: var(--bg, #f4f6fb);
+            --vm-border: #cbd5e1;
+            --vm-text: var(--text, #0f172a);
+            --vm-text-muted: var(--text-muted, #64748b);
+            --vm-radius: var(--radius, 12px);
+        }
+
+        /* ── Input & Form Control Styling with High-Visibility Crisp Borders ── */
+        .vm-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--vm-text-muted);
+            margin-bottom: 0.35rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .vm-label-text {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .vm-label .req {
+            color: #ef4444;
+            font-weight: 800;
+            margin-left: 2px;
+        }
+
+        .vm-input, .vm-select, .vm-textarea,
+        #frmVendorWizard input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+        #frmVendorWizard select,
+        #frmVendorWizard textarea,
+        #viewVendorWizard input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+        #viewVendorWizard select,
+        #viewVendorWizard textarea,
+        #viewVendorList input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+        #viewVendorList select,
+        .vm-section-card input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+        .vm-section-card select,
+        .vm-section-card textarea,
+        #modalQuickType input,
+        #modalQuickCategory input {
+            width: 100%;
+            height: 40px;
+            padding: 0 12px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--vm-text);
+            background-color: var(--vm-surface) !important;
+            border: 1.5px solid #94a3b8 !important; /* High-contrast, easily visible border */
+            border-radius: 8px;
+            outline: none;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+        }
+
+        .vm-textarea {
+            height: auto !important;
+            min-height: 85px !important;
+            padding: 10px 12px !important;
+            resize: vertical !important;
+        }
+
+        .vm-input:hover:not(:focus):not(.is-invalid),
+        .vm-select:hover:not(:focus):not(.is-invalid),
+        .vm-textarea:hover:not(:focus):not(.is-invalid),
+        #frmVendorWizard input:hover:not(:focus):not(.is-invalid),
+        #frmVendorWizard select:hover:not(:focus):not(.is-invalid),
+        #frmVendorWizard textarea:hover:not(:focus):not(.is-invalid),
+        #viewVendorWizard input:hover:not(:focus):not(.is-invalid),
+        #viewVendorWizard select:hover:not(:focus):not(.is-invalid),
+        #viewVendorWizard textarea:hover:not(:focus):not(.is-invalid),
+        #viewVendorList input:hover:not(:focus):not(.is-invalid),
+        #viewVendorList select:hover:not(:focus):not(.is-invalid) {
+            border-color: #475569 !important; /* slate-600 on hover */
+        }
+
+        .vm-input:focus,
+        .vm-select:focus,
+        .vm-textarea:focus,
+        #frmVendorWizard input:focus,
+        #frmVendorWizard select:focus,
+        #frmVendorWizard textarea:focus,
+        #viewVendorWizard input:focus,
+        #viewVendorWizard select:focus,
+        #viewVendorWizard textarea:focus,
+        #viewVendorList input:focus,
+        #viewVendorList select:focus {
+            border-color: var(--vm-primary) !important;
+            box-shadow: 0 0 0 3px rgba(var(--vm-primary-rgb), 0.22) !important;
+            background-color: var(--vm-surface) !important;
+        }
+
+        .dark .vm-input, .dark .vm-select, .dark .vm-textarea,
+        [data-theme="dark"] .vm-input, [data-theme="dark"] .vm-select, [data-theme="dark"] .vm-textarea,
+        .dark #frmVendorWizard input, .dark #frmVendorWizard select, .dark #frmVendorWizard textarea,
+        [data-theme="dark"] #frmVendorWizard input, [data-theme="dark"] #frmVendorWizard select, [data-theme="dark"] #frmVendorWizard textarea {
+            border: 1.5px solid #64748b !important;
+            background-color: #1e293b !important;
+            color: #f1f5f9 !important;
+        }
+
+        .dark .vm-input:hover:not(:focus), .dark .vm-select:hover:not(:focus), .dark .vm-textarea:hover:not(:focus),
+        [data-theme="dark"] .vm-input:hover:not(:focus), [data-theme="dark"] .vm-select:hover:not(:focus), [data-theme="dark"] .vm-textarea:hover:not(:focus) {
+            border-color: #94a3b8 !important;
+        }
+
+        .dark .vm-input:focus, .dark .vm-select:focus, .dark .vm-textarea:focus,
+        [data-theme="dark"] .vm-input:focus, [data-theme="dark"] .vm-select:focus, [data-theme="dark"] .vm-textarea:focus {
+            border-color: var(--vm-primary) !important;
+            box-shadow: 0 0 0 3px rgba(var(--vm-primary-rgb), 0.28) !important;
+        }
+
+        .vm-input.is-invalid, .vm-select.is-invalid, .vm-textarea.is-invalid,
+        input.is-invalid, select.is-invalid, textarea.is-invalid,
+        .vm-input-icon-wrap.is-invalid input,
+        .vm-input-code-wrap.is-invalid input {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18) !important;
+            background-color: rgba(239, 68, 68, 0.02) !important;
+        }
+
+        .select2-container--default .select2-selection.is-invalid {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18) !important;
+        }
+
+        .vm-val-msg {
+            color: #ef4444;
+            font-size: 0.68rem;
+            font-weight: 600;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .is-invalid + .vm-val-msg,
+        .is-invalid ~ .vm-val-msg,
+        .vm-input-icon-wrap.is-invalid ~ .vm-val-msg,
+        .vm-input-code-wrap.is-invalid ~ .vm-val-msg {
+            display: block;
+        }
+
+        .vm-hint {
+            font-size: 0.68rem;
+            color: var(--vm-text-muted);
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        /* ── Stepper Navigation (100% Theme Cohesive — ZERO Green) ── */
+        .vm-stepper-container {
+            position: relative;
+            background: var(--vm-surface);
+            border: 1.5px solid #cbd5e1;
+            border-radius: 16px;
+            padding: 0.75rem;
+            overflow-x: auto;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .vm-stepper-track {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-width: 760px;
+            position: relative;
+            gap: 8px;
+        }
+
+        .vm-step-card {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.22s ease;
+            border: 1.5px solid #cbd5e1;
+            user-select: none;
+            background: var(--vm-surface);
+        }
+
+        .vm-step-card:hover {
+            border-color: rgba(var(--vm-primary-rgb), 0.5);
+            background-color: rgba(var(--vm-primary-rgb), 0.04);
+        }
+
+        /* ACTIVE STEP: Matches Selected Corporate Theme Primary Color */
+        .vm-step-card.active {
+            background: var(--vm-primary) !important;
+            border-color: var(--vm-primary) !important;
+            box-shadow: 0 4px 14px rgba(var(--vm-primary-rgb), 0.35) !important;
+        }
+
+        .vm-step-card.active .vm-step-badge {
+            background: #ffffff !important;
+            color: var(--vm-primary) !important;
+            border-color: #ffffff !important;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18) !important;
+        }
+
+        .vm-step-card.active .vm-step-num {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .vm-step-card.active .vm-step-title {
+            color: #ffffff !important;
+        }
+
+        .vm-step-card.active .vm-step-status {
+            color: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        /* COMPLETED STEP: 100% Theme Color Tint & Checkmark (NO Green!) */
+        .vm-step-card.completed {
+            background: rgba(var(--vm-primary-rgb), 0.08) !important;
+            border-color: rgba(var(--vm-primary-rgb), 0.38) !important;
+        }
+
+        .vm-step-card.completed:hover {
+            background: rgba(var(--vm-primary-rgb), 0.15) !important;
+            border-color: var(--vm-primary) !important;
+        }
+
+        .vm-step-card.completed .vm-step-badge {
+            background: var(--vm-primary) !important;
+            color: #ffffff !important;
+            border-color: var(--vm-primary) !important;
+            box-shadow: 0 2px 6px rgba(var(--vm-primary-rgb), 0.25) !important;
+        }
+
+        .vm-step-card.completed .vm-step-num {
+            color: var(--vm-primary) !important;
+            font-weight: 800 !important;
+        }
+
+        .vm-step-card.completed .vm-step-title {
+            color: var(--vm-primary) !important;
+            font-weight: 700 !important;
+        }
+
+        .vm-step-card.completed .vm-step-status {
+            color: var(--vm-primary) !important;
+            font-weight: 700 !important;
+        }
+
+        /* PENDING STEP */
+        .vm-step-card:not(.active):not(.completed) {
+            background: var(--vm-surface) !important;
+            border-color: #cbd5e1 !important;
+        }
+
+        .vm-step-card:not(.active):not(.completed) .vm-step-badge {
+            background-color: #f1f5f9 !important;
+            color: #64748b !important;
+            border-color: #cbd5e1 !important;
+        }
+
+        .vm-step-card:not(.active):not(.completed) .vm-step-num {
+            color: #94a3b8 !important;
+        }
+
+        .vm-step-card:not(.active):not(.completed) .vm-step-title {
+            color: #334155 !important;
+        }
+
+        .vm-step-card:not(.active):not(.completed) .vm-step-status {
+            color: #94a3b8 !important;
+        }
+
+        .vm-step-badge {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            font-weight: 800;
+            background-color: var(--vm-bg);
+            color: var(--vm-text-muted);
+            border: 1px solid var(--vm-border);
+            transition: all 0.22s ease;
+        }
+
+        .vm-step-info {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            line-height: 1.25;
+        }
+
+        .vm-step-num {
+            font-size: 0.62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--vm-text-muted);
+        }
+
+        .vm-step-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--vm-text);
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        .vm-step-status {
+            font-size: 0.62rem;
+            font-weight: 600;
+            color: var(--vm-text-muted);
+        }
+
+        /* ── Section Card Container ── */
+        .vm-section-card {
+            background-color: var(--vm-surface);
+            border: 1px solid var(--vm-border);
+            border-radius: 14px;
+            padding: 1.25rem 1.5rem;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .vm-section-card:hover {
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+        }
+
+        .vm-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 0.85rem;
+            margin-bottom: 1.15rem;
+            border-bottom: 1px solid var(--vm-border);
+        }
+
+        .vm-section-title {
+            font-size: 0.84rem;
+            font-weight: 700;
+            color: var(--vm-text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.01em;
+        }
+
+        .vm-section-title i {
+            color: var(--vm-primary);
+        }
+
+        /* ── Action Buttons for Stepper (Theme Cohesive — ZERO Green) ── */
+        .btn-save-next {
+            background-color: var(--vm-primary) !important;
+            color: #ffffff !important;
+            border: 1.5px solid var(--vm-primary) !important;
+            font-weight: 700;
+            font-size: 0.8rem;
+            padding: 0.55rem 1.4rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(var(--vm-primary-rgb), 0.28);
+        }
+
+        .btn-save-next:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(var(--vm-primary-rgb), 0.38);
+        }
+
+        .btn-save-exit {
+            background-color: rgba(var(--vm-primary-rgb), 0.08) !important;
+            color: var(--vm-primary) !important;
+            border: 1.5px solid var(--vm-primary) !important;
+            font-weight: 700;
+            font-size: 0.8rem;
+            padding: 0.55rem 1.4rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .btn-save-exit:hover {
+            background-color: var(--vm-primary) !important;
+            color: #ffffff !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(var(--vm-primary-rgb), 0.28);
+        }
+
+        .btn-vm-primary {
+            background-color: var(--vm-primary) !important;
+            color: #ffffff !important;
+            border: 1.5px solid var(--vm-primary) !important;
+            font-weight: 700;
+            font-size: 0.78rem;
+            padding: 0.45rem 1rem;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            box-shadow: 0 2px 6px rgba(var(--vm-primary-rgb), 0.25);
+        }
+
+        .btn-vm-primary:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(var(--vm-primary-rgb), 0.35);
+        }
+
+        .btn-back-step {
+            background-color: var(--btn-cancel-bg) !important;
+            color: var(--btn-cancel-color) !important;
+            border: 1px solid var(--btn-cancel-border) !important;
+            font-weight: 700;
+            font-size: 0.8rem;
+            padding: 0.55rem 1.25rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .btn-back-step:hover {
+            background-color: var(--btn-cancel-bg-hover) !important;
+            transform: translateY(-1px);
+        }
+
+        .vm-sticky-action-bar {
+            position: sticky;
+            bottom: 0.75rem;
+            background: var(--vm-surface);
+            border: 1px solid var(--vm-border);
+            border-radius: 14px;
+            padding: 0.85rem 1.25rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            z-index: 40;
+            backdrop-filter: blur(8px);
+        }
+
+        /* ── Input with Left Icons & Action Addons (Zero Text Overlapping) ── */
+        .vm-input-icon-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .vm-input-icon-wrap .vm-input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--vm-text-muted);
+            font-size: 0.8rem;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .vm-input-icon-wrap input {
+            padding-left: 38px !important;
+        }
+
+        .vm-input-code-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .vm-input-code-wrap input {
+            padding-right: 76px !important;
+        }
+
+        .vm-input-code-wrap .vm-code-btn {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 2;
+        }
+
+        /* ── Custom Theme Radio Button (Bank Accounts Default Radio) ── */
+        .vm-radio-container {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+
+        .vm-radio-container input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+        }
+
+        .vm-radio-circle {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid #94a3b8;
+            background-color: var(--vm-surface);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.18s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+        }
+
+        .vm-radio-circle::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--vm-primary);
+            transform: scale(0);
+            transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .vm-radio-container:hover .vm-radio-circle {
+            border-color: var(--vm-primary);
+        }
+
+        .vm-radio-container input[type="radio"]:checked + .vm-radio-circle {
+            border-color: var(--vm-primary);
+            box-shadow: 0 0 0 3px rgba(var(--vm-primary-rgb), 0.2);
+        }
+
+        .vm-radio-container input[type="radio"]:checked + .vm-radio-circle::after {
+            transform: scale(1);
+        }
+
+        .vm-radio-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--vm-text-muted);
+            transition: color 0.18s ease;
+        }
+
+        .vm-radio-container input[type="radio"]:checked ~ .vm-radio-label {
+            color: var(--vm-primary);
+        }
+
+        /* ── Full Page Theme-Adaptive Circular Loader (Zero Radiant Colors) ── */
+        #full-page-loader {
+            background: rgba(15, 23, 42, 0.72) !important;
+            backdrop-filter: blur(4px) !important;
+        }
+
+        #full-page-loader .loader-spinner {
+            width: 50px !important;
+            height: 50px !important;
+            border: 4px solid rgba(255, 255, 255, 0.15) !important;
+            border-top: 4px solid var(--vm-primary) !important;
+            border-right: 4px solid var(--vm-primary) !important;
+            border-radius: 50% !important;
+            animation: spinLoader 0.75s linear infinite !important;
+            box-shadow: 0 0 15px rgba(var(--vm-primary-rgb), 0.35) !important;
+        }
+
+        #full-page-loader .loader-progress-bar {
+            display: none !important; /* Disables multi-colored / radiant bar */
+        }
+
+        #full-page-loader .loader-text {
+            color: #ffffff !important;
+            font-size: 0.85rem !important;
+            font-weight: 600 !important;
+            letter-spacing: 0.02em !important;
+            margin-top: 16px !important;
+        }
+
+        /* ── Select2 Enterprise Integration & Theme Synchronization ── */
+        .select2-container {
+            width: 100% !important;
+        }
+
+        .select2-container--default .select2-selection--single {
+            height: 40px !important;
+            border: 1.5px solid #94a3b8 !important;
+            border-radius: 8px !important;
+            background-color: var(--vm-surface) !important;
+            display: flex !important;
+            align-items: center !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .select2-container--default .select2-selection--single:hover {
+            border-color: #475569 !important;
+        }
+
+        .select2-container--default.select2-container--open .select2-selection--single,
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: var(--vm-primary) !important;
+            box-shadow: 0 0 0 3px rgba(var(--vm-primary-rgb), 0.22) !important;
+            outline: none !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 38px !important;
+            padding-left: 12px !important;
+            padding-right: 28px !important;
+            color: var(--vm-text) !important;
+            font-size: 0.82rem !important;
+            font-weight: 500 !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 38px !important;
+            right: 8px !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow b {
+            border-color: var(--vm-text-muted) transparent transparent transparent !important;
+            border-width: 5px 4px 0 4px !important;
+        }
+
+        .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+            border-color: transparent transparent var(--vm-primary) transparent !important;
+            border-width: 0 4px 5px 4px !important;
+        }
+
+        .select2-dropdown {
+            border: 1.5px solid var(--vm-primary) !important;
+            border-radius: 8px !important;
+            background-color: var(--vm-surface) !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+            z-index: 99999 !important;
+            overflow: hidden;
+        }
+
+        .select2-container--default .select2-search--dropdown {
+            padding: 8px !important;
+            background-color: var(--vm-bg) !important;
+            border-bottom: 1px solid var(--vm-border) !important;
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            border: 1.5px solid #cbd5e1 !important;
+            border-radius: 6px !important;
+            padding: 6px 10px !important;
+            font-size: 0.8rem !important;
+            background: var(--vm-surface) !important;
+            color: var(--vm-text) !important;
+            outline: none !important;
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+            border-color: var(--vm-primary) !important;
+            box-shadow: 0 0 0 2px rgba(var(--vm-primary-rgb), 0.18) !important;
+        }
+
+        .select2-container--default .select2-results__option {
+            padding: 7px 12px !important;
+            font-size: 0.8rem !important;
+            color: var(--vm-text) !important;
+            transition: background-color 0.12s ease;
+        }
+
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: var(--vm-primary) !important;
+            color: #ffffff !important;
+        }
+
+        .select2-container--default .select2-results__option[aria-selected="true"] {
+            background-color: rgba(var(--vm-primary-rgb), 0.12) !important;
+            color: var(--vm-primary) !important;
+            font-weight: 700 !important;
+        }
+
+        /* Dark mode select2 */
+        .dark .select2-container--default .select2-selection--single {
+            border: 1.5px solid #64748b !important;
+            background-color: #1e293b !important;
+        }
+        .dark .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: #f1f5f9 !important;
+        }
+        .dark .select2-dropdown {
+            background-color: #1e293b !important;
+            border-color: var(--vm-primary) !important;
+        }
+        .dark .select2-container--default .select2-search--dropdown {
+            background-color: #0f172a !important;
+            border-bottom-color: #334155 !important;
+        }
+        .dark .select2-container--default .select2-search--dropdown .select2-search__field {
+            background: #1e293b !important;
+            border-color: #475569 !important;
+            color: #f1f5f9 !important;
+        }
+        .dark .select2-container--default .select2-results__option {
+            color: #f1f5f9 !important;
+        }
+
+        /* ── DevExtreme Grid Standard Theming (Synchronized Column & Header Alignment) ── */
+        #dxGridVendorMaster {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--vm-border);
+        }
+
+        #dxGridVendorMaster .dx-datagrid {
+            font-family: inherit;
+            font-size: 0.8rem;
+        }
+
+        #dxGridVendorMaster .dx-datagrid-headers {
+            border-bottom: 2px solid var(--vm-border) !important;
+            background-color: var(--vm-surface) !important;
+        }
+
+        #dxGridVendorMaster .dx-datagrid-headers .dx-header-row > td {
+            background-color: var(--vm-surface) !important;
+            color: var(--vm-text-muted) !important;
+            font-weight: 700 !important;
+            font-size: 0.72rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.03em !important;
+            vertical-align: middle !important;
+        }
+
+        #dxGridVendorMaster .dx-datagrid-rowsview .dx-row {
+            border-bottom: 1px solid var(--vm-border) !important;
+        }
+
+        #dxGridVendorMaster .dx-datagrid-rowsview .dx-row-alt {
+            background-color: rgba(var(--vm-primary-rgb), 0.018) !important;
+        }
+
+        #dxGridVendorMaster .dx-datagrid-rowsview .dx-data-row.dx-state-hover:not(.dx-selection):not(.dx-row-inserted):not(.dx-row-removed):not(.dx-edit-row) > td {
+            background-color: rgba(var(--vm-primary-rgb), 0.05) !important;
+        }
+
+        /* ── Validation Focus Pulse Highlight ── */
+        .vm-focus-pulse {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.4) !important;
+            animation: vmInputPulse 1.2s infinite alternate !important;
+        }
+
+        @@keyframes vmInputPulse {
+            0% {
+                box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25);
+            }
+            100% {
+                box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.5);
+            }
+        }
+
+        .shake-err {
+            animation: shakeInput 0.35s ease-in-out;
+        }
+
+        @@keyframes shakeInput {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+    </style>
+}
+
+<div class="p-4 sm:p-6 lg:p-7 space-y-6 max-w-[1700px] mx-auto text-[var(--vm-text)]">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- TOP EXECUTIVE HEADER BAR                                                -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[var(--vm-surface)] p-5 sm:p-6 rounded-2xl shadow-sm border border-[var(--vm-border)]">
+        <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-xl bg-[var(--vm-primary)]/10 border border-[var(--vm-primary)]/20 flex items-center justify-center text-[var(--vm-primary)] text-xl font-bold shadow-xs">
+                <i class="fas fa-handshake"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2.5 flex-wrap">
+                    <h1 class="text-xl font-bold tracking-tight text-[var(--vm-text)]">Vendor Master</h1>
+                    <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[var(--vm-primary)]/10 text-[var(--vm-primary)] border border-[var(--vm-primary)]/20" id="badgeVendorCount">
+                        0 Vendors
+                    </span>
+                    <span id="badgeCurrentMode" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[var(--vm-text-muted)] border border-[var(--vm-border)]">
+                        Directory View
+                    </span>
+                </div>
+                <p class="text-xs text-[var(--vm-text-muted)] mt-1">Manage vendor profiles, multiple bank accounts, branch network, and statutory compliance</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2.5 w-full md:w-auto justify-end flex-wrap">
+            <button type="button" id="btnToggleList" onclick="showListView()" class="px-3.5 py-2 rounded-lg text-xs font-bold border border-[var(--vm-border)] bg-[var(--vm-surface)] hover:bg-[var(--vm-bg)] text-[var(--vm-text)] transition cursor-pointer flex items-center gap-1.5 shadow-2xs">
+                <i class="fas fa-list text-[var(--vm-primary)]"></i>
+                <span>Vendor Directory</span>
+            </button>
+            <button type="button" onclick="loadVendorData()" class="btn-clear !text-xs !py-2 !px-3.5 cursor-pointer flex items-center gap-1.5 shadow-2xs" title="Refresh Vendor List">
+                <i class="fas fa-sync-alt text-xs"></i>
+                <span>Refresh</span>
+            </button>
+            <button type="button" id="btnAddNewVendor" onclick="openCreateVendorWizard()" class="btn-vm-primary !text-xs !py-2 !px-4 text-white flex items-center gap-2 shadow-md cursor-pointer">
+                <i class="fas fa-plus text-xs"></i>
+                <span>Create New Vendor</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW 1: VENDOR DIRECTORY / LIST VIEW                                    -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <div id="viewVendorList" class="space-y-6">
+
+        <!-- 4 KPI Summary Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5">
+            <div class="bg-[var(--vm-surface)] border border-[var(--vm-border)] rounded-2xl p-4.5 flex items-center justify-between shadow-sm hover:shadow-md transition">
+                <div>
+                    <span class="text-[11px] font-bold text-[var(--vm-text-muted)] uppercase tracking-wider block">Total Directory</span>
+                    <span class="text-2xl font-black text-[var(--vm-text)] mt-1 block" id="statTotalVendors">0</span>
+                    <span class="text-[10px] text-[var(--vm-text-muted)] mt-0.5 block">Registered vendor records</span>
+                </div>
+                <div class="w-11 h-11 rounded-xl bg-[var(--vm-primary)]/10 text-[var(--vm-primary)] flex items-center justify-center text-lg shadow-xs">
+                    <i class="fas fa-address-book"></i>
+                </div>
+            </div>
+
+            <div class="bg-[var(--vm-surface)] border border-[var(--vm-border)] rounded-2xl p-4.5 flex items-center justify-between shadow-sm hover:shadow-md transition">
+                <div>
+                    <span class="text-[11px] font-bold text-[var(--vm-text-muted)] uppercase tracking-wider block">Active Status</span>
+                    <span class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block" id="statApprovedVendors">0</span>
+                    <span class="text-[10px] text-emerald-600 dark:text-emerald-400 mt-0.5 block">Approved & active vendors</span>
+                </div>
+                <div class="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg shadow-xs">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+
+            <div class="bg-[var(--vm-surface)] border border-[var(--vm-border)] rounded-2xl p-4.5 flex items-center justify-between shadow-sm hover:shadow-md transition">
+                <div>
+                    <span class="text-[11px] font-bold text-[var(--vm-text-muted)] uppercase tracking-wider block">GST Registered</span>
+                    <span class="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1 block" id="statGstVendors">0</span>
+                    <span class="text-[10px] text-blue-600 dark:text-blue-400 mt-0.5 block">With valid GSTIN identity</span>
+                </div>
+                <div class="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-lg shadow-xs">
+                    <i class="fas fa-receipt"></i>
+                </div>
+            </div>
+
+            <div class="bg-[var(--vm-surface)] border border-[var(--vm-border)] rounded-2xl p-4.5 flex items-center justify-between shadow-sm hover:shadow-md transition">
+                <div>
+                    <span class="text-[11px] font-bold text-[var(--vm-text-muted)] uppercase tracking-wider block">Branch Locations</span>
+                    <span class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1 block" id="statTotalBranches">0</span>
+                    <span class="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5 block">Secondary offices & sites</span>
+                </div>
+                <div class="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg shadow-xs">
+                    <i class="fas fa-code-branch"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- DevExtreme DataGrid Card Container (Adopted with Theme) -->
+        <div class="bg-[var(--vm-surface)] rounded-2xl border border-[var(--vm-border)] shadow-sm p-4 sm:p-5">
+            <div id="dxGridVendorMaster" class="min-h-[480px]"></div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- VIEW 2: MULTI-STEP VENDOR CREATION & EDIT WIZARD                        -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <div id="viewVendorWizard" style="display: none;" class="space-y-6">
+
+        <!-- Wizard Stepper Indicator (100% Theme Cohesive Ribbon — No Green) -->
+        <div class="vm-stepper-container">
+            <div class="vm-stepper-track">
+                <!-- Step 1 -->
+                <div class="vm-step-card active" id="stepNode1" onclick="jumpToStep(1)">
+                    <div class="vm-step-badge">1</div>
+                    <div class="vm-step-info">
+                        <span class="vm-step-num">Step 1</span>
+                        <span class="vm-step-title">General Details</span>
+                        <span class="vm-step-status">Active</span>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="vm-step-card" id="stepNode2" onclick="jumpToStep(2)">
+                    <div class="vm-step-badge">2</div>
+                    <div class="vm-step-info">
+                        <span class="vm-step-num">Step 2</span>
+                        <span class="vm-step-title">Address Details</span>
+                        <span class="vm-step-status">Pending</span>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="vm-step-card" id="stepNode3" onclick="jumpToStep(3)">
+                    <div class="vm-step-badge">3</div>
+                    <div class="vm-step-info">
+                        <span class="vm-step-num">Step 3</span>
+                        <span class="vm-step-title">Contact Details</span>
+                        <span class="vm-step-status">Pending</span>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="vm-step-card" id="stepNode4" onclick="jumpToStep(4)">
+                    <div class="vm-step-badge">4</div>
+                    <div class="vm-step-info">
+                        <span class="vm-step-num">Step 4</span>
+                        <span class="vm-step-title">Statutory & GST</span>
+                        <span class="vm-step-status">Pending</span>
+                    </div>
+                </div>
+
+                <!-- Step 5 -->
+                <div class="vm-step-card" id="stepNode5" onclick="jumpToStep(5)">
+                    <div class="vm-step-badge">5</div>
+                    <div class="vm-step-info">
+                        <span class="vm-step-num">Step 5</span>
+                        <span class="vm-step-title">Bank Details</span>
+                        <span class="vm-step-status">Pending</span>
+                    </div>
+                </div>
+
+                <!-- Step 6 -->
+                <div class="vm-step-card" id="stepNode6" onclick="jumpToStep(6)">
+                    <div class="vm-step-badge">6</div>
+                    <div class="vm-step-info">
+                        <span class="vm-step-num">Step 6</span>
+                        <span class="vm-step-title">Branches</span>
+                        <span class="vm-step-status">Pending</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wizard Content Container -->
+        <form id="frmVendorWizard" onsubmit="event.preventDefault();" class="space-y-6">
+            <input type="hidden" id="hdnVendorId" value="0" />
+
+            <!-- ───────────────────────────────────────────────────────────── -->
+            <!-- STEP 1: GENERAL DETAILS                                       -->
+            <!-- ───────────────────────────────────────────────────────────── -->
+            <div id="stepContent1" class="step-panel space-y-6">
+                <!-- Section 1A: Basic Identification -->
+                <div class="vm-section-card">
+                    <div class="vm-section-header">
+                        <h2 class="vm-section-title">
+                            <i class="fas fa-id-card"></i>
+                            <span>1. Vendor Identity & Registration</span>
+                        </h2>
+                        <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-900/60">* Required fields</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4.5">
+                        <!-- Vendor Code -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Vendor Code <span class="req">*</span></span>
+                            </label>
+                            <div class="vm-input-code-wrap">
+                                <input type="text" id="txtVendorCode" class="vm-input font-bold uppercase tracking-wider" placeholder="e.g. VND-0001" required />
+                                <button type="button" onclick="autoGenerateCode()" class="vm-code-btn px-2.5 py-1 rounded-md text-[10px] font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 text-[var(--vm-text)] transition cursor-pointer shadow-2xs" title="Auto-generate next vendor code">
+                                    <i class="fas fa-magic mr-1 text-[var(--vm-primary)]"></i>Auto
+                                </button>
+                            </div>
+                            <span class="vm-val-msg">Vendor Code is required</span>
+                        </div>
+
+                        <!-- Vendor Name -->
+                        <div class="sm:col-span-2">
+                            <label class="vm-label">
+                                <span class="vm-label-text">Legal Entity / Vendor Name <span class="req">*</span></span>
+                            </label>
+                            <input type="text" id="txtVendorName" class="vm-input font-semibold" placeholder="Enter Full Legal Entity / Trade Name" required />
+                            <span class="vm-val-msg">Vendor Name is required</span>
+                        </div>
+
+                        <!-- Primary Official Email (Mandatory) -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Primary Official Email <span class="req">*</span></span>
+                            </label>
+                            <div class="vm-input-icon-wrap">
+                                <i class="fas fa-envelope vm-input-icon"></i>
+                                <input type="email" id="txtEmailId" class="vm-input font-medium" placeholder="orders@vendor.com" onblur="validateEmailInput(this)" required />
+                            </div>
+                            <span class="vm-val-msg">Valid Primary Official Email is required</span>
+                        </div>
+
+                        <!-- Work Nature (New Column) -->
+                        <div class="sm:col-span-2">
+                            <label class="vm-label">
+                                <span class="vm-label-text">Work Nature</span>
+                            </label>
+                            <div class="vm-input-icon-wrap">
+                                <i class="fas fa-briefcase vm-input-icon"></i>
+                                <input type="text" id="txtWorkNature" class="vm-input" placeholder="e.g. Civil Contractor, Structural Steel, RCC Works, Electrical Supply" />
+                            </div>
+                            <span class="vm-hint">Primary nature of business, trade specialty or services rendered</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 1B: Business Classification -->
+                <div class="vm-section-card">
+                    <div class="vm-section-header">
+                        <h2 class="vm-section-title">
+                            <i class="fas fa-layer-group"></i>
+                            <span>2. Classification & Trade Category</span>
+                        </h2>
+                        <span class="text-xs text-[var(--vm-text-muted)]">Determines procurement workflows & accounting groups</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4.5">
+                        <!-- Vendor Type -->
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="vm-label !mb-0">
+                                    <span class="vm-label-text">Vendor Type <span class="req">*</span></span>
+                                </label>
+                                <button type="button" onclick="openQuickTypeModal()" class="text-[10px] text-[var(--vm-primary)] font-bold hover:underline cursor-pointer">
+                                    + New Type
+                                </button>
+                            </div>
+                            <select id="ddlVendorType" class="vm-select vm-select2 font-semibold" required>
+                                <option value="">Select Vendor Type</option>
+                            </select>
+                            <span class="vm-val-msg">Select a Vendor Type</span>
+                        </div>
+
+                        <!-- Vendor Category -->
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="vm-label !mb-0">
+                                    <span class="vm-label-text">Vendor Category <span class="req">*</span></span>
+                                </label>
+                                <button type="button" onclick="openQuickCategoryModal()" class="text-[10px] text-[var(--vm-primary)] font-bold hover:underline cursor-pointer">
+                                    + New Category
+                                </button>
+                            </div>
+                            <select id="ddlVendorCategory" class="vm-select vm-select2 font-semibold" required>
+                                <option value="">Select Vendor Category</option>
+                            </select>
+                            <span class="vm-val-msg">Select a Vendor Category</span>
+                        </div>
+
+                        <!-- Supply Type -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Supply Classification</span>
+                            </label>
+                            <select id="ddlSupplyType" class="vm-select vm-select2">
+                                <option value="">Select Supply Type</option>
+                                <option value="Material">Material</option>
+                                <option value="Service">Service</option>
+                                <option value="Labour">Labour</option>
+                                <option value="Turnkey">Turnkey</option>
+                                <option value="Consultant">Consultant</option>
+                                <option value="Equipment">Equipment</option>
+                            </select>
+                        </div>
+
+                        <!-- Consultant Type -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Consultancy Domain (if applicable)</span>
+                            </label>
+                            <select id="ddlConsultantType" class="vm-select vm-select2">
+                                <option value="">None / Not Applicable</option>
+                                <option value="Structural">Structural Consultant</option>
+                                <option value="Architectural">Architectural Consultant</option>
+                                <option value="MEP">MEP Consultant</option>
+                                <option value="Legal">Legal Consultant</option>
+                                <option value="Liasoning">Liasoning Consultant</option>
+                                <option value="PMC">PMC Consultant</option>
+                                <option value="Valuation">Valuation Consultant</option>
+                            </select>
+                        </div>
+
+                        <!-- Company Type -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Legal Constitution / Org Type</span>
+                            </label>
+                            <select id="ddlCompnayType" class="vm-select vm-select2">
+                                <option value="Private Limited">Private Limited</option>
+                                <option value="Public Limited">Public Limited</option>
+                                <option value="Partnership Firm">Partnership Firm</option>
+                                <option value="Sole Proprietorship">Sole Proprietorship</option>
+                                <option value="LLP">LLP</option>
+                                <option value="Trust / Society">Trust / Society</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 1C: Tax & Govt Registrations -->
+                <div class="vm-section-card">
+                    <div class="vm-section-header">
+                        <h2 class="vm-section-title">
+                            <i class="fas fa-file-invoice"></i>
+                            <span>3. Tax & Government Identifiers</span>
+                        </h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5">
+                        <!-- PAN No (Mandatory) -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">PAN Number <span class="req">*</span></span>
+                            </label>
+                            <input type="text" id="txtPanNo" maxlength="10" class="vm-input uppercase font-mono tracking-wider font-bold" placeholder="ABCDE1234F" onblur="validatePanInput(this)" required />
+                            <span class="vm-val-msg">Valid 10-digit PAN is required</span>
+                            <span class="vm-hint">10 digits (e.g. ABCDE1234F)</span>
+                        </div>
+
+                        <!-- PAN Type (Mandatory) -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">PAN Type <span class="req">*</span></span>
+                            </label>
+                            <select id="ddlPanType" class="vm-select vm-select2 font-semibold" required>
+                                <option value="">Select PAN Type</option>
+                                <option value="Company">Company</option>
+                                <option value="Individual">Individual</option>
+                                <option value="Partnership Firm">Partnership Firm</option>
+                                <option value="Trust">Trust</option>
+                                <option value="LLP">LLP</option>
+                            </select>
+                            <span class="vm-val-msg">PAN Type is required</span>
+                        </div>
+
+                        <!-- Aadhar No -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Aadhar Number (Proprietor)</span>
+                            </label>
+                            <input type="text" id="txtAadharNo" maxlength="12" class="vm-input font-mono" placeholder="12 digit Aadhar Number" />
+                        </div>
+
+                        <!-- MSME Registered? (Always show) -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">MSME Registered?</span>
+                            </label>
+                            <select id="ddlMSME" class="vm-select vm-select2 font-semibold">
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+
+                        <!-- MSME Number (Always show) -->
+                        <div class="lg:col-span-2">
+                            <label class="vm-label">
+                                <span class="vm-label-text">MSME / Udyam Reg. Number</span>
+                            </label>
+                            <input type="text" id="txtMSMENo" class="vm-input uppercase font-mono" placeholder="e.g. UDYAM-TN-01-0000000" />
+                            <span class="vm-hint">Required for MSME payment terms under MSMED Act</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ───────────────────────────────────────────────────────────── -->
+            <!-- STEP 2: ADDRESS DETAILS                                       -->
+            <!-- ───────────────────────────────────────────────────────────── -->
+            <div id="stepContent2" class="step-panel space-y-6" style="display: none;">
+                <!-- Section 2A: Registered Office -->
+                <div class="vm-section-card">
+                    <div class="vm-section-header">
+                        <h2 class="vm-section-title">
+                            <i class="fas fa-map-marked-alt"></i>
+                            <span>1. Principal Place of Business / Registered Office</span>
+                        </h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4.5">
+                        <!-- Registered Address -->
+                        <div class="md:row-span-2">
+                            <label class="vm-label">
+                                <span class="vm-label-text">Registered Street Address</span>
+                            </label>
+                            <textarea id="txtAddress" class="vm-textarea !h-[124px]" placeholder="Enter Door No, Building Name, Street / Avenue, Landmark..."></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4.5">
+                            <div>
+                                <label class="vm-label">
+                                    <span class="vm-label-text">City <span class="req">*</span></span>
+                                </label>
+                                <input type="text" id="txtCity" class="vm-input font-medium" value="Chennai" required />
+                                <span class="vm-val-msg">City is required</span>
+                            </div>
+
+                            <div>
+                                <label class="vm-label">
+                                    <span class="vm-label-text">State</span>
+                                </label>
+                                <input type="text" id="txtState" class="vm-input" value="Tamil Nadu" />
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4.5">
+                            <div>
+                                <label class="vm-label">
+                                    <span class="vm-label-text">Country</span>
+                                </label>
+                                <input type="text" id="txtCountry" class="vm-input" value="India" />
+                            </div>
+
+                            <div>
+                                <label class="vm-label">
+                                    <span class="vm-label-text">Postal Pin Code</span>
+                                </label>
+                                <input type="text" id="txtPincode" maxlength="10" class="vm-input font-mono font-bold" value="600077" placeholder="e.g. 600077" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2B: Communication & Payee Details -->
+                <div class="vm-section-card">
+                    <div class="vm-section-header">
+                        <h2 class="vm-section-title">
+                            <i class="fas fa-phone-alt"></i>
+                            <span>2. Communication & Settlement Details</span>
+                        </h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5">
+                        <!-- Phone Number -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Primary Telephone / Mobile</span>
+                            </label>
+                            <div class="flex items-center gap-1.5">
+                                <span class="px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold text-[var(--vm-text-muted)] border border-[var(--vm-border)] select-none">+91</span>
+                                <input type="text" id="txtPhoneNumber" class="vm-input" placeholder="e.g. 9840012345 / 044-24567890" />
+                            </div>
+                        </div>
+
+                        <!-- Cheque in the name of -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Cheque Payee Name</span>
+                            </label>
+                            <input type="text" id="txtChequeName" class="vm-input" placeholder="Exact payee name printed on cheque" />
+                        </div>
+
+                        <!-- Category & Org Type Tags -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Internal Category Tag</span>
+                            </label>
+                            <input type="text" id="txtCategory" class="vm-input" placeholder="Tag or internal code" />
+                        </div>
+
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Org Type Note</span>
+                            </label>
+                            <input type="text" id="txtOrgType" class="vm-input" placeholder="e.g. Corporate / Small Business" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ───────────────────────────────────────────────────────────── -->
+            <!-- STEP 3: CONTACT DETAILS                                       -->
+            <!-- ───────────────────────────────────────────────────────────── -->
+            <div id="stepContent3" class="step-panel space-y-6" style="display: none;">
+                <div class="vm-section-card">
+                    <div class="vm-section-header">
+                        <h2 class="vm-section-title">
+                            <i class="fas fa-address-book"></i>
+                            <span>Key Representative & Contact Person</span>
+                        </h2>
+                        <span class="text-xs text-[var(--vm-text-muted)]">Primary liaison for orders, quotes, and delivery notifications</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4.5">
+                        <!-- Contact Person (Mandatory) -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Contact Person Name <span class="req">*</span></span>
+                            </label>
+                            <input type="text" id="txtContactPerson" class="vm-input font-semibold" placeholder="e.g. Rajesh Kumar" required />
+                            <span class="vm-val-msg">Contact Person Name is required</span>
+                        </div>
+
+                        <!-- Contact No (Mandatory) -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Mobile / Phone Number <span class="req">*</span></span>
+                            </label>
+                            <input type="text" id="txtContactNo" class="vm-input font-semibold" placeholder="e.g. 9840012345" required />
+                            <span class="vm-val-msg">Contact Phone Number is required</span>
+                        </div>
+
+                        <!-- Email (Mandatory) -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Direct Email ID <span class="req">*</span></span>
+                            </label>
+                            <div class="vm-input-icon-wrap">
+                                <i class="fas fa-envelope vm-input-icon"></i>
+                                <input type="email" id="txtContactEmail" class="vm-input font-semibold" placeholder="representative@vendor.com" onblur="validateEmailInput(this)" required />
+                            </div>
+                            <span class="vm-val-msg">Valid Contact Email is required</span>
+                        </div>
+
+                        <!-- Designation -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Designation</span>
+                            </label>
+                            <input type="text" id="txtDesignation" class="vm-input" placeholder="e.g. General Manager - Sales" />
+                        </div>
+
+                        <!-- Contact Type -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Contact Type</span>
+                            </label>
+                            <select id="ddlContactType" class="vm-select vm-select2 font-semibold">
+                                <option value="Primary person" selected>Primary person</option>
+                                <option value="Secondary">Secondary</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <!-- Contact Address -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Office Address / Room</span>
+                            </label>
+                            <input type="text" id="txtContactAddress" class="vm-input" placeholder="Specific floor, room, or branch address" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-[var(--vm-primary)]/5 border border-[var(--vm-primary)]/20 text-[var(--vm-text)] text-xs flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-[var(--vm-primary)]/10 text-[var(--vm-primary)] flex items-center justify-center shrink-0">
+                        <i class="fas fa-info-circle text-sm"></i>
+                    </div>
+                    <span>The designated <strong>Primary Person</strong> will automatically receive electronic purchase orders, dispatch tracking requests, and payment settlement advices.</span>
+                </div>
+            </div>
+
+            <!-- ───────────────────────────────────────────────────────────── -->
+            <!-- STEP 4: STATUTORY & GST DETAILS                               -->
+            <!-- ───────────────────────────────────────────────────────────── -->
+            <div id="stepContent4" class="step-panel space-y-6" style="display: none;">
+                <!-- Section 4A: GST Details -->
+                <div class="vm-section-card">
+                    <div class="vm-section-header">
+                        <h2 class="vm-section-title">
+                            <i class="fas fa-receipt"></i>
+                            <span>1. Goods & Services Tax (GST) Compliance</span>
+                        </h2>
+                        <span class="text-xs text-[var(--vm-text-muted)]">Mandatory for GST Input Tax Credit (ITC) reconciliation</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5">
+                        <!-- GST IN with Official Government Portal Link -->
+                        <div class="sm:col-span-2">
+                            <div class="flex items-center justify-between mb-1 flex-wrap gap-2">
+                                <label class="vm-label !mb-0">
+                                    <span class="vm-label-text">GST Identification Number (GSTIN)</span>
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <a href="https://services.gst.gov.in/services/searchtp" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-md text-[11px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-400 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800 transition inline-flex items-center gap-1.5 cursor-pointer shadow-2xs" title="Verify Taxpayer on Official Government GST Portal (Opens in a new tab)">
+                                        <i class="fas fa-external-link-alt text-[10px]"></i>
+                                        <span>GST NO Check</span>
+                                    </a>
+                                </div>
+                            </div>
+                            <input type="text" id="txtGSTIn" maxlength="15" class="vm-input uppercase font-mono font-bold tracking-wider" placeholder="33CMIPM4901L1ZY" onblur="validateGstInput(this)" />
+                            <span class="vm-hint">15 characters (e.g. 33ABCDE4567F8Z9) — State code + PAN + Entity</span>
+                        </div>
+
+                        <!-- ARN No -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">ARN Number</span>
+                            </label>
+                            <input type="text" id="txtARNNo" class="vm-input uppercase font-mono" placeholder="Application Ref No" />
+                            <span class="vm-hint">Registration / Migration ARN</span>
+                        </div>
+
+                        <!-- GST Vendor Type -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">GST Taxpayer Type</span>
+                            </label>
+                            <select id="ddlGSTVendorType" class="vm-select vm-select2 font-semibold">
+                                <option value="Regular" selected>Regular</option>
+                                <option value="Composition">Composition</option>
+                                <option value="Unregistered">Unregistered</option>
+                                <option value="Overseas / Import">Overseas / Import</option>
+                                <option value="SEZ Unit">SEZ Unit</option>
+                            </select>
+                        </div>
+
+                        <!-- GST Filing -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">GST Return Filing Frequency</span>
+                            </label>
+                            <select id="ddlGSTFiling" class="vm-select vm-select2">
+                                <option value="None" selected>None</option>
+                                <option value="Monthly">Monthly</option>
+                                <option value="Quarterly">Quarterly</option>
+                            </select>
+                        </div>
+
+                        <!-- Duty Free -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Duty Free Status</span>
+                            </label>
+                            <select id="ddlDutyFree" class="vm-select vm-select2">
+                                <option value="No" selected>No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4B: Labor, Statutory & Tax Numbers -->
+                <div class="vm-section-card">
+                    <div class="vm-section-header">
+                        <h2 class="vm-section-title">
+                            <i class="fas fa-file-contract"></i>
+                            <span>2. Labor, Establishment & Other Tax Registrations</span>
+                        </h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4.5">
+                        <!-- Year Of Establishment -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Year Of Establishment</span>
+                            </label>
+                            <input type="text" id="txtYearOfEstablishment" class="vm-input font-bold" value="0" />
+                        </div>
+
+                        <!-- ESI No -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">ESI Registration No</span>
+                            </label>
+                            <input type="text" id="txtESINo" class="vm-input" placeholder="ESI No" />
+                        </div>
+
+                        <!-- EPF No -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">EPF Registration No</span>
+                            </label>
+                            <input type="text" id="txtEPFNo" class="vm-input" placeholder="EPF No" />
+                        </div>
+
+                        <!-- Shop & Establishment -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Shop & Establishment No</span>
+                            </label>
+                            <input type="text" id="txtShopEstablishmentNo" class="vm-input" placeholder="Shop Act No" />
+                        </div>
+
+                        <!-- LWF -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">LWF Registration No</span>
+                            </label>
+                            <input type="text" id="txtLWF" class="vm-input" placeholder="Labor Welfare Fund" />
+                        </div>
+
+                        <!-- Professional Tax -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">Professional Tax (PTax) No</span>
+                            </label>
+                            <input type="text" id="txtPTaxRegNo" class="vm-input" placeholder="PTax Reg No" />
+                        </div>
+
+                        <!-- TDS TAN Number -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">TDS TAN Account No</span>
+                            </label>
+                            <input type="text" id="txtTDSAccNo" class="vm-input uppercase font-mono" placeholder="e.g. CHEN12345F" />
+                        </div>
+
+                        <!-- VAT Number -->
+                        <div>
+                            <label class="vm-label">
+                                <span class="vm-label-text">VAT Registration No</span>
+                            </label>
+                            <input type="text" id="txtVATNo" class="vm-input" placeholder="State VAT / Legacy TIN" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ───────────────────────────────────────────────────────────── -->
+            <!-- STEP 5: BANK DETAILS (MULTIPLE BANK ACCOUNTS TABLE)           -->
+            <!-- ───────────────────────────────────────────────────────────── -->
+            <div id="stepContent5" class="step-panel space-y-6" style="display: none;">
+                <div class="vm-section-card">
+                    <div class="vm-section-header">
+                        <div>
+                            <h2 class="vm-section-title">
+                                <i class="fas fa-university"></i>
+                                <span>Vendor Bank Accounts (Multiple Accounts Supported)</span>
+                            </h2>
+                            <p class="text-xs text-[var(--vm-text-muted)] mt-0.5">Register one or more bank accounts. Designate the primary account using the Default selector.</p>
+                        </div>
+                        <button type="button" onclick="addBankRow()" class="btn-vm-primary !text-xs !py-1.5 !px-3.5 text-white transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+                            <i class="fas fa-plus text-xs"></i> Add Bank Account
+                        </button>
+                    </div>
+
+                    <div class="rounded-xl border border-[var(--vm-border)] overflow-hidden shadow-2xs">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs border-collapse" id="tblBankAccounts">
+                                <thead>
+                                    <tr class="bg-slate-50/80 dark:bg-slate-800/60 border-b border-[var(--vm-border)] text-[var(--vm-text-muted)] font-bold uppercase text-[10px] tracking-wider">
+                                        <th class="py-3 px-3 text-center w-[40px]">#</th>
+                                        <th class="py-3 px-3 text-center w-[80px]" title="Designate as primary disbursement account">Default</th>
+                                        <th class="py-3 px-3 min-w-[170px]">Account Holder Name</th>
+                                        <th class="py-3 px-3 min-w-[170px]">Account Number <span class="text-rose-500">*</span></th>
+                                        <th class="py-3 px-3 min-w-[130px]">Account Type <span class="text-rose-500">*</span></th>
+                                        <th class="py-3 px-3 min-w-[160px]">Bank Name <span class="text-rose-500">*</span></th>
+                                        <th class="py-3 px-3 min-w-[140px]">Branch Name <span class="text-rose-500">*</span></th>
+                                        <th class="py-3 px-3 min-w-[110px]">Branch Code <span class="text-rose-500">*</span></th>
+                                        <th class="py-3 px-3 min-w-[130px]">IFSC Code <span class="text-rose-500">*</span></th>
+                                        <th class="py-3 px-3 min-w-[110px]">MICR Code</th>
+                                        <th class="py-3 px-2 text-center w-[50px]">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tblBankBody" class="divide-y divide-[var(--vm-border)]">
+                                    <!-- Dynamic bank rows inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-[var(--vm-primary)]/5 border border-[var(--vm-primary)]/20 text-[var(--vm-text)] text-xs flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-[var(--vm-primary)]/10 text-[var(--vm-primary)] flex items-center justify-center shrink-0">
+                        <i class="fas fa-shield-alt text-sm"></i>
+                    </div>
+                    <span>Bank account details are verified against bank records. Electronic funds transfers (NEFT/RTGS) will be settled to the marked <strong>Default</strong> bank account.</span>
+                </div>
+            </div>
+
+            <!-- ───────────────────────────────────────────────────────────── -->
+            <!-- STEP 6: BRANCH DETAILS (MULTIPLE ENTRY - OPTIONAL)            -->
+            <!-- ───────────────────────────────────────────────────────────── -->
+            <div id="stepContent6" class="step-panel space-y-6" style="display: none;">
+                <div class="vm-section-card">
+                    <div class="vm-section-header">
+                        <div>
+                            <h2 class="vm-section-title">
+                                <i class="fas fa-code-branch"></i>
+                                <span>Vendor Branch Network (Optional Multiple Offices & Sites)</span>
+                            </h2>
+                            <p class="text-xs text-[var(--vm-text-muted)] mt-0.5">Optional: Record secondary regional offices, warehouses, delivery depots, and state GSTINs</p>
+                        </div>
+                        <button type="button" onclick="addBranchRow()" class="btn-vm-primary !text-xs !py-1.5 !px-3 text-white transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+                            <i class="fas fa-plus text-xs"></i> Add Branch Row
+                        </button>
+                    </div>
+
+                    <div class="rounded-xl border border-[var(--vm-border)] overflow-hidden shadow-2xs">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50/80 dark:bg-slate-800/60 border-b border-[var(--vm-border)] text-[var(--vm-text-muted)] font-bold uppercase text-[10px] tracking-wider">
+                                        <th class="py-3 px-3 text-center w-[40px]">#</th>
+                                        <th class="py-3 px-3 min-w-[160px]">Branch Name</th>
+                                        <th class="py-3 px-3 min-w-[200px]">Address</th>
+                                        <th class="py-3 px-3 min-w-[120px]">City</th>
+                                        <th class="py-3 px-3 min-w-[90px]">Pincode</th>
+                                        <th class="py-3 px-3 min-w-[120px]">Phone No</th>
+                                        <th class="py-3 px-3 min-w-[150px]">GST IN</th>
+                                        <th class="py-3 px-3 min-w-[110px]">TIN No</th>
+                                        <th class="py-3 px-3 min-w-[95px]">Status</th>
+                                        <th class="py-3 px-2 text-center w-[50px]">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tblBranchBody" class="divide-y divide-[var(--vm-border)]">
+                                    <!-- Dynamic branch rows inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ───────────────────────────────────────────────────────────── -->
+            <!-- STICKY BOTTOM WIZARD ACTION BAR                               -->
+            <!-- ───────────────────────────────────────────────────────────── -->
+            <div class="vm-sticky-action-bar flex flex-col sm:flex-row items-center justify-between gap-4">
+                <!-- Left: Quick Navigation -->
+                <div class="flex items-center gap-2.5 w-full sm:w-auto">
+                    <span class="text-xs font-bold text-[var(--vm-text-muted)]">Jump to:</span>
+                    <select id="ddlJumpStep" class="vm-select !h-[34px] !w-auto text-xs font-bold cursor-pointer" onchange="jumpToStep(parseInt(this.value))">
+                        <option value="1">1. General Details</option>
+                        <option value="2">2. Address Details</option>
+                        <option value="3">3. Contact Details</option>
+                        <option value="4">4. Statutory Details</option>
+                        <option value="5">5. Bank Details</option>
+                        <option value="6">6. Branch Details</option>
+                    </select>
+
+                    <button type="button" id="btnStepBack" onclick="goPreviousStep()" class="btn-back-step !py-1.5 !px-3 !text-xs cursor-pointer" style="display: none;">
+                        <i class="fas fa-arrow-left mr-1"></i> Back
+                    </button>
+                </div>
+
+                <!-- Center: Step Indicator -->
+                <div class="hidden md:flex items-center gap-1.5 text-xs text-[var(--vm-text-muted)] font-semibold">
+                    <span id="lblStepSummary">Step 1 of 6: General Details</span>
+                </div>
+
+                <!-- Right: Save & Progress Actions -->
+                <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+                    <button type="button" onclick="showListView()" class="btn-clear !text-xs !py-2 !px-3.5 cursor-pointer">
+                        <i class="fas fa-times mr-1"></i> Cancel
+                    </button>
+                    <button type="button" id="btnSaveNext" onclick="handleSaveAndNext()" class="btn-save-next cursor-pointer">
+                        <span>Save & Next</span> <i class="fas fa-arrow-right ml-1"></i>
+                    </button>
+                    <button type="button" id="btnSaveExit" onclick="handleSaveAndExit()" class="btn-save-exit cursor-pointer">
+                        <i class="fas fa-check-circle mr-1"></i> <span>Save & Exit</span>
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- MODAL: QUICK ADD VENDOR TYPE                                            -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <div id="modalQuickType" class="fixed inset-0 z-[9999] overflow-y-auto" style="display: none; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);">
+        <div class="min-h-full flex items-center justify-center p-4 text-center">
+            <div class="relative w-full max-w-md bg-[var(--vm-surface)] rounded-2xl shadow-2xl border border-[var(--vm-border)] text-left transform transition-all my-8 overflow-hidden inline-block p-6">
+                <div class="flex items-center justify-between border-b border-[var(--vm-border)] pb-3 mb-4">
+                    <h3 class="text-sm font-bold text-[var(--vm-text)] flex items-center gap-2">
+                        <i class="fas fa-tags text-[var(--vm-primary)]"></i> Add New Vendor Type
+                    </h3>
+                    <button type="button" onclick="closeQuickTypeModal()" class="text-[var(--vm-text-muted)] hover:text-[var(--vm-text)]">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="space-y-4 text-xs">
+                    <div>
+                        <label class="vm-label">
+                            <span class="vm-label-text">Type Name <span class="req">*</span></span>
+                        </label>
+                        <input type="text" id="txtQuickTypeName" class="vm-input font-semibold" placeholder="e.g. Material Supplier, Subcontractor, Consultant" />
+                    </div>
+                    <div>
+                        <label class="vm-label">
+                            <span class="vm-label-text">Type Code (Optional)</span>
+                        </label>
+                        <input type="text" id="txtQuickTypeCode" class="vm-input uppercase font-mono" placeholder="e.g. VTM-08" />
+                    </div>
+                    <div class="pt-3 border-t border-[var(--vm-border)] flex justify-end gap-2.5">
+                        <button type="button" onclick="closeQuickTypeModal()" class="btn-cancel !text-xs !py-1.5 !px-3 cursor-pointer">Cancel</button>
+                        <button type="button" onclick="submitQuickType()" class="btn-vm-primary !text-xs !py-1.5 !px-4 text-white cursor-pointer">Save Type</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- MODAL: QUICK ADD VENDOR CATEGORY                                        -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <div id="modalQuickCategory" class="fixed inset-0 z-[9999] overflow-y-auto" style="display: none; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);">
+        <div class="min-h-full flex items-center justify-center p-4 text-center">
+            <div class="relative w-full max-w-md bg-[var(--vm-surface)] rounded-2xl shadow-2xl border border-[var(--vm-border)] text-left transform transition-all my-8 overflow-hidden inline-block p-6">
+                <div class="flex items-center justify-between border-b border-[var(--vm-border)] pb-3 mb-4">
+                    <h3 class="text-sm font-bold text-[var(--vm-text)] flex items-center gap-2">
+                        <i class="fas fa-boxes text-[var(--vm-primary)]"></i> Add New Vendor Category
+                    </h3>
+                    <button type="button" onclick="closeQuickCategoryModal()" class="text-[var(--vm-text-muted)] hover:text-[var(--vm-text)]">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="space-y-4 text-xs">
+                    <div>
+                        <label class="vm-label">
+                            <span class="vm-label-text">Category Name <span class="req">*</span></span>
+                        </label>
+                        <input type="text" id="txtQuickCategoryName" class="vm-input font-semibold" placeholder="e.g. Electrical & Instrumentation" />
+                    </div>
+                    <div>
+                        <label class="vm-label">
+                            <span class="vm-label-text">Category Code (Optional)</span>
+                        </label>
+                        <input type="text" id="txtQuickCategoryCode" class="vm-input uppercase font-mono" placeholder="e.g. VCM-12" />
+                    </div>
+                    <div class="pt-3 border-t border-[var(--vm-border)] flex justify-end gap-2.5">
+                        <button type="button" onclick="closeQuickCategoryModal()" class="btn-cancel !text-xs !py-1.5 !px-3 cursor-pointer">Cancel</button>
+                        <button type="button" onclick="submitQuickCategory()" class="btn-vm-primary !text-xs !py-1.5 !px-4 text-white cursor-pointer">Save Category</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- MODAL: VIEW VENDOR EXECUTIVE DOSSIER                                    -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <div id="modalViewVendor" class="fixed inset-0 z-[9999] overflow-y-auto" style="display: none; background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px);">
+        <div class="min-h-full flex items-center justify-center p-3 sm:p-5 text-center">
+            <div class="relative w-full max-w-4xl bg-[var(--vm-surface)] rounded-2xl shadow-2xl border border-[var(--vm-border)] text-left transform transition-all my-8 overflow-hidden inline-block p-6 sm:p-7">
+                <div class="flex items-center justify-between border-b border-[var(--vm-border)] pb-4 mb-5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-[var(--vm-primary)]/10 text-[var(--vm-primary)] flex items-center justify-center text-lg font-bold">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-[var(--vm-text)]" id="lblViewVendorName">Vendor Dossier</h3>
+                            <p class="text-xs text-[var(--vm-text-muted)] mt-0.5" id="lblViewVendorCode">VND-0000</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeViewModal()" class="text-[var(--vm-text-muted)] hover:text-[var(--vm-text)] p-1">
+                        <i class="fas fa-times text-base"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-4.5 text-xs max-h-[70vh] overflow-y-auto pr-2" id="boxViewVendorContent">
+                    <!-- Dynamic summary inserted here -->
+                </div>
+
+                <div class="pt-4 border-t border-[var(--vm-border)] flex justify-end gap-2.5 mt-5">
+                    <button type="button" onclick="closeViewModal()" class="btn-cancel !text-xs !py-2 !px-4 cursor-pointer">Close</button>
+                    <button type="button" id="btnEditFromView" class="btn-vm-primary !text-xs !py-2 !px-4 text-white cursor-pointer flex items-center gap-1.5">
+                        <i class="fas fa-edit mr-1"></i> Edit This Vendor
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        // ═══════════════════════════════════════════════════════════════════════
+        // VENDOR MASTER CLIENT CONTROLLER (DEVTREME DATAGRID INTEGRATION)
+        // ═══════════════════════════════════════════════════════════════════════
+        let currentStep = 1;
+        let vendorDataCache = [];
+        let bankRowCounter = 0;
+        let branchRowCounter = 0;
+        let gridInstance = null;
+
+        const stepNames = [
+            "General Details",
+            "Address Details",
+            "Contact Details",
+            "Statutory & GST",
+            "Bank Details",
+            "Branch Details"
+        ];
+
+        $(document).ready(function () {
+            initSelect2Dropdowns();
+            initVendorGrid();
+            loadDropdownMasters();
+            loadVendorData();
+            initLiveValidationListeners();
+        });
+
+        function initSelect2Dropdowns() {
+            if ($.fn.select2) {
+                $('.vm-select2').select2({
+                    width: '100%',
+                    dropdownAutoWidth: true
+                });
+            }
+        }
+
+        function initLiveValidationListeners() {
+            // Live clear validation styling as the user types
+            $(document).on('input', 'input, textarea', function () {
+                const el = this;
+                $(el).removeClass('is-invalid shake-err vm-focus-pulse');
+                $(el).closest('.vm-input-icon-wrap, .vm-input-code-wrap').removeClass('is-invalid shake-err vm-focus-pulse');
+                $(el).siblings('.vm-val-msg').hide();
+                $(el).closest('.vm-input-icon-wrap, .vm-input-code-wrap').siblings('.vm-val-msg').hide();
+            });
+
+            // Live clear validation styling on select dropdown change
+            $(document).on('change', 'select', function () {
+                $(this).removeClass('is-invalid shake-err vm-focus-pulse');
+                $(this).next('.select2-container').find('.select2-selection').removeClass('is-invalid vm-focus-pulse');
+                $(this).siblings('.vm-val-msg').hide();
+            });
+
+            // Live auto-uppercase alphanumeric fields
+            $(document).on('input', '#txtPanNo', function () {
+                this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            });
+            $(document).on('input', '#txtGSTIn', function () {
+                this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            });
+            $(document).on('input', '.bank-ifsc', function () {
+                this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            });
+        }
+
+        // ── 0. FULL PAGE LOADER HELPERS ───────────────────────────────────────
+        function showFullPageLoader(text = "Loading Vendor Management...") {
+            const loader = document.getElementById("full-page-loader");
+            if (loader) {
+                const textEl = loader.querySelector(".loader-text");
+                if (textEl) textEl.textContent = text;
+                loader.classList.remove("hidden");
+            }
+        }
+
+        function hideFullPageLoader() {
+            const loader = document.getElementById("full-page-loader");
+            if (loader) {
+                loader.classList.add("hidden");
+            }
+        }
+
+        // ── 1. DROPDOWN MASTERS LOADER ────────────────────────────────────────
+        function loadDropdownMasters() {
+            // Load Vendor Types
+            $.ajax({
+                url: '/VendorMaster/GetVendorTypes',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (res && res.success && res.data) {
+                        const $ddlType = $('#ddlVendorType');
+                        $ddlType.empty().append('<option value="">Select Vendor Type</option>');
+
+                        res.data.forEach(t => {
+                            $ddlType.append(new Option(t.vendorTypeName, t.vendorTypeId));
+                        });
+                        $ddlType.trigger('change.select2');
+                    }
+                },
+                error: function (err) {
+                    console.error("Error loading types:", err);
+                }
+            });
+
+            // Load Vendor Categories
+            $.ajax({
+                url: '/VendorMaster/GetVendorCategories',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    if (res && res.success && res.data) {
+                        const $ddlCat = $('#ddlVendorCategory');
+                        $ddlCat.empty().append('<option value="">Select Vendor Category</option>');
+
+                        res.data.forEach(c => {
+                            $ddlCat.append(new Option(c.vendorCategoryName, c.vendorCategoryId));
+                        });
+                        $ddlCat.trigger('change.select2');
+                    }
+                },
+                error: function (err) {
+                    console.error("Error loading categories:", err);
+                }
+            });
+        }
+
+        // ── 2. DEVTREME DATAGRID INITIALIZATION & DATA BINDING ────────────────
+        function initVendorGrid() {
+            gridInstance = $("#dxGridVendorMaster").dxDataGrid({
+                dataSource: [],
+                keyExpr: "vendorId",
+                showBorders: true,
+                showRowLines: true,
+                rowAlternationEnabled: true,
+                hoverStateEnabled: true,
+                columnAutoWidth: true,
+                wordWrapEnabled: false,
+                allowColumnResizing: true,
+                columnResizingMode: "widget",
+                allowColumnReordering: true,
+                searchPanel: {
+                    visible: true,
+                    width: 280,
+                    placeholder: "Search vendors, GST, PAN..."
+                },
+                headerFilter: {
+                    visible: true
+                },
+                export: {
+                    enabled: true,
+                    fileName: "Vendor_Directory_VGN_ERP_" + new Date().toISOString().slice(0, 10)
+                },
+                paging: {
+                    pageSize: 15
+                },
+                pager: {
+                    visible: true,
+                    showPageSizeSelector: true,
+                    allowedPageSizes: [10, 15, 25, 50, 100],
+                    showInfo: true,
+                    showNavigationButtons: true
+                },
+                columns: [
+                    {
+                        caption: "Actions",
+                        width: 110,
+                        alignment: "center",
+                        allowFiltering: false,
+                        allowSorting: false,
+                        allowExporting: false,
+                        cellTemplate: function (container, options) {
+                            var vId = options.data.vendorId;
+                            var vName = (options.data.vendorName || '').replace(/'/g, "\\'");
+
+                            // Standard Colorful Action Buttons: View = Teal, Edit = Blue, Delete = Rose
+                            var $btnView = $(`
+                                <button type="button" class="btn-grid-action btn-action-view mr-1" title="View Full Dossier">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            `).on('click', function () {
+                                viewVendor(vId);
+                            });
+
+                            var $btnEdit = $(`
+                                <button type="button" class="btn-grid-action btn-action-edit mr-1" title="Edit Vendor">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            `).on('click', function () {
+                                editVendor(vId);
+                            });
+
+                            var $btnDelete = $(`
+                                <button type="button" class="btn-grid-action btn-action-delete" title="Deactivate Vendor">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            `).on('click', function () {
+                                deleteVendor(vId, vName);
+                            });
+
+                            container.append($btnView).append($btnEdit).append($btnDelete);
+                        }
+                    },
+                    {
+                        dataField: "vendorCode",
+                        caption: "Code",
+                        width: 120,
+                        cellTemplate: function (container, options) {
+                            var code = options.data.vendorCode || '-';
+                            $(`<span class="px-2.5 py-1 rounded-md bg-[var(--vm-primary)]/10 text-[var(--vm-primary)] font-mono font-bold text-xs border border-[var(--vm-primary)]/20 shadow-2xs">${code}</span>`).appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "vendorName",
+                        caption: "Vendor Name",
+                        minWidth: 230,
+                        cellTemplate: function (container, options) {
+                            var name = options.data.vendorName || '-';
+                            var workNature = options.data.workNature ? `<span class="text-[10px] text-[var(--vm-text-muted)] block font-medium mt-0.5"><i class="fas fa-briefcase mr-1 opacity-70"></i>${options.data.workNature}</span>` : '';
+                            $(`<div><span class="font-bold text-[var(--vm-text)] text-xs">${name}</span>${workNature}</div>`).appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "vendorTypeName",
+                        caption: "Vendor Type",
+                        minWidth: 140,
+                        cellTemplate: function (container, options) {
+                            var type = options.data.vendorTypeName || '-';
+                            $(`<span class="font-medium text-[var(--vm-text)] text-xs">${type}</span>`).appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "vendorCategoryName",
+                        caption: "Category",
+                        minWidth: 140,
+                        cellTemplate: function (container, options) {
+                            var cat = options.data.vendorCategoryName || '-';
+                            $(`<span class="text-[var(--vm-text-muted)] text-xs">${cat}</span>`).appendTo(container);
+                        }
+                    },
+                    {
+                        caption: "Location",
+                        dataField: "city",
+                        minWidth: 140,
+                        cellTemplate: function (container, options) {
+                            var city = options.data.city || '-';
+                            var state = options.data.state || '';
+                            $(`<div><span class="font-medium text-xs text-[var(--vm-text)]">${city}</span><span class="text-[10px] text-[var(--vm-text-muted)] block">${state}</span></div>`).appendTo(container);
+                        }
+                    },
+                    {
+                        caption: "Contact Info",
+                        dataField: "contactPerson",
+                        minWidth: 160,
+                        cellTemplate: function (container, options) {
+                            var person = options.data.contactPerson || '-';
+                            var phone = options.data.phoneNumber || options.data.contactNo || '';
+                            $(`<div><span class="font-semibold text-xs text-[var(--vm-text)]">${person}</span><span class="text-[10px] text-[var(--vm-text-muted)] block">${phone}</span></div>`).appendTo(container);
+                        }
+                    },
+                    {
+                        caption: "GSTIN / PAN",
+                        dataField: "gstIn",
+                        minWidth: 160,
+                        cellTemplate: function (container, options) {
+                            var gst = options.data.gstIn;
+                            var pan = options.data.panNo ? `<span class="text-[10px] font-mono text-[var(--vm-text-muted)] block">PAN: ${options.data.panNo}</span>` : '';
+                            if (gst && gst.trim().length > 0) {
+                                $(`<div>
+                                    <a href="https://services.gst.gov.in/services/searchtp" target="_blank" rel="noopener noreferrer" class="font-mono font-bold text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline inline-flex items-center gap-1 cursor-pointer" title="Verify Taxpayer on Government GST Portal (Opens in a new tab)">
+                                        <span>${gst}</span>
+                                        <i class="fas fa-external-link-alt text-[9px] opacity-75"></i>
+                                    </a>
+                                    ${pan}
+                                </div>`).appendTo(container);
+                            } else {
+                                $(`<div><span class="font-mono text-xs text-[var(--vm-text-muted)]">-</span>${pan}</div>`).appendTo(container);
+                            }
+                        }
+                    },
+                    {
+                        caption: "Primary Bank",
+                        dataField: "primaryBankName",
+                        minWidth: 160,
+                        cellTemplate: function (container, options) {
+                            var bank = options.data.primaryBankName || '-';
+                            var ac = options.data.primaryAccountNo ? `<span class="text-[10px] font-mono text-[var(--vm-text-muted)] block">A/c: ${options.data.primaryAccountNo}</span>` : '';
+                            $(`<div><span class="font-semibold text-xs text-[var(--vm-text)]">${bank}</span>${ac}</div>`).appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "bankCount",
+                        caption: "Banks",
+                        width: 75,
+                        alignment: "center",
+                        cellTemplate: function (container, options) {
+                            var count = options.data.bankCount || 0;
+                            $(`<span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-900/60">${count}</span>`).appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "branchCount",
+                        caption: "Branches",
+                        width: 80,
+                        alignment: "center",
+                        cellTemplate: function (container, options) {
+                            var count = options.data.branchCount || 0;
+                            $(`<span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-300 dark:border-slate-700">${count}</span>`).appendTo(container);
+                        }
+                    },
+                    {
+                        dataField: "status",
+                        caption: "Status",
+                        width: 95,
+                        alignment: "center",
+                        cellTemplate: function (container, options) {
+                            var isInactive = options.data.status === '0' || (options.data.status || '').toLowerCase() === 'inactive';
+                            var badge = isInactive
+                                ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-900/60"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Inactive</span>`
+                                : `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/60"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Active</span>`;
+                            $(badge).appendTo(container);
+                        }
+                    }
+                ],
+                onContentReady: function (e) {
+                    if (window.vgnFitGridHeaders) {
+                        window.vgnFitGridHeaders(e.element[0]);
+                    }
+                }
+            }).dxDataGrid("instance");
+        }
+
+        // ── 3. VENDOR DATA LOADER & KPI STATS ─────────────────────────────────
+        function loadVendorData() {
+            showFullPageLoader("Fetching Vendor Directory...");
+
+            $.ajax({
+                url: '/VendorMaster/GetVendorList',
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    hideFullPageLoader();
+
+                    if (!res || !res.success) {
+                        showToast(res ? res.message : 'Error loading vendor directory', 'error');
+                        return;
+                    }
+
+                    vendorDataCache = res.data || [];
+                    document.getElementById("badgeVendorCount").innerText = `${vendorDataCache.length} Vendors`;
+
+                    // Update 4 KPI Stat Counters
+                    updateKpiStats(vendorDataCache);
+
+                    // Update DevExtreme Grid
+                    if (gridInstance) {
+                        gridInstance.option("dataSource", vendorDataCache);
+                        gridInstance.refresh();
+                    }
+                },
+                error: function (err) {
+                    hideFullPageLoader();
+                    console.error("Fetch error:", err);
+                    showToast("Failed to communicate with server.", "error");
+                }
+            });
+        }
+
+        function updateKpiStats(data) {
+            const total = data.length;
+            const active = data.filter(v => v.status === '1' || (v.status || '').toLowerCase() === 'active').length;
+            const gstRegistered = data.filter(v => (v.gstIn || '').trim().length > 0).length;
+            const totalBranches = data.reduce((acc, v) => acc + (v.branchCount || 0), 0);
+
+            document.getElementById("statTotalVendors").innerText = total;
+            document.getElementById("statApprovedVendors").innerText = active;
+            document.getElementById("statGstVendors").innerText = gstRegistered;
+            document.getElementById("statTotalBranches").innerText = totalBranches;
+        }
+
+        // ── 4. VIEW TOGGLING ──────────────────────────────────────────────────
+        function showListView() {
+            document.getElementById("viewVendorWizard").style.display = "none";
+            document.getElementById("viewVendorList").style.display = "block";
+            document.getElementById("badgeCurrentMode").innerText = "Directory View";
+            if (gridInstance) {
+                gridInstance.refresh();
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openCreateVendorWizard() {
+            resetWizardForm();
+            autoGenerateCode();
+            document.getElementById("viewVendorList").style.display = "none";
+            document.getElementById("viewVendorWizard").style.display = "block";
+            document.getElementById("badgeCurrentMode").innerText = "Create Vendor";
+            jumpToStep(1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ── 5. STEPPER NAVIGATION (UNBLOCKED - VALIDATION ONLY ON FINAL SAVE) ──
+        function jumpToStep(targetStep) {
+            if (targetStep < 1 || targetStep > 6) return;
+
+            // Hide all panels & update step cards
+            for (let i = 1; i <= 6; i++) {
+                const panel = document.getElementById(`stepContent${i}`);
+                if (panel) panel.style.display = "none";
+
+                const node = document.getElementById(`stepNode${i}`);
+                if (node) {
+                    node.classList.remove("active");
+                    const badge = node.querySelector(".vm-step-badge");
+                    const statusText = node.querySelector(".vm-step-status");
+
+                    if (i < targetStep) {
+                        // Completed state: Theme-consistent soft tint with checkmark (NO green!)
+                        node.classList.add("completed");
+                        if (badge) badge.innerHTML = `<i class="fas fa-check text-xs text-white"></i>`;
+                        if (statusText) statusText.textContent = "Done";
+                    } else if (i === targetStep) {
+                        // Active state: Filled with primary theme color
+                        node.classList.remove("completed");
+                        node.classList.add("active");
+                        if (badge) badge.innerText = i;
+                        if (statusText) statusText.textContent = "Active";
+                    } else {
+                        // Pending state
+                        node.classList.remove("completed");
+                        if (badge) badge.innerText = i;
+                        if (statusText) statusText.textContent = "Pending";
+                    }
+                }
+            }
+
+            // Show target panel
+            const targetPanel = document.getElementById(`stepContent${targetStep}`);
+            if (targetPanel) targetPanel.style.display = "block";
+
+            const targetNode = document.getElementById(`stepNode${targetStep}`);
+            if (targetNode) {
+                targetNode.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+
+            document.getElementById("ddlJumpStep").value = targetStep;
+            document.getElementById("lblStepSummary").innerText = `Step ${targetStep} of 6: ${stepNames[targetStep - 1]}`;
+
+            // Adjust back button visibility
+            const btnBack = document.getElementById("btnStepBack");
+            if (targetStep === 1) {
+                btnBack.style.display = "none";
+            } else {
+                btnBack.style.display = "inline-flex";
+            }
+
+            // Adjust Save & Next / Final Button Label
+            const btnNext = document.getElementById("btnSaveNext");
+            if (targetStep === 6) {
+                btnNext.innerHTML = `<span>Save All & Complete</span> <i class="fas fa-check-circle ml-1"></i>`;
+            } else {
+                btnNext.innerHTML = `<span>Save & Next</span> <i class="fas fa-arrow-right ml-1"></i>`;
+            }
+
+            currentStep = targetStep;
+            setTimeout(() => {
+                $(`#stepContent${targetStep} .vm-select2`).select2({ width: '100%' });
+            }, 60);
+            window.scrollTo({ top: 120, behavior: 'smooth' });
+        }
+
+        function goPreviousStep() {
+            if (currentStep > 1) {
+                jumpToStep(currentStep - 1);
+            }
+        }
+
+        // ── 6. COMPREHENSIVE PER-STEP & FULL FORM VALIDATIONS ─────────────────
+        function isValidEmail(email) {
+            if (!email || typeof email !== 'string') return false;
+            const val = email.trim();
+            if (val.length < 5 || val.length > 150) return false;
+            // Robust standard RFC pattern using Unicode \u0040 to avoid Razor compiler escaping conflicts
+            const regex = /^[a-zA-Z0-9._%+-]+[\u0040][a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            return regex.test(val);
+        }
+
+        function validateEmailInput(el) {
+            if (!el) return;
+            const val = (el.value || '').trim();
+            if (val && !isValidEmail(val)) {
+                el.classList.add("is-invalid");
+                $(el).closest('.vm-input-icon-wrap').addClass("is-invalid");
+                $(el).closest('.vm-input-icon-wrap').siblings('.vm-val-msg').show();
+            } else {
+                el.classList.remove("is-invalid", "shake-err", "vm-focus-pulse");
+                $(el).closest('.vm-input-icon-wrap').removeClass("is-invalid shake-err vm-focus-pulse");
+                $(el).closest('.vm-input-icon-wrap').siblings('.vm-val-msg').hide();
+            }
+        }
+
+        function highlightAndFocusElement(el) {
+            if (!el) return;
+            try {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } catch (e) {}
+
+            setTimeout(() => {
+                if (typeof el.focus === 'function') {
+                    el.focus();
+                }
+                el.classList.add('vm-focus-pulse');
+                $(el).closest('.vm-input-icon-wrap, .vm-input-code-wrap').addClass('vm-focus-pulse');
+
+                if ($(el).hasClass('vm-select2')) {
+                    const $s2Sel = $(el).next('.select2-container').find('.select2-selection');
+                    $s2Sel.addClass('vm-focus-pulse');
+                    try {
+                        $(el).select2('open');
+                    } catch (e) {}
+                }
+
+                $(el).one('input change focusout', function () {
+                    $(this).removeClass('vm-focus-pulse is-invalid shake-err');
+                    $(this).closest('.vm-input-icon-wrap, .vm-input-code-wrap').removeClass('vm-focus-pulse is-invalid shake-err');
+                    $(this).next('.select2-container').find('.select2-selection').removeClass('vm-focus-pulse is-invalid');
+                });
+            }, 250);
+        }
+
+        function showValidationSweetAlert(missingList, firstInvalidEl) {
+            if (!missingList || missingList.length === 0) return;
+
+            const listItemsHtml = missingList.slice(0, 8).map(m => `
+                <li style="margin-bottom: 7px; line-height: 1.45; text-align: left;">
+                    <span style="font-weight: 700; color: #b91c1c;">${m.label}:</span>
+                    <span style="color: #475569; font-style: italic; margin-left: 4px;">${m.example}</span>
+                </li>
+            `).join('');
+
+            const overflowNote = missingList.length > 8 
+                ? `<p style="font-size: 11px; color: #64748b; margin-top: 8px; text-align: left;">...and ${missingList.length - 8} more required field(s)</p>` 
+                : '';
+
+            if (typeof Swal !== "undefined") {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Required Information Missing',
+                    html: `
+                        <div style="font-size: 13px; text-align: left; padding: 4px 6px;">
+                            <p style="font-weight: 600; color: #1e293b; margin-bottom: 10px;">Please provide the following required details:</p>
+                            <ul style="list-style-type: disc; padding-left: 20px; max-height: 280px; overflow-y: auto; margin: 0;">
+                                ${listItemsHtml}
+                            </ul>
+                            ${overflowNote}
+                        </div>
+                    `,
+                    confirmButtonText: 'Fix Missing Fields',
+                    confirmButtonColor: 'var(--vm-primary, #a82024)',
+                    buttonsStyling: true,
+                    customClass: {
+                        confirmButton: 'btn-vm-primary !px-5 !py-2.5 !text-sm !font-bold !rounded-lg shadow-md'
+                    },
+                    allowOutsideClick: false
+                }).then(() => {
+                    highlightAndFocusElement(firstInvalidEl);
+                });
+            } else {
+                alert("Please complete required fields:\n" + missingList.map(m => `- ${m.label}: ${m.example}`).join('\n'));
+                highlightAndFocusElement(firstInvalidEl);
+            }
+        }
+
+        function validateStepFields(step) {
+            const panel = document.getElementById(`stepContent${step}`);
+            if (panel) {
+                panel.querySelectorAll(".is-invalid").forEach(el => el.classList.remove("is-invalid", "shake-err", "vm-focus-pulse"));
+                panel.querySelectorAll(".select2-selection").forEach(el => el.classList.remove("vm-focus-pulse"));
+                panel.querySelectorAll(".vm-val-msg").forEach(el => el.style.display = "none");
+            }
+
+            let isValid = true;
+            let missingList = [];
+            let firstInvalidEl = null;
+
+            function markStepError(el, fieldLabel, exampleText) {
+                if (el) {
+                    el.classList.add("is-invalid", "shake-err");
+                    const $el = $(el);
+                    $el.closest('.vm-input-icon-wrap, .vm-input-code-wrap').addClass("is-invalid shake-err");
+                    if ($el.hasClass('vm-select2')) {
+                        $el.next('.select2-container').find('.select2-selection').addClass("is-invalid");
+                    }
+                    $el.siblings('.vm-val-msg').show();
+                    $el.closest('.vm-input-icon-wrap, .vm-input-code-wrap').siblings('.vm-val-msg').show();
+
+                    if (!firstInvalidEl) {
+                        firstInvalidEl = el;
+                    }
+                }
+                isValid = false;
+                missingList.push({ label: fieldLabel, example: exampleText, element: el });
+            }
+
+            if (step === 1) {
+                const codeEl = document.getElementById("txtVendorCode");
+                if (!codeEl || !codeEl.value.trim()) markStepError(codeEl, "Vendor Code", "e.g. VND-0001 (or click Auto)");
+
+                const nameEl = document.getElementById("txtVendorName");
+                if (!nameEl || !nameEl.value.trim()) markStepError(nameEl, "Legal Entity / Vendor Name", "e.g. ABC Infra Projects Pvt Ltd");
+
+                const emailEl = document.getElementById("txtEmailId");
+                const emailVal = emailEl ? emailEl.value.trim() : "";
+                if (!emailVal || !isValidEmail(emailVal)) {
+                    markStepError(emailEl, "Primary Official Email", "e.g. orders@@vendor.com (must be a valid email format)");
+                }
+
+                const typeEl = document.getElementById("ddlVendorType");
+                if (!typeEl || !typeEl.value) markStepError(typeEl, "Vendor Type", "Select a Vendor Type from the dropdown");
+
+                const catEl = document.getElementById("ddlVendorCategory");
+                if (!catEl || !catEl.value) markStepError(catEl, "Vendor Category", "Select a Vendor Category from the dropdown");
+
+                const panEl = document.getElementById("txtPanNo");
+                const panVal = panEl ? panEl.value.trim().toUpperCase().replace(/\s+/g, '') : "";
+                if (panEl) panEl.value = panVal;
+                const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+                if (!panVal || !panRegex.test(panVal)) {
+                    markStepError(panEl, "PAN Number", "e.g. ABCDE1234F (10 uppercase characters: 5 letters, 4 numbers, 1 letter)");
+                }
+
+                const panTypeEl = document.getElementById("ddlPanType");
+                if (!panTypeEl || !panTypeEl.value) markStepError(panTypeEl, "PAN Type", "Select PAN Type (Company, Individual, LLP, etc.)");
+            } else if (step === 2) {
+                const cityEl = document.getElementById("txtCity");
+                if (!cityEl || !cityEl.value.trim()) markStepError(cityEl, "City", "e.g. Chennai, Bangalore");
+            } else if (step === 3) {
+                const contactPersonEl = document.getElementById("txtContactPerson");
+                if (!contactPersonEl || !contactPersonEl.value.trim()) markStepError(contactPersonEl, "Contact Person Name", "e.g. Ramesh Kumar");
+
+                const contactNoEl = document.getElementById("txtContactNo");
+                const contactPhoneVal = contactNoEl ? contactNoEl.value.trim() : "";
+                if (!contactPhoneVal) markStepError(contactNoEl, "Contact Phone / Mobile", "e.g. 9840012345");
+
+                const contactEmailEl = document.getElementById("txtContactEmail");
+                const contactEmailVal = contactEmailEl ? contactEmailEl.value.trim() : "";
+                if (!contactEmailVal || !isValidEmail(contactEmailVal)) {
+                    markStepError(contactEmailEl, "Contact Direct Email", "e.g. representative@@vendor.com (must be a valid email format)");
+                }
+            } else if (step === 5) {
+                const bankRows = document.querySelectorAll(".bank-entry-row");
+                if (bankRows.length === 0) {
+                    markStepError(document.getElementById("tblBankAccounts"), "Bank Accounts", "At least one Bank Account is required");
+                } else {
+                    const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+                    bankRows.forEach((r, idx) => {
+                        const acEl = r.querySelector(".bank-acno");
+                        const typeEl = r.querySelector(".bank-actype");
+                        const nameEl = r.querySelector(".bank-name");
+                        const brNameEl = r.querySelector(".bank-brname");
+                        const brCodeEl = r.querySelector(".bank-brcode");
+                        const ifscEl = r.querySelector(".bank-ifsc");
+
+                        if (!acEl || !acEl.value.trim()) markStepError(acEl, `Bank #${idx + 1} Account Number`, "e.g. 50200012345678");
+                        if (!typeEl || !typeEl.value.trim()) markStepError(typeEl, `Bank #${idx + 1} Account Type`, "e.g. Current A/c");
+                        if (!nameEl || !nameEl.value.trim()) markStepError(nameEl, `Bank #${idx + 1} Bank Name`, "e.g. HDFC Bank, SBI");
+
+                        const ifscVal = ifscEl ? ifscEl.value.trim().toUpperCase().replace(/\s+/g, '') : '';
+                        if (ifscEl) ifscEl.value = ifscVal;
+                        if (!ifscVal || !ifscRegex.test(ifscVal)) {
+                            markStepError(ifscEl, `Bank #${idx + 1} IFSC Code`, "e.g. HDFC0001234 (11 alphanumeric characters)");
+                        } else {
+                            if (brCodeEl && !brCodeEl.value.trim() && ifscVal.length === 11) {
+                                brCodeEl.value = ifscVal.substring(5);
+                            }
+                            if (brNameEl && !brNameEl.value.trim()) {
+                                brNameEl.value = "Main Branch";
+                            }
+                        }
+                    });
+                }
+            }
+
+            return {
+                isValid: isValid,
+                missingList: missingList,
+                firstInvalidEl: firstInvalidEl
+            };
+        }
+
+        function handleSaveAndNext() {
+            const stepRes = validateStepFields(currentStep);
+            if (!stepRes.isValid) {
+                showValidationSweetAlert(stepRes.missingList, stepRes.firstInvalidEl);
+                return;
+            }
+
+            const currentNode = document.getElementById(`stepNode${currentStep}`);
+            if (currentNode) currentNode.classList.add("completed");
+
+            if (currentStep < 6) {
+                jumpToStep(currentStep + 1);
+            } else {
+                submitVendorForm();
+            }
+        }
+
+        function handleSaveAndExit() {
+            if (validateFullVendorForm()) {
+                submitVendorForm();
+            }
+        }
+
+        function validateFullVendorForm() {
+            document.querySelectorAll(".is-invalid").forEach(el => el.classList.remove("is-invalid", "shake-err", "vm-focus-pulse"));
+            document.querySelectorAll(".select2-selection").forEach(el => el.classList.remove("vm-focus-pulse"));
+
+            let allMissing = [];
+            let firstErrorStep = null;
+            let firstInvalidEl = null;
+
+            for (let step = 1; step <= 6; step++) {
+                const stepRes = validateStepFields(step);
+                if (!stepRes.isValid) {
+                    if (!firstErrorStep) {
+                        firstErrorStep = step;
+                        firstInvalidEl = stepRes.firstInvalidEl;
+                    }
+                    allMissing = allMissing.concat(stepRes.missingList);
+                }
+            }
+
+            if (allMissing.length > 0) {
+                if (firstErrorStep && firstErrorStep !== currentStep) {
+                    jumpToStep(firstErrorStep);
+                }
+                showValidationSweetAlert(allMissing, firstInvalidEl);
+                return false;
+            }
+
+            return true;
+        }
+
+        function validatePanInput(el) {
+            if (!el) return;
+            const val = el.value.trim().toUpperCase().replace(/\s+/g, '');
+            el.value = val;
+            const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+            if (val && !panRegex.test(val)) {
+                el.classList.add("is-invalid");
+                showToast("PAN format is invalid (10 characters: 5 letters + 4 digits + 1 letter)", "warning");
+            } else {
+                el.classList.remove("is-invalid", "shake-err", "vm-focus-pulse");
+                $(el).siblings('.vm-val-msg').hide();
+            }
+        }
+
+        function validateGstInput(el) {
+            if (!el) return;
+            const val = el.value.trim().toUpperCase().replace(/\s+/g, '');
+            el.value = val;
+            const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+            if (val && !gstRegex.test(val)) {
+                el.classList.add("is-invalid");
+            } else {
+                el.classList.remove("is-invalid", "shake-err", "vm-focus-pulse");
+            }
+        }
+
+        // ── 7. MULTIPLE BANK ACCOUNTS ROW MANAGEMENT (STEP 5) ─────────────────
+        function addBankRow(b = null) {
+            bankRowCounter++;
+            const tbody = document.getElementById("tblBankBody");
+            const rowId = `bankRow_${bankRowCounter}`;
+
+            const isDefault = b ? (b.defaultBank === 'Yes' || b.defaultBank === '1' || b.defaultBank === 'True') : (bankRowCounter === 1);
+
+            const rowHtml = `
+                <tr id="${rowId}" class="bank-entry-row hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
+                    <td class="py-2.5 px-3 font-bold text-center text-[var(--vm-text-muted)]">${bankRowCounter}</td>
+                    <td class="py-2.5 px-2 text-center">
+                        <label class="vm-radio-container" title="Designate as primary disbursement account">
+                            <input type="radio" name="rdoDefaultBank" class="bank-default-radio" ${isDefault ? 'checked' : ''} />
+                            <span class="vm-radio-circle"></span>
+                            <span class="vm-radio-label">Default</span>
+                        </label>
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="text" class="vm-input bank-acholder !h-[34px] !text-xs" placeholder="Beneficiary Name" value="${b ? (b.accountHolderName || '') : ''}" />
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="text" class="vm-input bank-acno font-mono font-bold !h-[34px] !text-xs tracking-wider" placeholder="Account Number" value="${b ? (b.accountNo || '') : ''}" required />
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <select class="vm-select bank-actype font-semibold !h-[34px] !text-xs cursor-pointer">
+                            <option value="Current A/c" ${(!b || b.accountType === 'Current A/c') ? 'selected' : ''}>Current A/c</option>
+                            <option value="Saving A/c" ${(b && (b.accountType === 'Saving A/c' || b.accountType === 'Savings A/c')) ? 'selected' : ''}>Saving A/c</option>
+                            <option value="Cash Credit (CC)" ${(b && b.accountType === 'Cash Credit (CC)') ? 'selected' : ''}>Cash Credit (CC)</option>
+                            <option value="Overdraft (OD)" ${(b && b.accountType === 'Overdraft (OD)') ? 'selected' : ''}>Overdraft (OD)</option>
+                        </select>
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="text" class="vm-input bank-name font-semibold !h-[34px] !text-xs" placeholder="e.g. HDFC Bank, SBI" value="${b ? (b.bankName || '') : ''}" required />
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="text" class="vm-input bank-brname !h-[34px] !text-xs" placeholder="Branch Name" value="${b ? (b.branchName || '') : ''}" required />
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="text" class="vm-input bank-brcode !h-[34px] !text-xs font-mono" placeholder="Branch Code" value="${b ? (b.branchCode || '') : ''}" required />
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="text" class="vm-input bank-ifsc uppercase font-mono font-bold !h-[34px] !text-xs tracking-wider" placeholder="IFSC Code" maxlength="11" value="${b ? (b.ifscCode || '') : ''}" required />
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="text" class="vm-input bank-micr font-mono !h-[34px] !text-xs" placeholder="MICR" maxlength="9" value="${b ? (b.micrCode || '') : ''}" />
+                    </td>
+                    <td class="py-2.5 px-2 text-center">
+                        <button type="button" onclick="removeBankRow('${rowId}')" class="btn-grid-action btn-action-delete" title="Delete Bank Account">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            tbody.insertAdjacentHTML('beforeend', rowHtml);
+        }
+
+        function removeBankRow(rowId) {
+            const rows = document.querySelectorAll(".bank-entry-row");
+            if (rows.length <= 1) {
+                showToast("At least one bank account row must remain", "warning");
+                return;
+            }
+            const el = document.getElementById(rowId);
+            if (el) {
+                const wasDefault = el.querySelector(".bank-default-radio")?.checked;
+                el.remove();
+                if (wasDefault) {
+                    const firstRadio = document.querySelector(".bank-default-radio");
+                    if (firstRadio) firstRadio.checked = true;
+                }
+            }
+        }
+
+        function collectBanksData() {
+            const list = [];
+            const rows = document.querySelectorAll(".bank-entry-row");
+            rows.forEach(r => {
+                const acNo = r.querySelector(".bank-acno")?.value.trim();
+                if (acNo) {
+                    list.push({
+                        accountHolderName: r.querySelector(".bank-acholder")?.value.trim() || '',
+                        accountNo: acNo,
+                        accountType: r.querySelector(".bank-actype")?.value || 'Current A/c',
+                        bankName: r.querySelector(".bank-name")?.value.trim() || '',
+                        branchName: r.querySelector(".bank-brname")?.value.trim() || '',
+                        branchCode: r.querySelector(".bank-brcode")?.value.trim() || '',
+                        ifscCode: (r.querySelector(".bank-ifsc")?.value.trim() || '').toUpperCase(),
+                        micrCode: r.querySelector(".bank-micr")?.value.trim() || '',
+                        defaultBank: r.querySelector(".bank-default-radio")?.checked ? 'Yes' : 'No',
+                        status: '1'
+                    });
+                }
+            });
+            return list;
+        }
+
+        // ── 9. MULTIPLE BRANCHES ROW MANAGEMENT (STEP 6) ──────────────────────
+        function addBranchRow(b = null) {
+            branchRowCounter++;
+            const tbody = document.getElementById("tblBranchBody");
+            const rowId = `branchRow_${branchRowCounter}`;
+
+            const isBranchActive = !b || b.status === '1' || b.status === 'Active';
+
+            const rowHtml = `
+                <tr id="${rowId}" class="branch-entry-row hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
+                    <td class="py-2.5 px-3 font-bold text-center text-[var(--vm-text-muted)]">${branchRowCounter}</td>
+                    <td class="py-2.5 px-2">
+                        <input type="text" class="vm-input branch-name !h-[34px] !text-xs font-semibold" placeholder="e.g. Factory Unit / Site Office" value="${b ? (b.branchName || '') : ''}" />
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="text" class="vm-input branch-addr !h-[34px] !text-xs" placeholder="Full Branch Address" value="${b ? (b.address || '') : ''}" />
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="text" class="vm-input branch-city !h-[34px] !text-xs" placeholder="City" value="${b ? (b.city || '') : ''}" />
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="text" class="vm-input branch-pin !h-[34px] !text-xs font-mono" placeholder="Pincode" value="${b ? (b.pincode || '') : ''}" />
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="text" class="vm-input branch-phone !h-[34px] !text-xs" placeholder="Phone No" value="${b ? (b.phoneNo || '') : ''}" />
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="text" class="vm-input branch-gst !h-[34px] !text-xs uppercase font-mono font-bold" placeholder="Branch GSTIN" value="${b ? (b.gstIn || '') : ''}" />
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <input type="text" class="vm-input branch-tin !h-[34px] !text-xs" placeholder="TIN No" value="${b ? (b.tinNo || '') : ''}" />
+                    </td>
+                    <td class="py-2.5 px-2">
+                        <select class="vm-select branch-status !h-[34px] !text-xs font-bold cursor-pointer">
+                            <option value="1" ${isBranchActive ? 'selected' : ''}>Active</option>
+                            <option value="0" ${!isBranchActive ? 'selected' : ''}>Inactive</option>
+                        </select>
+                    </td>
+                    <td class="py-2.5 px-2 text-center">
+                        <button type="button" onclick="removeBranchRow('${rowId}')" class="btn-grid-action btn-action-delete" title="Delete Branch">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            tbody.insertAdjacentHTML('beforeend', rowHtml);
+        }
+
+        function removeBranchRow(rowId) {
+            const el = document.getElementById(rowId);
+            if (el) el.remove();
+        }
+
+        function collectBranchesData() {
+            const list = [];
+            const rows = document.querySelectorAll(".branch-entry-row");
+            rows.forEach(r => {
+                const name = r.querySelector(".branch-name")?.value.trim();
+                if (name) {
+                    list.push({
+                        branchName: name,
+                        address: r.querySelector(".branch-addr")?.value.trim() || '',
+                        city: r.querySelector(".branch-city")?.value.trim() || '',
+                        pincode: r.querySelector(".branch-pin")?.value.trim() || '',
+                        phoneNo: r.querySelector(".branch-phone")?.value.trim() || '',
+                        gstIn: (r.querySelector(".branch-gst")?.value.trim() || '').toUpperCase(),
+                        tinNo: r.querySelector(".branch-tin")?.value.trim() || '',
+                        status: r.querySelector(".branch-status")?.value === '0' ? '0' : '1'
+                    });
+                }
+            });
+            return list;
+        }
+
+        // ── 10. SUBMIT VENDOR FORM ─────────────────────────────────────────────
+        function submitVendorForm() {
+            if (!validateFullVendorForm()) return;
+
+            const vendorId = parseInt(document.getElementById("hdnVendorId").value) || 0;
+            const isNew = vendorId === 0;
+
+            const payload = {
+                vendorId: vendorId,
+                vendorCode: document.getElementById("txtVendorCode").value.trim(),
+                vendorName: document.getElementById("txtVendorName").value.trim(),
+                emailId: document.getElementById("txtEmailId").value.trim(),
+                workNature: document.getElementById("txtWorkNature").value.trim(),
+                vendorTypeId: document.getElementById("ddlVendorType").value,
+                vendorCategoryId: document.getElementById("ddlVendorCategory").value,
+                supplyType: document.getElementById("ddlSupplyType").value,
+                consultantType: document.getElementById("ddlConsultantType").value,
+                compnayType: document.getElementById("ddlCompnayType").value,
+                panNo: document.getElementById("txtPanNo").value.trim().toUpperCase(),
+                panType: document.getElementById("ddlPanType").value,
+                aadharNo: document.getElementById("txtAadharNo").value.trim(),
+                msme: document.getElementById("ddlMSME").value,
+                msmeNo: document.getElementById("txtMSMENo").value.trim(),
+
+                // Step 2: Address
+                address: document.getElementById("txtAddress").value.trim(),
+                city: document.getElementById("txtCity").value.trim(),
+                state: document.getElementById("txtState").value.trim(),
+                country: document.getElementById("txtCountry").value.trim(),
+                pincode: document.getElementById("txtPincode").value.trim(),
+                phoneNumber: document.getElementById("txtPhoneNumber").value.trim(),
+                chequeName: document.getElementById("txtChequeName").value.trim(),
+                category: document.getElementById("txtCategory").value.trim(),
+                orgType: document.getElementById("txtOrgType").value.trim(),
+
+                // Step 3: Contact
+                contactPerson: document.getElementById("txtContactPerson").value.trim(),
+                contactNo: document.getElementById("txtContactNo").value.trim(),
+                contactAddress: document.getElementById("txtContactAddress").value.trim(),
+                designation: document.getElementById("txtDesignation").value.trim(),
+                contactType: document.getElementById("ddlContactType").value,
+
+                // Step 4: Statutory
+                yearofEstablishment: document.getElementById("txtYearOfEstablishment").value.trim() || '0',
+                esiNo: document.getElementById("txtESINo").value.trim(),
+                epfNo: document.getElementById("txtEPFNo").value.trim(),
+                gstIn: document.getElementById("txtGSTIn").value.trim().toUpperCase(),
+                arnNo: document.getElementById("txtARNNo").value.trim(),
+                vendorType: document.getElementById("ddlGSTVendorType").value,
+                gstFiling: document.getElementById("ddlGSTFiling").value,
+                shopEstablishmentNo: document.getElementById("txtShopEstablishmentNo").value.trim(),
+                lwf: document.getElementById("txtLWF").value.trim(),
+                pTaxRegNo: document.getElementById("txtPTaxRegNo").value.trim(),
+                tdsAccNo: document.getElementById("txtTDSAccNo").value.trim(),
+                dutyFree: document.getElementById("ddlDutyFree").value,
+                vatNo: document.getElementById("txtVATNo").value.trim(),
+
+                // Step 5: Multiple Bank Accounts
+                banks: collectBanksData(),
+
+                // Step 6: Branches (Optional)
+                branches: collectBranchesData(),
+
+                // Status: always '1' for active
+                status: '1'
+            };
+
+            showFullPageLoader(isNew ? "Creating New Vendor..." : "Updating Vendor...");
+
+            fetch('/VendorMaster/SaveVendor', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(r => r.json())
+            .then(res => {
+                hideFullPageLoader();
+
+                if (res.success) {
+                    showToast(res.message || "Vendor saved successfully!", "success");
+                    showListView();
+                    loadVendorData();
+                } else {
+                    showToast(res.message || "Failed to save vendor", "error");
+                }
+            })
+            .catch(err => {
+                hideFullPageLoader();
+                console.error("Save error:", err);
+                showToast("Communication error while saving: " + err.message, "error");
+            });
+        }
+
+        // ── 11. EDIT VENDOR ───────────────────────────────────────────────────
+        function editVendor(id) {
+            showFullPageLoader("Loading Vendor Details...");
+
+            fetch(`/VendorMaster/GetVendorById?id=${id}`)
+                .then(r => r.json())
+                .then(res => {
+                    hideFullPageLoader();
+
+                    if (!res.success || !res.data) {
+                        showToast(res.message || "Failed to load vendor details", "error");
+                        return;
+                    }
+
+                    resetWizardForm();
+                    const v = res.data;
+
+                    document.getElementById("hdnVendorId").value = v.vendorId;
+                    document.getElementById("txtVendorCode").value = v.vendorCode || '';
+                    document.getElementById("txtVendorName").value = v.vendorName || '';
+                    document.getElementById("txtEmailId").value = v.emailId || '';
+                    document.getElementById("txtWorkNature").value = v.workNature || '';
+                    $('#ddlVendorType').val(v.vendorTypeId || '').trigger('change');
+                    $('#ddlVendorCategory').val(v.vendorCategoryId || '').trigger('change');
+                    $('#ddlSupplyType').val(v.supplyType || '').trigger('change');
+                    $('#ddlConsultantType').val(v.consultantType || '').trigger('change');
+                    $('#ddlCompnayType').val(v.compnayType || 'Private Limited').trigger('change');
+                    document.getElementById("txtPanNo").value = v.panNo || '';
+                    $('#ddlPanType').val(v.panType || 'Company').trigger('change');
+                    document.getElementById("txtAadharNo").value = v.aadharNo || '';
+                    $('#ddlMSME').val(v.msme || 'No').trigger('change');
+                    document.getElementById("txtMSMENo").value = v.msmeNo || '';
+
+                    // Step 2
+                    document.getElementById("txtAddress").value = v.address || '';
+                    document.getElementById("txtCity").value = v.city || 'Chennai';
+                    document.getElementById("txtState").value = v.state || 'Tamil Nadu';
+                    document.getElementById("txtCountry").value = v.country || 'India';
+                    document.getElementById("txtPincode").value = v.pincode || '600077';
+                    document.getElementById("txtPhoneNumber").value = v.phoneNumber || '';
+                    document.getElementById("txtChequeName").value = v.chequeName || '';
+                    document.getElementById("txtCategory").value = v.category || '';
+                    document.getElementById("txtOrgType").value = v.orgType || '';
+
+                    // Step 3
+                    document.getElementById("txtContactPerson").value = v.contactPerson || '';
+                    document.getElementById("txtContactNo").value = v.contactNo || '';
+                    document.getElementById("txtContactAddress").value = v.contactAddress || '';
+                    document.getElementById("txtDesignation").value = v.designation || '';
+                    document.getElementById("txtContactEmail").value = v.contactEmail || v.emailId || '';
+                    $('#ddlContactType').val(v.contactType || 'Primary person').trigger('change');
+
+                    // Step 4
+                    document.getElementById("txtYearOfEstablishment").value = v.yearofEstablishment || '0';
+                    document.getElementById("txtESINo").value = v.esiNo || '';
+                    document.getElementById("txtEPFNo").value = v.epfNo || '';
+                    document.getElementById("txtGSTIn").value = v.gstIn || '';
+                    document.getElementById("txtARNNo").value = v.arnNo || '';
+                    $('#ddlGSTVendorType').val(v.vendorType || 'Regular').trigger('change');
+                    $('#ddlGSTFiling').val(v.gstFiling || 'None').trigger('change');
+                    document.getElementById("txtShopEstablishmentNo").value = v.shopEstablishmentNo || '';
+                    document.getElementById("txtLWF").value = v.lwf || '';
+                    document.getElementById("txtPTaxRegNo").value = v.pTaxRegNo || '';
+                    document.getElementById("txtTDSAccNo").value = v.tdsAccNo || '';
+                    $('#ddlDutyFree').val(v.dutyFree || 'No').trigger('change');
+                    document.getElementById("txtVATNo").value = v.vatNo || '';
+
+                    // Step 5: Populate Banks
+                    document.getElementById("tblBankBody").innerHTML = '';
+                    bankRowCounter = 0;
+                    if (v.banks && v.banks.length > 0) {
+                        v.banks.forEach(b => addBankRow(b));
+                    } else {
+                        addBankRow();
+                    }
+
+                    // Step 6: Populate Branches
+                    document.getElementById("tblBranchBody").innerHTML = '';
+                    branchRowCounter = 0;
+                    if (v.branches && v.branches.length > 0) {
+                        v.branches.forEach(b => addBranchRow(b));
+                    }
+
+                    // Switch to wizard view
+                    document.getElementById("viewVendorList").style.display = "none";
+                    document.getElementById("viewVendorWizard").style.display = "block";
+                    document.getElementById("badgeCurrentMode").innerText = `Edit: ${v.vendorCode || v.vendorName}`;
+                    jumpToStep(1);
+                })
+                .catch(err => {
+                    hideFullPageLoader();
+                    console.error("Fetch vendor error:", err);
+                    showToast("Error loading vendor: " + err.message, "error");
+                });
+        }
+
+        // ── 12. VIEW VENDOR DOSSIER MODAL ─────────────────────────────────────
+        function viewVendor(id) {
+            showFullPageLoader("Opening Dossier...");
+
+            fetch(`/VendorMaster/GetVendorById?id=${id}`)
+                .then(r => r.json())
+                .then(res => {
+                    hideFullPageLoader();
+
+                    if (!res.success || !res.data) {
+                        showToast(res.message || "Failed to load vendor details", "error");
+                        return;
+                    }
+
+                    const v = res.data;
+                    const statusTag = (v.status === '1' || v.status === 'Active') ? 'Active' : 'Inactive';
+                    document.getElementById("lblViewVendorName").innerText = v.vendorName;
+                    document.getElementById("lblViewVendorCode").innerText = `${v.vendorCode || 'VND'} • ${v.vendorTypeName || 'Vendor'} • ${v.city || 'City'} • Status: ${statusTag}`;
+
+                    document.getElementById("btnEditFromView").onclick = function() {
+                        closeViewModal();
+                        editVendor(v.vendorId);
+                    };
+
+                    let bankHtml = '<p class="text-[var(--vm-text-muted)] italic py-2">No bank accounts registered.</p>';
+                    if (v.banks && v.banks.length > 0) {
+                        bankHtml = `
+                            <div class="overflow-x-auto mt-2 rounded-lg border border-[var(--vm-border)]">
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <tr class="bg-slate-100 dark:bg-slate-800 text-[10px] font-bold uppercase text-[var(--vm-text-muted)] border-b border-[var(--vm-border)]">
+                                        <th class="p-2">Default</th>
+                                        <th class="p-2">Bank Name</th>
+                                        <th class="p-2">Account No</th>
+                                        <th class="p-2">Type</th>
+                                        <th class="p-2">IFSC</th>
+                                        <th class="p-2">Branch</th>
+                                    </tr>
+                                    ${v.banks.map(b => `
+                                        <tr class="border-b border-[var(--vm-border)] last:border-0 hover:bg-slate-50/50">
+                                            <td class="p-2">${(b.defaultBank === 'Yes' || b.defaultBank === '1') ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">Default</span>' : '-'}</td>
+                                            <td class="p-2 font-semibold text-[var(--vm-text)]">${b.bankName || '-'}</td>
+                                            <td class="p-2 font-mono font-bold">${b.accountNo || '-'}</td>
+                                            <td class="p-2">${b.accountType || '-'}</td>
+                                            <td class="p-2 font-mono font-bold">${b.ifscCode || '-'}</td>
+                                            <td class="p-2">${b.branchName || '-'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </table>
+                            </div>
+                        `;
+                    }
+
+                    let branchHtml = '<p class="text-[var(--vm-text-muted)] italic py-2">No branch records registered for this vendor.</p>';
+                    if (v.branches && v.branches.length > 0) {
+                        branchHtml = `
+                            <div class="overflow-x-auto mt-2 rounded-lg border border-[var(--vm-border)]">
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <tr class="bg-slate-100 dark:bg-slate-800 text-[10px] font-bold uppercase text-[var(--vm-text-muted)] border-b border-[var(--vm-border)]">
+                                        <th class="p-2">Branch Name</th>
+                                        <th class="p-2">City</th>
+                                        <th class="p-2">Phone</th>
+                                        <th class="p-2">GSTIN</th>
+                                        <th class="p-2 text-center">Status</th>
+                                    </tr>
+                                    ${v.branches.map(b => `
+                                        <tr class="border-b border-[var(--vm-border)] last:border-0 hover:bg-slate-50/50">
+                                            <td class="p-2 font-semibold text-[var(--vm-text)]">${b.branchName}</td>
+                                            <td class="p-2">${b.city || '-'}</td>
+                                            <td class="p-2">${b.phoneNo || '-'}</td>
+                                            <td class="p-2 font-mono font-bold">${b.gstIn || '-'}</td>
+                                            <td class="p-2 text-center">
+                                                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${(b.status === '1' || b.status === 'Active') ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-rose-100 text-rose-800'}">
+                                                    ${(b.status === '1' || b.status === 'Active') ? 'Active' : 'Inactive'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </table>
+                            </div>
+                        `;
+                    }
+
+                    const html = `
+                        <!-- Identity & Classification Grid -->
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3.5 p-4 bg-slate-50/70 dark:bg-slate-800/40 rounded-xl border border-[var(--vm-border)]">
+                            <div><span class="text-[10px] font-bold uppercase tracking-wider text-[var(--vm-text-muted)] block">Vendor Type</span> <strong class="text-xs text-[var(--vm-text)]">${v.vendorTypeName || '-'}</strong></div>
+                            <div><span class="text-[10px] font-bold uppercase tracking-wider text-[var(--vm-text-muted)] block">Category</span> <strong class="text-xs text-[var(--vm-text)]">${v.vendorCategoryName || '-'}</strong></div>
+                            <div><span class="text-[10px] font-bold uppercase tracking-wider text-[var(--vm-text-muted)] block">Work Nature</span> <strong class="text-xs text-[var(--vm-text)]">${v.workNature || '-'}</strong></div>
+                            <div><span class="text-[10px] font-bold uppercase tracking-wider text-[var(--vm-text-muted)] block">Constitution</span> <strong class="text-xs text-[var(--vm-text)]">${v.compnayType || '-'}</strong></div>
+                            <div><span class="text-[10px] font-bold uppercase tracking-wider text-[var(--vm-text-muted)] block">PAN Number</span> <strong class="text-xs font-mono text-[var(--vm-text)]">${v.panNo || '-'} (${v.panType || 'Company'})</strong></div>
+                            <div><span class="text-[10px] font-bold uppercase tracking-wider text-[var(--vm-text-muted)] block">Primary Email</span> <strong class="text-xs text-[var(--vm-text)]">${v.emailId || '-'}</strong></div>
+                            <div>
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--vm-text-muted)] block">GSTIN</span> 
+                                <div class="flex items-center gap-1.5 mt-0.5">
+                                    <strong class="text-xs font-mono text-[var(--vm-text)]">${v.gstIn || '-'}</strong>
+                                    ${v.gstIn ? `<a href="https://services.gst.gov.in/services/searchtp" target="_blank" rel="noopener noreferrer" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 inline-flex items-center gap-1 transition" title="Verify on Official Government GST Portal (Opens new tab)"><i class="fas fa-external-link-alt text-[8px]"></i>Verify</a>` : ''}
+                                </div>
+                            </div>
+                            <div><span class="text-[10px] font-bold uppercase tracking-wider text-[var(--vm-text-muted)] block">MSME Reg.</span> <strong class="text-xs text-[var(--vm-text)]">${v.msme || 'No'} ${v.msmeNo ? '(' + v.msmeNo + ')' : ''}</strong></div>
+                        </div>
+
+                        <!-- Address & Contact -->
+                        <div class="p-4 bg-slate-50/70 dark:bg-slate-800/40 rounded-xl border border-[var(--vm-border)]">
+                            <h4 class="font-bold text-xs uppercase tracking-wider text-[var(--vm-text)] mb-2 flex items-center gap-1.5">
+                                <i class="fas fa-map-marker-alt text-[var(--vm-primary)]"></i> Registered Address & Contact Liaison
+                            </h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                                <div>
+                                    <span class="text-[10px] font-bold uppercase text-[var(--vm-text-muted)] block">Registered Address</span>
+                                    <p class="text-[var(--vm-text)]">${v.address || '-'}, ${v.city || ''}, ${v.state || ''} - ${v.pincode || ''}</p>
+                                    <span class="text-[11px] text-[var(--vm-text-muted)] block mt-1"><i class="fas fa-phone mr-1"></i>${v.phoneNumber || '-'}</span>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] font-bold uppercase text-[var(--vm-text-muted)] block">Contact Person</span>
+                                    <p class="font-bold text-[var(--vm-text)]">${v.contactPerson || '-'} <span class="text-[10px] font-normal text-[var(--vm-text-muted)]">(${v.designation || 'Representative'})</span></p>
+                                    <span class="text-[11px] text-[var(--vm-text-muted)] block"><i class="fas fa-phone mr-1"></i>${v.contactNo || '-'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bank Accounts Section -->
+                        <div class="p-4 bg-slate-50/70 dark:bg-slate-800/40 rounded-xl border border-[var(--vm-border)]">
+                            <h4 class="font-bold text-xs uppercase tracking-wider text-[var(--vm-text)] mb-2 flex items-center gap-1.5">
+                                <i class="fas fa-university text-[var(--vm-primary)]"></i> Registered Bank Accounts
+                            </h4>
+                            ${bankHtml}
+                        </div>
+
+                        <!-- Branch Network Section -->
+                        <div class="p-4 bg-slate-50/70 dark:bg-slate-800/40 rounded-xl border border-[var(--vm-border)]">
+                            <h4 class="font-bold text-xs uppercase tracking-wider text-[var(--vm-text)] mb-2 flex items-center gap-1.5">
+                                <i class="fas fa-code-branch text-[var(--vm-primary)]"></i> Secondary Branches & Site Locations
+                            </h4>
+                            ${branchHtml}
+                        </div>
+                    `;
+
+                    document.getElementById("boxViewVendorContent").innerHTML = html;
+                    document.getElementById("modalViewVendor").style.display = "block";
+                })
+                .catch(err => {
+                    hideFullPageLoader();
+                    console.error("View error:", err);
+                    showToast("Error displaying dossier: " + err.message, "error");
+                });
+        }
+
+        function closeViewModal() {
+            document.getElementById("modalViewVendor").style.display = "none";
+        }
+
+        // ── 13. DELETE / DEACTIVATE VENDOR ────────────────────────────────────
+        function deleteVendor(id, name) {
+            if (typeof Swal !== "undefined") {
+                Swal.fire({
+                    title: 'Deactivate Vendor?',
+                    text: `Are you sure you want to deactivate vendor "${name}"?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e11d48',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: 'Yes, Deactivate',
+                    cancelButtonText: 'Cancel'
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        executeDelete(id);
+                    }
+                });
+            } else {
+                if (confirm(`Are you sure you want to deactivate vendor "${name}"?`)) {
+                    executeDelete(id);
+                }
+            }
+        }
+
+        function executeDelete(id) {
+            showFullPageLoader("Deactivating Vendor...");
+
+            fetch(`/VendorMaster/DeleteVendor?id=${id}`, { method: 'POST' })
+                .then(r => r.json())
+                .then(res => {
+                    hideFullPageLoader();
+                    if (res.success) {
+                        showToast(res.message || "Vendor deactivated successfully", "success");
+                        loadVendorData();
+                    } else {
+                        showToast(res.message || "Failed to deactivate vendor", "error");
+                    }
+                })
+                .catch(err => {
+                    hideFullPageLoader();
+                    console.error("Delete error:", err);
+                    showToast("Error: " + err.message, "error");
+                });
+        }
+
+        // ── 14. QUICK ADD TYPE & CATEGORY MODALS ──────────────────────────────
+        function openQuickTypeModal() {
+            document.getElementById("txtQuickTypeName").value = "";
+            document.getElementById("txtQuickTypeCode").value = "";
+            document.getElementById("modalQuickType").style.display = "block";
+        }
+
+        function closeQuickTypeModal() {
+            document.getElementById("modalQuickType").style.display = "none";
+        }
+
+        function submitQuickType() {
+            const name = document.getElementById("txtQuickTypeName").value.trim();
+            const code = document.getElementById("txtQuickTypeCode").value.trim();
+            if (!name) {
+                showToast("Please enter Type Name", "warning");
+                return;
+            }
+
+            showFullPageLoader("Adding Vendor Type...");
+
+            fetch('/VendorMaster/QuickAddType', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ vendorTypeName: name, vendorTypeCode: code })
+            })
+                .then(r => r.json())
+                .then(res => {
+                    hideFullPageLoader();
+                    if (res.success) {
+                        showToast("New Vendor Type created!", "success");
+                        closeQuickTypeModal();
+                        loadDropdownMasters();
+                        setTimeout(() => {
+                            $('#ddlVendorType').val(res.vendorTypeId).trigger('change');
+                        }, 400);
+                    } else {
+                        showToast(res.message || "Error creating type", "error");
+                    }
+                })
+                .catch(err => {
+                    hideFullPageLoader();
+                    showToast("Error creating type: " + err.message, "error");
+                });
+        }
+
+        function openQuickCategoryModal() {
+            document.getElementById("txtQuickCategoryName").value = "";
+            document.getElementById("txtQuickCategoryCode").value = "";
+            document.getElementById("modalQuickCategory").style.display = "block";
+        }
+
+        function closeQuickCategoryModal() {
+            document.getElementById("modalQuickCategory").style.display = "none";
+        }
+
+        function submitQuickCategory() {
+            const name = document.getElementById("txtQuickCategoryName").value.trim();
+            const code = document.getElementById("txtQuickCategoryCode").value.trim();
+            if (!name) {
+                showToast("Please enter Category Name", "warning");
+                return;
+            }
+
+            showFullPageLoader("Adding Vendor Category...");
+
+            fetch('/VendorMaster/QuickAddCategory', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ vendorCategoryName: name, vendorCategoryCode: code })
+            })
+                .then(r => r.json())
+                .then(res => {
+                    hideFullPageLoader();
+                    if (res.success) {
+                        showToast("New Vendor Category created!", "success");
+                        closeQuickCategoryModal();
+                        loadDropdownMasters();
+                        setTimeout(() => {
+                            $('#ddlVendorCategory').val(res.vendorCategoryId).trigger('change');
+                        }, 400);
+                    } else {
+                        showToast(res.message || "Error creating category", "error");
+                    }
+                })
+                .catch(err => {
+                    hideFullPageLoader();
+                    showToast("Error creating category: " + err.message, "error");
+                });
+        }
+
+        // ── 15. UTILITIES & RESETS ─────────────────────────────────────────────
+        function autoGenerateCode() {
+            fetch('/VendorMaster/GetNextVendorCode')
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success && res.code) {
+                        document.getElementById("txtVendorCode").value = res.code;
+                    }
+                });
+        }
+
+        function resetWizardForm() {
+            document.getElementById("hdnVendorId").value = "0";
+            document.getElementById("frmVendorWizard").reset();
+            
+            // Step 5: Reset Banks with 1 default empty row
+            document.getElementById("tblBankBody").innerHTML = "";
+            bankRowCounter = 0;
+            addBankRow();
+
+            // Step 6: Reset Branches
+            document.getElementById("tblBranchBody").innerHTML = "";
+            branchRowCounter = 0;
+
+            // Reset default values matching system defaults
+            document.getElementById("txtCity").value = "Chennai";
+            document.getElementById("txtState").value = "Tamil Nadu";
+            document.getElementById("txtCountry").value = "India";
+            document.getElementById("txtPincode").value = "600077";
+            document.getElementById("txtYearOfEstablishment").value = "0";
+
+            // Trigger Select2 updates
+            $('#ddlVendorType').val('').trigger('change');
+            $('#ddlVendorCategory').val('').trigger('change');
+            $('#ddlSupplyType').val('').trigger('change');
+            $('#ddlConsultantType').val('').trigger('change');
+            $('#ddlCompnayType').val('Private Limited').trigger('change');
+            $('#ddlPanType').val('').trigger('change');
+            $('#ddlMSME').val('No').trigger('change');
+            $('#ddlContactType').val('Primary person').trigger('change');
+            $('#ddlGSTVendorType').val('Regular').trigger('change');
+            $('#ddlGSTFiling').val('None').trigger('change');
+            $('#ddlDutyFree').val('No').trigger('change');
+
+            // Remove all error classes and pulsing focus
+            document.querySelectorAll(".is-invalid, .shake-err, .vm-focus-pulse").forEach(el => {
+                el.classList.remove("is-invalid", "shake-err", "vm-focus-pulse");
+            });
+            document.querySelectorAll(".select2-selection").forEach(el => {
+                el.classList.remove("vm-focus-pulse");
+            });
+        }
+
+        function showToast(message, type = "info") {
+            if (typeof Swal !== "undefined") {
+                const iconType = type === "error" ? "error" : (type === "warning" ? "warning" : "success");
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: iconType,
+                    title: message,
+                    showConfirmButton: false,
+                    timer: 3500,
+                    timerProgressBar: true
+                });
+            } else {
+                alert(message);
+            }
+        }
+    </script>
+}

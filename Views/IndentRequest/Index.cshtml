@@ -1,0 +1,2263 @@
+@{
+    ViewBag.Title = "Indent Request — VGN ERP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* ═══════════════════════════════════════════════════════════════════════
+       ERP ADAPTIVE THEME SYSTEM (Light / Dark / High-Contrast / Font-Scale)
+       ═══════════════════════════════════════════════════════════════════════ */
+    :root {
+        --erp-primary: var(--primary, #0088cc);
+        --erp-primary-rgb: var(--primary-rgb, 0, 136, 204);
+        --erp-primary-hover: var(--primary, #0077b3);
+        --erp-primary-light: rgba(var(--primary-rgb, 0, 136, 204), 0.1);
+        --erp-surface: var(--surface, #ffffff);
+        --erp-surface-secondary: #f8fafc;
+        --erp-surface-tertiary: #f1f5f9;
+        --erp-border: var(--border, #e2e8f0);
+        --erp-border-strong: #cbd5e1;
+        --erp-text: var(--text, #0f172a);
+        --erp-text-muted: var(--text-muted, #64748b);
+        --erp-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        --erp-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    [data-theme="dark"], .dark {
+        --erp-surface: var(--surface, #1e293b);
+        --erp-surface-secondary: #0f172a;
+        --erp-surface-tertiary: #162032;
+        --erp-border: var(--border, #334155);
+        --erp-border-strong: #475569;
+        --erp-text: var(--text, #f8fafc);
+        --erp-text-muted: var(--text-muted, #94a3b8);
+        --erp-primary-light: rgba(var(--primary-rgb, 56, 189, 248), 0.15);
+        --erp-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+        --erp-shadow-md: 0 4px 10px rgba(0, 0, 0, 0.4);
+    }
+
+    [data-contrast="high"] {
+        --erp-border: #64748b;
+        --erp-border-strong: #1e293b;
+    }
+
+    [data-contrast="high"][data-theme="dark"], [data-contrast="high"].dark {
+        --erp-border: #94a3b8;
+        --erp-border-strong: #f1f5f9;
+    }
+
+    .erp-card {
+        background-color: var(--erp-surface);
+        border: 1px solid var(--erp-border);
+        border-radius: 12px;
+        box-shadow: var(--erp-shadow-sm);
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .erp-header-bg {
+        background: linear-gradient(180deg, #eaf4fb 0%, #d8ebf8 100%);
+        color: #0b3d64;
+        border-bottom: 2px solid #b2d2ec;
+    }
+
+    .dark .erp-header-bg, [data-theme="dark"] .erp-header-bg {
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        color: #38bdf8;
+        border-bottom: 2px solid #334155;
+    }
+
+    .btn-theme {
+        background-color: var(--erp-primary) !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        transition: all 0.15s ease-in-out;
+        border: 1px solid rgba(0, 0, 0, 0.15) !important;
+        box-shadow: 0 2px 6px rgba(var(--erp-primary-rgb), 0.35) !important;
+    }
+    .btn-theme:hover {
+        filter: brightness(0.92);
+        color: #ffffff !important;
+        box-shadow: 0 4px 10px rgba(var(--erp-primary-rgb), 0.45) !important;
+    }
+
+    .btn-modal-save {
+        background-color: var(--erp-primary) !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        border: 1px solid rgba(0, 0, 0, 0.15) !important;
+        box-shadow: 0 3px 8px rgba(var(--erp-primary-rgb), 0.35) !important;
+        transition: all 0.15s ease-in-out;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    .btn-modal-save:hover {
+        filter: brightness(0.92);
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(var(--erp-primary-rgb), 0.5) !important;
+    }
+
+    .btn-modal-cancel {
+        background-color: var(--erp-surface) !important;
+        color: var(--erp-text) !important;
+        font-weight: 600 !important;
+        border: 1px solid var(--erp-border-strong) !important;
+        transition: all 0.15s ease-in-out;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    .btn-modal-cancel:hover {
+        background-color: var(--erp-surface-secondary) !important;
+    }
+
+    .drawer-panel {
+        background-color: var(--erp-surface-secondary);
+        border-top: 1px solid var(--erp-border);
+        border-bottom: 2px solid var(--erp-border-strong);
+    }
+
+    .iow-card {
+        background-color: var(--erp-surface);
+        border: 1px solid var(--erp-border);
+        border-radius: 10px;
+        box-shadow: var(--erp-shadow-sm);
+        transition: border-color 0.15s;
+    }
+    .iow-card:hover {
+        border-color: var(--erp-primary);
+    }
+
+    .erp-input {
+        background-color: var(--erp-surface);
+        border: 1px solid var(--erp-border);
+        color: var(--erp-text);
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .erp-input:focus {
+        border-color: var(--erp-primary) !important;
+        box-shadow: 0 0 0 2px rgba(var(--erp-primary-rgb), 0.2) !important;
+        outline: none;
+    }
+
+    /* Custom scrollbars */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.03);
+        border-radius: 4px;
+    }
+    .dark .custom-scrollbar::-webkit-scrollbar-track, [data-theme="dark"] .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.03);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+    .dark .custom-scrollbar::-webkit-scrollbar-thumb, [data-theme="dark"] .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #475569;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+    /* Select2 Container sizing & responsive theme compatibility */
+    .select2-container {
+        width: 100% !important;
+    }
+    .select2-container--default .select2-selection--single {
+        height: 32px !important;
+        display: flex;
+        align-items: center;
+        border-radius: 6px;
+        border: 1px solid var(--erp-border) !important;
+        background-color: var(--erp-surface) !important;
+        color: var(--erp-text) !important;
+        font-size: 12px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 30px !important;
+        padding-left: 8px;
+        padding-right: 20px;
+        color: var(--erp-text) !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 30px !important;
+    }
+    .select2-dropdown {
+        background-color: var(--erp-surface) !important;
+        border: 1px solid var(--erp-border-strong) !important;
+        color: var(--erp-text) !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+        border-radius: 8px !important;
+        z-index: 1000000 !important;
+    }
+    .select2-search__field {
+        background-color: var(--erp-surface-secondary) !important;
+        border: 1px solid var(--erp-border) !important;
+        color: var(--erp-text) !important;
+        border-radius: 6px !important;
+        font-size: 12px !important;
+    }
+    .select2-results__option {
+        color: var(--erp-text) !important;
+        font-size: 12px !important;
+        padding: 6px 10px !important;
+    }
+    .select2-results__option--highlighted[aria-selected] {
+        background-color: var(--erp-primary) !important;
+        color: #ffffff !important;
+    }
+
+    /* Screen Adaptation helpers */
+    @@media (max-width: 640px) {
+        .sticky-summary-actions {
+            width: 100%;
+            justify-content: stretch;
+        }
+        .sticky-summary-actions button {
+            flex: 1;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="w-full max-w-[1720px] mx-auto px-2 sm:px-4 lg:px-6 py-3 space-y-4 font-sans text-slate-800 dark:text-slate-100">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         VIEW 1 — INDENT REQUEST LIST SCREEN (DevExtreme DataGrid)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <div id="viewIndentList" class="space-y-4">
+        <!-- Header Bar -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[var(--erp-surface)] p-4 sm:p-5 rounded-2xl shadow-sm border border-[var(--erp-border)]">
+            <div class="flex items-center gap-3.5">
+                <div class="w-11 h-11 rounded-xl bg-sky-500/10 border border-sky-500/25 flex items-center justify-center text-[#0088cc] dark:text-sky-400 text-xl shadow-xs">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2.5">
+                        <h1 class="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">Indent Request</h1>
+                        <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20" id="badgeTotalIndent">
+                            0 Requests
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Resource-first requisition flow with IOW allocations, WBS breakdowns, and auto-summed quantities</p>
+                </div>
+            </div>
+
+            <!-- Top Action Buttons -->
+            <div class="flex items-center gap-2.5 w-full md:w-auto justify-end flex-wrap">
+                <button type="button" onclick="loadIndentGrid()" class="px-3.5 py-2 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-600 bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer flex items-center gap-1.5 shadow-2xs" title="Refresh List">
+                    <i class="fas fa-sync-alt text-slate-500"></i>
+                    <span>Refresh</span>
+                </button>
+                <button type="button" onclick="openNewIndentForm()" class="btn-theme px-4 py-2 rounded-lg text-xs flex items-center gap-2 shadow-md cursor-pointer transition transform active:scale-95">
+                    <i class="fas fa-plus font-bold"></i>
+                    <span>New Indent Request</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Summary Stats Strip -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
+            <div class="bg-[var(--erp-surface)] border border-[var(--erp-border)] rounded-xl p-4 flex items-center justify-between shadow-2xs">
+                <div>
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Requests</span>
+                    <span class="text-2xl font-black text-slate-800 dark:text-slate-100 mt-1 block" id="statTotalRequests">0</span>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-sky-500/10 text-[#0088cc] flex items-center justify-center text-lg">
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+            </div>
+            <div class="bg-[var(--erp-surface)] border border-[var(--erp-border)] rounded-xl p-4 flex items-center justify-between shadow-2xs">
+                <div>
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Items Indented</span>
+                    <span class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block" id="statTotalItems">0</span>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-lg">
+                    <i class="fas fa-cubes"></i>
+                </div>
+            </div>
+            <div class="bg-[var(--erp-surface)] border border-[var(--erp-border)] rounded-xl p-4 flex items-center justify-between shadow-2xs">
+                <div>
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Active Status</span>
+                    <span class="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1 block" id="statActiveRequests">0</span>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center text-lg">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- DevExtreme DataGrid Card -->
+        <div class="bg-[var(--erp-surface)] border border-[var(--erp-border)] rounded-xl shadow-xs p-4 sm:p-5">
+            <div id="dxGridIndent"></div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         VIEW 2 — INDENT REQUEST ENTRY / EDIT FORM
+         Resource -> IOW -> Multiple WBS Allocation Hierarchy
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <div id="viewIndentForm" style="display: none;" class="space-y-4">
+        <!-- Navigation Header Bar -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-3.5 sm:p-4 rounded-xl shadow-2xs border border-[var(--erp-border)] bg-[var(--erp-surface)]">
+            <div class="flex items-center gap-3 flex-wrap">
+                <button type="button" onclick="switchToIndentList()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition cursor-pointer flex items-center gap-1.5 shadow-2xs">
+                    <i class="fas fa-arrow-left text-xs"></i>
+                    <span>Back to List</span>
+                </button>
+                <div class="h-4 w-[1px] bg-slate-300 dark:bg-slate-600 hidden sm:block"></div>
+                <span class="text-sm font-bold text-sky-700 dark:text-sky-400 flex items-center gap-2" id="lblIndentFormTitle">
+                    <i class="fas fa-edit text-xs"></i>
+                    <span>Request for Creation - Indent Request Add</span>
+                </span>
+                <span id="badgeEditMode" class="hidden text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">Edit Mode</span>
+            </div>
+
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <button type="button" onclick="switchToIndentList()" class="px-4 py-1.5 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-600 transition cursor-pointer">
+                    Cancel
+                </button>
+                <button type="button" onclick="saveIndentRequest()" class="btn-modal-save px-5 py-1.5 rounded-lg text-xs font-bold text-white shadow-md flex items-center gap-1.5 cursor-pointer transition transform active:scale-95">
+                    <i class="fas fa-save text-xs"></i>
+                    <span>Save Indent</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Master Section Card (Project_IndentRequestMas) -->
+        <div class="erp-card p-4 sm:p-5 space-y-4">
+            <input type="hidden" id="hdnIndentMasId" value="0" />
+            <input type="hidden" id="hdnCostcenterId" value="" />
+            <input type="hidden" id="hdnProectKickOfId" value="" />
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+                <!-- Cost Centre / Project -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                        <i class="fas fa-building text-sky-500 mr-1"></i> Cost Centre / Project <span class="text-rose-500">*</span>
+                    </label>
+                    <select id="ddlProject" class="select2 w-full text-xs">
+                        <option value="">-- Select Cost Centre --</option>
+                    </select>
+                </div>
+
+                <!-- Request Type -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                        <i class="fas fa-tags text-indigo-500 mr-1"></i> Request Type <span class="text-rose-500">*</span>
+                    </label>
+                    <select id="ddlRequestType" class="select2 w-full text-xs">
+                        <option value="Material" selected>Material</option>
+                        <option value="Service">Service</option>
+                        <option value="Machinery">Machinery / Equipment</option>
+                        <option value="Consumables">Consumables</option>
+                        <option value="Labour">Labour</option>
+                    </select>
+                </div>
+
+                <!-- Request No (Auto-generated) -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                        <i class="fas fa-hashtag text-slate-400 mr-1"></i> Request No
+                    </label>
+                    <input type="text" id="txtRequestNo" readonly placeholder="Auto-generated" class="w-full text-xs font-bold px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-900/80 text-sky-700 dark:text-sky-300 focus:outline-none cursor-not-allowed font-mono" />
+                </div>
+
+                <!-- Required Date / Date & Time -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                        <i class="fas fa-calendar-alt text-amber-500 mr-1"></i> Required Date <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="date" id="txtMasterRequiredDate" class="w-full text-xs font-semibold px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500 erp-input" />
+                </div>
+            </div>
+
+            <!-- Master Remarks -->
+            <div>
+                <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                    <i class="fas fa-comment-alt text-emerald-500 mr-1"></i> Overall Requisition Remarks / General Notes
+                </label>
+                <input type="text" id="txtMainRemarks" placeholder="Enter requisition notes or site delivery instructions..." class="w-full text-xs px-3.5 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-[#f8fafc] dark:bg-slate-900/60 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500 erp-input" />
+            </div>
+        </div>
+
+        <!-- Detail Section: Enter Request Quantity (Resource -> IOW -> WBS) -->
+        <div class="erp-card shadow-md overflow-hidden flex flex-col">
+            <!-- Toolbar -->
+            <div class="erp-header-bg px-4 py-2.5 flex items-center justify-between flex-wrap gap-2.5 flex-shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <span class="font-bold text-xs uppercase tracking-wide flex items-center gap-1.5">
+                        <i class="fas fa-layer-group text-sm"></i>
+                        <span>Enter Request Quantity</span>
+                    </span>
+                    <span class="px-2.5 py-0.5 rounded-full bg-white dark:bg-slate-800 text-sky-700 dark:text-sky-300 font-bold text-[11px] shadow-2xs" id="badgeItemCount">0 Resources</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="openResourcePickerModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#1b4965] hover:bg-[#133549] text-white shadow-2xs flex items-center gap-1.5 cursor-pointer transition transform active:scale-95" title="Search & Multi-select materials from Resource Master">
+                        <i class="fas fa-boxes text-xs"></i>
+                        <span>Add Resource</span>
+                    </button>
+                    <button type="button" onclick="addNewResourceRow()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs flex items-center gap-1.5 cursor-pointer transition transform active:scale-95" title="Add blank single row">
+                        <i class="fas fa-plus text-xs"></i>
+                        <span>Add Row</span>
+                    </button>
+                    <button type="button" onclick="clearAllResourceRows()" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer" title="Clear all rows">
+                        <i class="fas fa-trash-alt mr-1"></i> Clear All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Material Table Container -->
+            <div class="overflow-x-auto overflow-y-auto custom-scrollbar flex-1" style="max-height: 65vh; min-height: 280px;">
+                <table id="tblIndentItems" class="w-full border-collapse text-xs table-fixed">
+                    <thead class="sticky top-0 z-20 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold border-b border-slate-300 dark:border-slate-700 shadow-xs">
+                        <tr>
+                            <th class="w-12 px-2 py-3 text-center">#</th>
+                            <th class="min-w-[280px] px-3 py-3 text-left">Description / Resource <span class="text-rose-500">*</span></th>
+                            <th class="w-36 px-2.5 py-3 text-left">Brand / Spec</th>
+                            <th class="w-36 px-2.5 py-3 text-right">Qty (From WBS) <span class="text-rose-500">*</span></th>
+                            <th class="w-24 px-2 py-3 text-center">Unit <span class="text-rose-500">*</span></th>
+                            <th class="w-32 px-2.5 py-3 text-left">Required Date <span class="text-rose-500">*</span></th>
+                            <th class="w-48 px-2.5 py-3 text-left">Remarks</th>
+                            <th class="w-28 px-1 py-3 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblIndentItemsBody" class="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-900">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Sticky Bottom Summary & Action Bar -->
+            <div class="sticky bottom-0 z-30 p-3 sm:p-4 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-700 shadow-[0_-6px_20px_rgba(0,0,0,0.08)] flex items-center justify-between flex-wrap gap-3 flex-shrink-0">
+                <div class="flex items-center gap-2.5 flex-wrap">
+                    <div class="px-3 py-1.5 rounded-lg bg-sky-50 dark:bg-slate-700 border border-sky-200 dark:border-slate-600 text-xs font-bold text-sky-800 dark:text-sky-300 flex items-center gap-1.5 shadow-2xs">
+                        <i class="fas fa-cubes text-sky-600"></i>
+                        <span>Materials:</span>
+                        <strong id="lblSummaryTotalRes" class="font-black text-sky-700 dark:text-sky-300">0</strong>
+                    </div>
+                    <div class="px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-slate-700 border border-indigo-200 dark:border-slate-600 text-xs font-bold text-indigo-800 dark:text-indigo-300 flex items-center gap-1.5 shadow-2xs">
+                        <i class="fas fa-sitemap text-indigo-600"></i>
+                        <span>IOWs:</span>
+                        <strong id="lblSummaryTotalIow" class="font-black text-indigo-700 dark:text-indigo-300">0</strong>
+                    </div>
+                    <div class="px-3.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-slate-700 border border-emerald-200 dark:border-slate-600 text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-2 shadow-2xs">
+                        <i class="fas fa-calculator text-emerald-600"></i>
+                        <span>Total Allocated Qty:</span>
+                        <strong id="lblSummaryGrandQty" class="font-mono text-sm font-black text-emerald-700 dark:text-emerald-300">0.00</strong>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2.5 sticky-summary-actions flex-wrap">
+                    <button type="button" onclick="switchToIndentList()" class="px-4 py-2 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-600 bg-white hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition cursor-pointer shadow-2xs flex items-center gap-1.5">
+                        <i class="fas fa-times text-xs"></i>
+                        <span>Cancel</span>
+                    </button>
+                    <button type="button" onclick="resetIndentForm()" class="px-4 py-2 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-600 bg-slate-50 hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition cursor-pointer shadow-2xs flex items-center gap-1.5">
+                        <i class="fas fa-undo text-xs"></i>
+                        <span>Reset</span>
+                    </button>
+                    <button type="button" id="btnSaveBottom" onclick="saveIndentRequest()" class="btn-modal-save px-6 py-2.5 rounded-lg text-xs font-bold text-white shadow-md flex items-center gap-2 cursor-pointer transition transform active:scale-95">
+                        <i class="fas fa-save text-xs"></i>
+                        <span>Save Indent Request</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         MODAL 1 — RESOURCE PICKER (Search & Multi-Select from ResourceMas)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <div id="modalResourcePicker" class="fixed inset-0 z-[1060] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto" style="display: none;">
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-4xl max-h-[88vh] h-[85vh] flex flex-col overflow-hidden my-auto z-[1065]">
+            <!-- Modal Header -->
+            <div class="px-5 py-3.5 bg-slate-100 dark:bg-slate-700/60 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-sky-500/10 text-[#0088cc] flex items-center justify-center">
+                        <i class="fas fa-boxes text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100">Select Resources from Master</h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Search and check materials to add them into the requisition grid</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeResourcePickerModal()" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-500 transition cursor-pointer">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            </div>
+
+            <!-- Modal Filter Bar with Select2 for Group -->
+            <div class="p-3 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3 flex-wrap flex-shrink-0">
+                <div class="flex-1 min-w-[200px]">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                        <input type="text" id="txtResourceSearch" onkeyup="filterResourceListTable()" placeholder="Search material name or code..." class="w-full text-xs pl-8 pr-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500" />
+                    </div>
+                </div>
+
+                <div class="w-[240px]">
+                    <select id="ddlResourceGroupFilter" class="select2 w-full text-xs">
+                        <option value="">-- All Resource Groups --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Modal Resource Table (min-h-0 prevents flexbox overflow from pushing footer off screen) -->
+            <div class="overflow-y-auto flex-1 min-h-0 p-2 custom-scrollbar">
+                <table class="w-full text-xs border-collapse">
+                    <thead class="sticky top-0 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold border-b border-slate-300 dark:border-slate-600 shadow-2xs">
+                        <tr>
+                            <th class="w-10 px-3 py-2 text-center">
+                                <input type="checkbox" id="chkSelectAllResources" onchange="toggleSelectAllResources(this)" class="w-4 h-4 rounded text-sky-600 cursor-pointer" />
+                            </th>
+                            <th class="px-3 py-2 text-left">Group</th>
+                            <th class="px-3 py-2 text-left">Resource Name</th>
+                            <th class="w-24 px-3 py-2 text-left">Unit</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblResourcePickerBody" class="divide-y divide-slate-200 dark:divide-slate-700">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Modal Footer: High Contrast, Prominent Save Button -->
+            <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/95 flex-shrink-0 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-500 font-medium" id="lblResourceCountInfo">Showing 0 resources</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-300 border border-sky-300 dark:border-sky-700">
+                        <span id="numSelectedResourcesPill">0</span> selected
+                    </span>
+                </div>
+                <div class="flex items-center gap-2.5">
+                    <button type="button" onclick="closeResourcePickerModal()" class="btn-modal-cancel px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5">
+                        <i class="fas fa-times text-xs"></i>
+                        <span>Cancel</span>
+                    </button>
+                    <button type="button" id="btnModalSaveResources" onclick="applySelectedResources()" class="btn-modal-save px-5 py-2 rounded-lg text-xs font-bold text-white shadow-md flex items-center gap-2 cursor-pointer transition transform active:scale-95">
+                        <i class="fas fa-save text-xs"></i>
+                        <span>Save &amp; Add Selected (<span id="numSelectedResources">0</span>)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         MODAL 1B — WBS PICKER (Search & Multi-Select from WBSMaster)
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <div id="modalWbsPicker" class="fixed inset-0 z-[1060] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto" style="display: none;">
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-2xl max-h-[88vh] h-[80vh] flex flex-col overflow-hidden my-auto z-[1065]">
+            <!-- Modal Header -->
+            <div class="px-5 py-3.5 bg-slate-100 dark:bg-slate-700/60 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-sky-500/10 text-[#0088cc] flex items-center justify-center">
+                        <i class="fas fa-layer-group text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100">Select WBS / Locations</h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400" id="lblWbsTargetContext">Multi-select WBS locations from Master</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeWbsPickerModal()" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-500 transition cursor-pointer">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            </div>
+
+            <!-- Modal Filter Bar -->
+            <div class="p-3 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3 flex-shrink-0">
+                <div class="relative flex-1">
+                    <i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                    <input type="text" id="txtWbsSearch" onkeyup="filterWbsPickerTable()" placeholder="Search WBS / location name..." class="w-full text-xs pl-8 pr-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500" />
+                </div>
+            </div>
+
+            <!-- Modal WBS Table (min-h-0 prevents flexbox overflow from pushing footer off screen) -->
+            <div class="overflow-y-auto flex-1 min-h-0 p-2 custom-scrollbar">
+                <table class="w-full text-xs border-collapse">
+                    <thead class="sticky top-0 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold border-b border-slate-300 dark:border-slate-600 shadow-2xs">
+                        <tr>
+                            <th class="w-10 px-3 py-2 text-center">
+                                <input type="checkbox" id="chkSelectAllWbs" onchange="toggleSelectAllWbs(this)" class="w-4 h-4 rounded text-sky-600 cursor-pointer" />
+                            </th>
+                            <th class="px-3 py-2 text-left">WBS / Location Name</th>
+                            <th class="w-28 px-3 py-2 text-left">WBS Code</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblWbsPickerBody" class="divide-y divide-slate-200 dark:divide-slate-700">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Modal Footer: High Contrast, Prominent Save Button -->
+            <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/95 flex-shrink-0 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-500 font-medium" id="lblWbsCountInfo">Showing 0 locations</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-300 border border-sky-300 dark:border-sky-700">
+                        <span id="numSelectedWbsPill">0</span> selected
+                    </span>
+                </div>
+                <div class="flex items-center gap-2.5">
+                    <button type="button" onclick="closeWbsPickerModal()" class="btn-modal-cancel px-4 py-2 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5">
+                        <i class="fas fa-times text-xs"></i>
+                        <span>Cancel</span>
+                    </button>
+                    <button type="button" id="btnModalSaveWbs" onclick="applySelectedWbs()" class="btn-modal-save px-5 py-2 rounded-lg text-xs font-bold text-white shadow-md flex items-center gap-2 cursor-pointer transition transform active:scale-95">
+                        <i class="fas fa-save text-xs"></i>
+                        <span>Save &amp; Add Selected WBS (<span id="numSelectedWbs">0</span>)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         MODAL 2 — QUICK VIEW
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <div id="modalQuickView" class="fixed inset-0 z-[1060] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto" style="display: none;">
+        <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-4xl max-h-[88vh] h-[85vh] flex flex-col overflow-hidden my-auto z-[1065]">
+            <div class="px-5 py-3.5 bg-slate-100 dark:bg-slate-700/60 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between flex-shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-teal-500/10 text-teal-600 flex items-center justify-center">
+                        <i class="fas fa-eye text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100">Indent Request Quick View</h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400" id="modalReqSubTitle">Requisition Details &amp; Allocations</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeQuickViewModal()" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 transition cursor-pointer">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            </div>
+            <div class="p-5 overflow-y-auto flex-1 min-h-0 space-y-4 custom-scrollbar text-xs">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 dark:bg-slate-900/50 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase block">Request No</span>
+                        <span class="font-bold text-sky-600 dark:text-sky-400 text-sm" id="modalReqNo">—</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase block">Cost Centre</span>
+                        <span class="font-bold text-slate-800 dark:text-slate-100" id="modalProject">—</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase block">Request Type</span>
+                        <span class="font-bold text-slate-800 dark:text-slate-100" id="modalType">—</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase block">Date &amp; Time</span>
+                        <span class="font-bold text-slate-800 dark:text-slate-100" id="modalDate">—</span>
+                    </div>
+                </div>
+                <div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-2xs">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold border-b border-slate-200 dark:border-slate-600">
+                            <tr>
+                                <th class="px-3 py-2 text-center w-10">#</th>
+                                <th class="px-3 py-2">Resource / Material</th>
+                                <th class="px-3 py-2">Item of Work (IOW)</th>
+                                <th class="px-3 py-2">WBS / Location</th>
+                                <th class="px-3 py-2 text-right">Qty</th>
+                                <th class="px-3 py-2">Unit</th>
+                                <th class="px-3 py-2">Required Date</th>
+                                <th class="px-3 py-2">Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalItemsBody" class="divide-y divide-slate-200 dark:divide-slate-700 bg-white dark:bg-slate-800">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="bg-amber-50/50 dark:bg-amber-950/20 p-3 rounded-xl border border-amber-200 dark:border-amber-900/40">
+                    <span class="font-bold text-amber-800 dark:text-amber-300 block mb-0.5">Overall Remarks:</span>
+                    <p class="text-slate-700 dark:text-slate-300 italic" id="modalRemarks">No remarks provided.</p>
+                </div>
+            </div>
+            <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-2 bg-slate-50 dark:bg-slate-800/95 flex-shrink-0 z-10 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                <button type="button" onclick="closeQuickViewModal()" class="btn-modal-cancel px-5 py-2 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5">
+                    <i class="fas fa-times text-xs"></i>
+                    <span>Close</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ═══════════════════════════════════════════════════════════════════════
+    // GLOBAL STATE & REACTIVE DATA MODEL
+    // Hierarchy: Resource -> IOW -> Multiple WBS
+    // Main Qty calculates from sum of WBS Qty
+    // ═══════════════════════════════════════════════════════════════════════
+    let projectList = [];
+    let wbsList = [];
+    let iowList = [];
+    let resourceList = [];
+    let selectedResourceIds = new Set();
+    let indentGridInstance = null;
+    let rowSequence = 0;
+
+    // Reactive items store: Array of resource objects
+    let indentResources = [];
+
+    $(document).ready(function () {
+        initDevExtremeGrid();
+        initMasterSelect2();
+        loadAllLookups();
+        loadIndentGrid();
+
+        // Default Master Required Date to today
+        const todayStr = new Date().toISOString().split('T')[0];
+        $('#txtMasterRequiredDate').val(todayStr);
+
+        // Instant adaptation to ERP theme, contrast, and layout changes
+        if (window.MutationObserver) {
+            const themeObserver = new MutationObserver(function (mutations) {
+                mutations.forEach(function (m) {
+                    if (m.attributeName === 'data-theme' || m.attributeName === 'data-contrast' || m.attributeName === 'class' || m.attributeName === 'data-primary' || m.attributeName === 'data-sidebar') {
+                        if (indentGridInstance) {
+                            indentGridInstance.repaint();
+                        }
+                    }
+                });
+            });
+            themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-contrast', 'class', 'data-primary', 'data-sidebar'] });
+        }
+
+        // Viewport resize adaptation
+        $(window).on('resize', function () {
+            if (indentGridInstance) {
+                indentGridInstance.updateDimensions();
+            }
+        });
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 1. SELECT2 INITIALIZERS & DATA LOADERS FROM MASTERS
+    // ═══════════════════════════════════════════════════════════════════════
+    function initMasterSelect2() {
+        if ($.fn.select2) {
+            $('#ddlProject').select2({
+                placeholder: "-- Select Cost Centre --",
+                allowClear: true,
+                width: '100%'
+            }).on('change', function () {
+                onProjectChanged();
+            });
+
+            $('#ddlRequestType').select2({
+                width: '100%'
+            });
+
+            $('#ddlResourceGroupFilter').select2({
+                placeholder: "-- All Resource Groups --",
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#modalResourcePicker')
+            }).on('change', function () {
+                filterResourceListTable();
+            });
+        }
+    }
+
+    function loadAllLookups() {
+        // 1. Projects from ProjectKickOffMas
+        $.get('/IndentRequest/GetProjects', function (res) {
+            if (res && res.success && res.data) {
+                projectList = res.data;
+                const $ddl = $('#ddlProject').empty().append('<option value="">-- Select Cost Centre --</option>');
+                projectList.forEach(p => {
+                    $ddl.append(`<option value="${p.projectKickoffId}" data-costcentre="${p.costCentreId || ''}">${p.projectName}</option>`);
+                });
+                $ddl.trigger('change.select2');
+            }
+        });
+
+        // 2. WBS from WBSMaster
+        $.get('/IndentRequest/GetWBSList', function (res) {
+            if (res && res.success && res.data) {
+                wbsList = res.data;
+            }
+        });
+
+        // 3. IOW initial top list from IOWMas
+        $.get('/IndentRequest/GetIOWList', function (res) {
+            if (res && res.success && res.data) {
+                iowList = res.data;
+            }
+        });
+
+        // 4. Resources from ResourceMas
+        $.get('/IndentRequest/GetResources', function (res) {
+            if (res && res.success && res.data) {
+                resourceList = res.data;
+                populateResourceGroupFilter();
+            }
+        });
+    }
+
+    function populateResourceGroupFilter() {
+        const groups = new Set();
+        resourceList.forEach(r => {
+            if (r.resourceGroupName && r.resourceGroupName.trim() !== '') {
+                groups.add(r.resourceGroupName.trim());
+            }
+        });
+        const $grp = $('#ddlResourceGroupFilter').empty().append('<option value="">-- All Resource Groups --</option>');
+        Array.from(groups).sort().forEach(g => {
+            $grp.append(`<option value="${g}">${g}</option>`);
+        });
+        $grp.trigger('change.select2');
+    }
+
+    function onProjectChanged() {
+        const val = $('#ddlProject').val();
+        $('#hdnProectKickOfId').val(val || '');
+        const selOpt = $('#ddlProject').find('option:selected');
+        const cc = selOpt.data('costcentre') || '';
+        $('#hdnCostcenterId').val(cc);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 2. DEVEXTREME OVERVIEW GRID
+    // ═══════════════════════════════════════════════════════════════════════
+    function initDevExtremeGrid() {
+        $("#dxGridIndent").dxDataGrid({
+            dataSource: [],
+            keyExpr: "indentMasId",
+            showBorders: true,
+            showRowLines: true,
+            rowAlternationEnabled: true,
+            hoverStateEnabled: true,
+            columnAutoWidth: true,
+            wordWrapEnabled: false,
+            allowColumnResizing: true,
+            columnResizingMode: "widget",
+            searchPanel: {
+                visible: true,
+                width: 280,
+                placeholder: "Search Indent / Cost Centre / Ref..."
+            },
+            headerFilter: { visible: true },
+            export: {
+                enabled: true,
+                fileName: "Indent_Requests_" + new Date().toISOString().slice(0, 10)
+            },
+            paging: { pageSize: 15 },
+            pager: {
+                showPageSizeSelector: true,
+                allowedPageSizes: [10, 15, 25, 50],
+                showInfo: true
+            },
+            columns: [
+                {
+                    caption: "Action",
+                    alignment: "center",
+                    width: 110,
+                    cellTemplate: function (container, options) {
+                        const data = options.data;
+                        const $w = $('<div class="flex items-center justify-center gap-1.5"></div>');
+
+                        const $btnView = $('<button type="button" class="btn-grid-action btn-action-view" title="Quick View"><i class="fas fa-eye"></i></button>');
+                        $btnView.on('click', function () { quickViewIndent(data.indentMasId); });
+
+                        const $btnEdit = $('<button type="button" class="btn-grid-action btn-action-edit" title="Edit Indent"><i class="fas fa-edit"></i></button>');
+                        $btnEdit.on('click', function () { editIndent(data.indentMasId); });
+
+                        const $btnDel = $('<button type="button" class="btn-grid-action btn-action-delete" title="Delete Indent"><i class="fas fa-trash-alt"></i></button>');
+                        $btnDel.on('click', function () { deleteIndentItem(data.indentMasId, data.requestNo); });
+
+                        $w.append($btnView).append($btnEdit).append($btnDel);
+                        container.append($w);
+                    }
+                },
+                {
+                    caption: "S.No",
+                    width: 60,
+                    alignment: "center",
+                    cellTemplate: function (c, opt) { c.text(opt.rowIndex + 1); }
+                },
+                {
+                    dataField: "requestNo",
+                    caption: "Request No",
+                    width: 130,
+                    alignment: "center",
+                    cellTemplate: function (c, opt) {
+                        $('<span class="font-bold text-xs text-sky-600 dark:text-sky-400"></span>')
+                            .text(opt.value || ("IND-" + opt.data.indentMasId))
+                            .appendTo(c);
+                    }
+                },
+                {
+                    dataField: "requestDatetime",
+                    caption: "Date & Time",
+                    width: 140,
+                    alignment: "center"
+                },
+                {
+                    dataField: "projectName",
+                    caption: "Cost Centre / Project",
+                    minWidth: 220,
+                    cellTemplate: function (c, opt) {
+                        $('<span class="font-bold text-xs text-[var(--text)]"></span>').text(opt.value || "—").appendTo(c);
+                    }
+                },
+                {
+                    dataField: "requestType",
+                    caption: "Type",
+                    width: 110,
+                    alignment: "center",
+                    cellTemplate: function (c, opt) {
+                        const val = opt.value || "Material";
+                        $('<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300"></span>')
+                            .text(val)
+                            .appendTo(c);
+                    }
+                },
+                {
+                    dataField: "totalItems",
+                    caption: "Allocations",
+                    width: 100,
+                    alignment: "center",
+                    cellTemplate: function (c, opt) {
+                        $('<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"></span>')
+                            .text((opt.value || 0) + " Lines")
+                            .appendTo(c);
+                    }
+                },
+                {
+                    dataField: "remarks",
+                    caption: "Remarks",
+                    minWidth: 180,
+                    cellTemplate: function (c, opt) {
+                        $('<span class="text-xs text-slate-500 truncate block"></span>').text(opt.value || "—").appendTo(c);
+                    }
+                },
+                {
+                    dataField: "createdBy",
+                    caption: "Created By",
+                    width: 120,
+                    alignment: "center"
+                }
+            ]
+        });
+        indentGridInstance = $("#dxGridIndent").dxDataGrid("instance");
+    }
+
+    function loadIndentGrid() {
+        if (!indentGridInstance) return;
+        indentGridInstance.beginCustomLoading("Loading Indent Requests...");
+        $.get('/IndentRequest/GetIndentList', function (res) {
+            indentGridInstance.endCustomLoading();
+            if (res && res.success && res.data) {
+                indentGridInstance.option('dataSource', res.data);
+                $('#statTotalRequests').text(res.data.length);
+                $('#badgeTotalIndent').text(`${res.data.length} Requests`);
+                let totItems = 0;
+                res.data.forEach(x => totItems += (x.totalItems || 0));
+                $('#statTotalItems').text(totItems);
+                $('#statActiveRequests').text(res.data.filter(x => x.status === '1').length);
+            }
+        }).fail(function () {
+            indentGridInstance.endCustomLoading();
+        });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 3. NAVIGATION & FORM MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════════════
+    function openNewIndentForm() {
+        resetIndentForm();
+        $('#lblIndentFormTitle').text('Request for Creation - Indent Request Add');
+        $('#badgeEditMode').addClass('hidden');
+        $('#viewIndentList').slideUp(200);
+        $('#viewIndentForm').slideDown(200);
+
+        // Fetch Next Ref No
+        $.get('/IndentRequest/GetNextRefNo', function (res) {
+            if (res && res.success && res.nextRefNo) {
+                $('#txtRequestNo').val(res.nextRefNo);
+            }
+        });
+    }
+
+    function switchToIndentList() {
+        $('#viewIndentForm').slideUp(200);
+        $('#viewIndentList').slideDown(200);
+        loadIndentGrid();
+    }
+
+    function resetIndentForm() {
+        $('#hdnIndentMasId').val('0');
+        $('#hdnCostcenterId').val('');
+        $('#hdnProectKickOfId').val('');
+        $('#ddlProject').val('').trigger('change.select2');
+        $('#ddlRequestType').val('Material').trigger('change.select2');
+        $('#txtRequestNo').val('');
+        $('#txtMainRemarks').val('');
+        const todayStr = new Date().toISOString().split('T')[0];
+        $('#txtMasterRequiredDate').val(todayStr);
+
+        indentResources = [];
+        selectedResourceIds.clear();
+        rowSequence = 0;
+        renderResourceRows();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 4. RESOURCE -> IOW -> MULTIPLE WBS ALLOCATION LOGIC
+    // Core requirement:
+    // - User selects resource
+    // - Each resource has individual IOW(s)
+    // - Each IOW has multiple WBS
+    // - Main Qty is calculated from sum of WBS Qty!
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // Add a single blank resource row
+    function addNewResourceRow() {
+        rowSequence++;
+        const rowKey = 'res_' + rowSequence;
+        const todayStr = $('#txtMasterRequiredDate').val() || new Date().toISOString().split('T')[0];
+
+        const newRes = {
+            rowKey: rowKey,
+            resourceId: '',
+            resourceName: '',
+            brand: '',
+            unit: 'Nos',
+            qty: 0,
+            requiredDate: todayStr,
+            remarks: '',
+            isExpanded: false, // Collapsed by default as requested!
+            iows: []
+        };
+
+        indentResources.push(newRes);
+        renderResourceRows();
+    }
+
+    // Add multiple resources from Resource Picker modal
+    function addResourcesFromPicker(resourcesToAdd) {
+        const todayStr = $('#txtMasterRequiredDate').val() || new Date().toISOString().split('T')[0];
+
+        resourcesToAdd.forEach(r => {
+            rowSequence++;
+            const rowKey = 'res_' + rowSequence;
+            const uName = (r.unitName && r.unitName !== '?' && !r.unitName.includes('?')) ? r.unitName : (r.unitId || 'Nos');
+
+            const newRes = {
+                rowKey: rowKey,
+                resourceId: r.resourceId.toString(),
+                resourceName: r.resourceName,
+                brand: '',
+                unit: uName,
+                qty: 0,
+                requiredDate: todayStr,
+                remarks: '',
+                isExpanded: false, // Collapsed by default as requested!
+                iows: []
+            };
+
+            indentResources.push(newRes);
+        });
+
+        renderResourceRows();
+    }
+
+    // Update sticky summary bar live chips
+    function updateSummaryBarTotals() {
+        const totRes = indentResources.length;
+        let totIow = 0;
+        let grandQty = 0;
+        indentResources.forEach(r => {
+            if (r.iows) totIow += r.iows.length;
+            grandQty += (parseFloat(r.qty) || 0);
+        });
+        $('#lblSummaryTotalRes').text(totRes);
+        $('#lblSummaryTotalIow').text(totIow);
+        $('#lblSummaryGrandQty').text(grandQty.toFixed(2));
+    }
+
+    // Render all resource rows in the main table
+    function renderResourceRows() {
+        const $tbody = $('#tblIndentItemsBody').empty();
+
+        if (indentResources.length === 0) {
+            $tbody.append(`
+                <tr id="trNoItems">
+                    <td colspan="8" class="text-center py-12 text-slate-400">
+                        <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-sky-50 dark:bg-slate-800/80 border border-sky-100 dark:border-slate-700 flex items-center justify-center text-sky-500 text-2xl shadow-2xs">
+                            <i class="fas fa-boxes"></i>
+                        </div>
+                        <p class="font-bold text-sm text-slate-700 dark:text-slate-200">No resources added yet</p>
+                        <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Click <strong class="text-sky-600 dark:text-sky-400 cursor-pointer" onclick="openResourcePickerModal()">"Add Resource"</strong> to multi-select materials from master or <strong class="text-emerald-600 cursor-pointer" onclick="addNewResourceRow()">"Add Row"</strong>.</p>
+                    </td>
+                </tr>
+            `);
+            $('#badgeItemCount').text('0 Resources');
+            updateSummaryBarTotals();
+            return;
+        }
+
+        $('#badgeItemCount').text(`${indentResources.length} Resources`);
+
+        indentResources.forEach((res, index) => {
+            const isExpanded = res.isExpanded;
+            const arrowIcon = isExpanded ? 'fa-chevron-up text-sky-600' : 'fa-chevron-down text-slate-400';
+            const drawerDisplay = isExpanded ? '' : 'style="display:none;"';
+
+            // Calculate main qty from sum of all WBS quantities under this resource (clean 2-digit float)
+            const calcQty = calculateTotalResourceQty(res);
+            res.qty = calcQty;
+
+            // Resource row HTML
+            const rowHtml = `
+                <tr id="row_${res.rowKey}" class="main-resource-row hover:bg-sky-50/30 dark:hover:bg-slate-800/50 transition-colors">
+                    <td class="text-center px-2 py-2.5 font-bold text-slate-400">
+                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-xs shadow-2xs">${index + 1}</span>
+                    </td>
+                    
+                    <!-- Description / Resource with Select2 -->
+                    <td class="px-2 py-2.5">
+                        <select id="sel_resource_${res.rowKey}" class="select2-resource w-full text-xs">
+                            <option value="">-- Select Resource / Material --</option>
+                        </select>
+                    </td>
+
+                    <!-- Brand / Spec -->
+                    <td class="px-2 py-2.5">
+                        <input type="text" value="${res.brand || ''}" placeholder="Brand / Spec..." onchange="onResourceBrandChanged('${res.rowKey}', this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500 erp-input shadow-2xs" />
+                    </td>
+
+                    <!-- Qty (Calculated from WBS as clean 2-digit float, no unit text mixed in) -->
+                    <td class="px-2 py-2.5 text-right">
+                        <input type="number" step="0.01" readonly id="txt_main_qty_${res.rowKey}" value="${parseFloat(res.qty || 0).toFixed(2)}" class="w-full text-right font-black text-xs px-2.5 py-1.5 rounded-lg border border-sky-200 dark:border-sky-800/60 bg-sky-50/70 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300 font-mono focus:outline-none cursor-not-allowed shadow-2xs" title="Auto-calculated sum of all WBS quantities under this resource" />
+                    </td>
+
+                    <!-- Unit (Loads directly from Resource) -->
+                    <td class="px-2 py-2.5 text-center">
+                        <span id="txt_unit_${res.rowKey}" class="inline-flex items-center justify-center px-2 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 w-full text-center shadow-2xs">${res.unit || 'Nos'}</span>
+                    </td>
+
+                    <!-- Required Date -->
+                    <td class="px-2 py-2.5">
+                        <input type="date" value="${res.requiredDate || ''}" onchange="onResourceReqDateChanged('${res.rowKey}', this.value)" class="w-full text-xs px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500 erp-input shadow-2xs" />
+                    </td>
+
+                    <!-- Remarks -->
+                    <td class="px-2 py-2.5">
+                        <input type="text" value="${res.remarks || ''}" placeholder="Material notes..." onchange="onResourceRemarksChanged('${res.rowKey}', this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500 erp-input shadow-2xs" />
+                    </td>
+
+                    <!-- Actions (Right side: Arrow expand/collapse, Add IOW, Delete) -->
+                    <td class="px-1 py-2.5 text-center">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button type="button" onclick="toggleResourceDrawer('${res.rowKey}')" class="w-7 h-7 flex items-center justify-center rounded-lg border border-sky-200 dark:border-sky-800/60 bg-sky-50 hover:bg-sky-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-sky-600 dark:text-sky-400 transition transform hover:scale-105 cursor-pointer shadow-2xs" title="${isExpanded ? 'Collapse Allocations' : 'Expand IOW & WBS Allocations'}">
+                                <i id="icon_toggle_${res.rowKey}" class="fas ${arrowIcon} text-xs"></i>
+                            </button>
+                            <button type="button" onclick="addIowToResource('${res.rowKey}')" class="w-7 h-7 flex items-center justify-center rounded-lg border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 hover:bg-emerald-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-600 dark:text-emerald-400 transition transform hover:scale-105 cursor-pointer shadow-2xs" title="Add Item of Work (IOW)">
+                                <i class="fas fa-plus text-xs"></i>
+                            </button>
+                            <button type="button" onclick="removeResourceRow('${res.rowKey}')" class="w-7 h-7 flex items-center justify-center rounded-lg border border-rose-200 dark:border-rose-800/60 bg-rose-50 hover:bg-rose-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-rose-600 dark:text-rose-400 transition transform hover:scale-105 cursor-pointer shadow-2xs" title="Remove Resource">
+                                <i class="fas fa-trash-alt text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- 🔽 EXPANDABLE DRAWER: IOW & WBS ALLOCATION BREAKDOWN -->
+                <tr id="drawer_${res.rowKey}" class="drawer-panel" ${drawerDisplay}>
+                    <td colspan="8" class="p-3 sm:p-4 bg-slate-50/80 dark:bg-slate-900/60 border-l-4 border-l-sky-500">
+                        <div class="space-y-3">
+                            <!-- Drawer Header -->
+                            <div class="flex items-center justify-between flex-wrap gap-2.5 pb-2.5 border-b border-slate-200 dark:border-slate-700">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="font-bold text-xs text-sky-800 dark:text-sky-300 flex items-center gap-1.5">
+                                        <i class="fas fa-sitemap text-sky-500"></i>
+                                        <span>IOW &amp; WBS Allocations for:</span>
+                                    </span>
+                                    <span class="font-bold text-xs px-2.5 py-0.5 rounded-md bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 shadow-2xs">${res.resourceName || 'Unassigned Material'}</span>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 border border-sky-300 dark:border-sky-800">
+                                        Total Allocated: <strong id="lbl_drawer_total_${res.rowKey}" class="font-mono mx-1">${res.qty.toFixed(2)}</strong> <span id="lbl_drawer_total_unit_${res.rowKey}">${res.unit}</span>
+                                    </span>
+                                </div>
+                                <button type="button" onclick="addIowToResource('${res.rowKey}')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#1b4965] hover:bg-[#133549] text-white shadow-2xs flex items-center gap-1.5 cursor-pointer transition transform active:scale-95">
+                                    <i class="fas fa-plus text-xs"></i>
+                                    <span>Add Item of Work (IOW)</span>
+                                </button>
+                            </div>
+
+                            <!-- Container of IOW cards for this resource -->
+                            <div id="iow_container_${res.rowKey}" class="space-y-3">
+                                <!-- IOW Cards rendered by renderIowCards() -->
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+
+            $tbody.append(rowHtml);
+
+            // Populate Resource Select2 dropdown
+            initResourceSelect2(res);
+
+            // Render IOWs under this resource
+            renderIowCards(res);
+        });
+
+        // Sync sticky summary bar metrics
+        updateSummaryBarTotals();
+    }
+
+    // Toggle resource expandable drawer
+    function toggleResourceDrawer(rowKey) {
+        const res = indentResources.find(x => x.rowKey === rowKey);
+        if (!res) return;
+        res.isExpanded = !res.isExpanded;
+        const $drawer = $(`#drawer_${rowKey}`);
+        const $icon = $(`#icon_toggle_${rowKey}`);
+
+        if (res.isExpanded) {
+            $drawer.show();
+            $icon.removeClass('fa-chevron-down text-slate-400').addClass('fa-chevron-up text-sky-600');
+        } else {
+            $drawer.hide();
+            $icon.removeClass('fa-chevron-up text-sky-600').addClass('fa-chevron-down text-slate-400');
+        }
+    }
+
+    // Initialize Resource Select2
+    function initResourceSelect2(res) {
+        const $sel = $(`#sel_resource_${res.rowKey}`);
+        $sel.empty().append('<option value="">-- Select Resource / Material --</option>');
+
+        resourceList.forEach(r => {
+            const isSelected = (r.resourceId.toString() === res.resourceId.toString()) ? 'selected' : '';
+            const uName = (r.unitName && r.unitName !== '?' && !r.unitName.includes('?')) ? r.unitName : 'Nos';
+            $sel.append(`<option value="${r.resourceId}" data-unit="${uName}" ${isSelected}>${r.resourceName} (${uName})</option>`);
+        });
+
+        if ($.fn.select2) {
+            $sel.select2({
+                placeholder: "-- Select Resource / Material --",
+                allowClear: true,
+                width: '100%'
+            }).on('change', function () {
+                const selVal = $(this).val();
+                const found = resourceList.find(x => x.resourceId.toString() === (selVal || '').toString());
+                if (found) {
+                    res.resourceId = found.resourceId.toString();
+                    res.resourceName = found.resourceName;
+                    const uName = (found.unitName && found.unitName !== '?' && !found.unitName.includes('?')) ? found.unitName : (found.unitId || 'Nos');
+                    res.unit = uName;
+                } else {
+                    res.resourceId = '';
+                    res.resourceName = '';
+                    res.unit = 'Nos';
+                }
+
+                $(`#txt_unit_${res.rowKey}`).text(res.unit);
+                renderResourceRows();
+            });
+        }
+    }
+
+    function removeResourceRow(rowKey) {
+        indentResources = indentResources.filter(x => x.rowKey !== rowKey);
+        renderResourceRows();
+    }
+
+    function clearAllResourceRows() {
+        if (indentResources.length === 0) return;
+        Swal.fire({
+            title: 'Clear All Resources?',
+            text: 'This will remove all materials, IOWs, and WBS allocations from this requisition.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e11d48',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, Clear All'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                indentResources = [];
+                selectedResourceIds.clear();
+                renderResourceRows();
+            }
+        });
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // IOW CARDS MANAGEMENT (Level 2: Resource -> IOW)
+    // ─────────────────────────────────────────────────────────────────────────
+    function addIowToResource(rowKey) {
+        const res = indentResources.find(x => x.rowKey === rowKey);
+        if (!res) return;
+
+        const iowKey = 'iow_' + rowKey + '_' + (res.iows.length + 1) + '_' + Date.now().toString().slice(-4);
+        const newIow = {
+            iowKey: iowKey,
+            iowId: '',
+            iowSpecification: '',
+            wbsList: []
+        };
+
+        res.iows.push(newIow);
+        res.isExpanded = true;
+        renderResourceRows();
+
+        // Automatically add 1 initial WBS row to this IOW
+        addWbsToIow(rowKey, iowKey);
+    }
+
+    function removeIowFromResource(rowKey, iowKey) {
+        const res = indentResources.find(x => x.rowKey === rowKey);
+        if (!res) return;
+        res.iows = res.iows.filter(x => x.iowKey !== iowKey);
+        recalculateAndRefreshResource(rowKey);
+        renderResourceRows();
+    }
+
+    function renderIowCards(res) {
+        const $container = $(`#iow_container_${res.rowKey}`).empty();
+
+        if (res.iows.length === 0) {
+            $container.append(`
+                <div class="text-center py-4 bg-white dark:bg-slate-800 rounded-lg border border-dashed border-slate-300 dark:border-slate-700">
+                    <p class="text-xs text-slate-400">No Item of Work (IOW) assigned to this resource yet.</p>
+                    <button type="button" onclick="addIowToResource('${res.rowKey}')" class="mt-2 text-xs font-bold text-sky-600 hover:text-sky-700 cursor-pointer">
+                        <i class="fas fa-plus mr-1"></i> Add First IOW
+                    </button>
+                </div>
+            `);
+            return;
+        }
+
+        res.iows.forEach((iow, iowIdx) => {
+            const iowSubtotal = calculateIowSubtotal(iow);
+
+            const cardHtml = `
+                <div id="card_${iow.iowKey}" class="iow-card shadow-xs overflow-hidden border border-slate-200 dark:border-slate-700">
+                    <!-- IOW Card Header with Select2 -->
+                    <div class="bg-slate-100 dark:bg-slate-800/90 px-3.5 py-2.5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between flex-wrap gap-2">
+                        <div class="flex items-center gap-2 flex-1 min-w-[280px]">
+                            <span class="text-[11px] font-bold text-sky-800 dark:text-sky-300 uppercase tracking-wide whitespace-nowrap">
+                                <i class="fas fa-tasks mr-1"></i> IOW #${iowIdx + 1}:
+                            </span>
+                            <div class="flex-1">
+                                <select id="sel_iow_${iow.iowKey}" class="select2-iow w-full text-xs">
+                                    <option value="">-- Select Item of Work (IOW) --</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs font-bold text-slate-700 dark:text-slate-200">
+                                IOW Subtotal: <strong id="badge_iow_qty_${iow.iowKey}" class="text-sky-600 dark:text-sky-400 text-sm font-black">${iowSubtotal.toFixed(2)}</strong>
+                            </span>
+                            <button type="button" onclick="openWbsPickerModal('${res.rowKey}', '${iow.iowKey}')" class="px-2.5 py-1 rounded-md text-xs font-bold bg-[#1b4965] hover:bg-[#133549] text-white shadow-2xs flex items-center gap-1 cursor-pointer" title="Multi-select WBS locations from master">
+                                <i class="fas fa-layer-group text-[10px]"></i>
+                                <span>Select WBS</span>
+                            </button>
+                            <button type="button" onclick="addWbsToIow('${res.rowKey}', '${iow.iowKey}')" class="px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs flex items-center gap-1 cursor-pointer" title="Add single blank WBS line">
+                                <i class="fas fa-plus text-[10px]"></i>
+                                <span>Add Row</span>
+                            </button>
+                            <button type="button" onclick="removeIowFromResource('${res.rowKey}', '${iow.iowKey}')" class="w-6 h-6 flex items-center justify-center rounded hover:bg-rose-100 text-rose-600 dark:hover:bg-rose-950/50 transition cursor-pointer" title="Delete this IOW">
+                                <i class="fas fa-trash-alt text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- WBS Allocation Table under this IOW -->
+                    <div class="p-2.5 bg-white dark:bg-slate-900">
+                        <table class="w-full text-xs border-collapse">
+                            <thead class="bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700">
+                                <tr>
+                                    <th class="w-10 px-2 py-1.5 text-center">#</th>
+                                    <th class="min-w-[260px] px-3 py-1.5 text-left">WBS / Location <span class="text-rose-500">*</span></th>
+                                    <th class="w-[140px] px-3 py-1.5 text-right">Allocated Qty <span class="text-rose-500">*</span></th>
+                                    <th class="w-[220px] px-3 py-1.5 text-left">Location Remarks</th>
+                                    <th class="w-12 px-1 py-1.5 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="wbs_body_${iow.iowKey}" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Rendered by renderWbsRows() -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            $container.append(cardHtml);
+
+            // Initialize IOW Select2 with remote AJAX search across 13,000+ IOWs
+            initIowSelect2(res, iow);
+
+            // Render WBS rows under this IOW
+            renderWbsRows(res, iow);
+        });
+    }
+
+    // Initialize IOW Select2
+    function initIowSelect2(res, iow) {
+        const $sel = $(`#sel_iow_${iow.iowKey}`);
+        $sel.empty().append('<option value="">-- Select Item of Work (IOW) --</option>');
+
+        // Prepopulate known initial IOWs
+        iowList.forEach(item => {
+            const isSel = (item.iowId.toString() === iow.iowId.toString()) ? 'selected' : '';
+            $sel.append(`<option value="${item.iowId}" ${isSel}>${item.text || item.specification}</option>`);
+        });
+
+        // If IOW has a value not in initial list, add it
+        if (iow.iowId && !$sel.find(`option[value="${iow.iowId}"]`).length) {
+            $sel.append(`<option value="${iow.iowId}" selected>${iow.iowSpecification || ('IOW #' + iow.iowId)}</option>`);
+        }
+
+        if ($.fn.select2) {
+            $sel.select2({
+                placeholder: "-- Type to search IOW (13,000+ items) --",
+                allowClear: true,
+                width: '100%',
+                ajax: {
+                    url: '/IndentRequest/SearchIOW',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return { q: params.term || '' };
+                    },
+                    processResults: function (data) {
+                        return { results: data.results || [] };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 0
+            }).on('change', function () {
+                const val = $(this).val();
+                const specText = $(this).find('option:selected').text();
+                iow.iowId = val || '';
+                iow.iowSpecification = specText || '';
+            });
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // WBS ROWS MANAGEMENT (Level 3: IOW -> Multiple WBS)
+    // ─────────────────────────────────────────────────────────────────────────
+    function addWbsToIow(rowKey, iowKey) {
+        const res = indentResources.find(x => x.rowKey === rowKey);
+        if (!res) return;
+        const iow = res.iows.find(x => x.iowKey === iowKey);
+        if (!iow) return;
+
+        const wbsKey = 'wbs_' + iowKey + '_' + (iow.wbsList.length + 1) + '_' + Date.now().toString().slice(-4);
+        const newWbs = {
+            wbsKey: wbsKey,
+            wbsId: '',
+            wbsName: '',
+            qty: 0,
+            remarks: ''
+        };
+
+        iow.wbsList.push(newWbs);
+        renderWbsRows(res, iow);
+    }
+
+    function removeWbsFromIow(rowKey, iowKey, wbsKey) {
+        const res = indentResources.find(x => x.rowKey === rowKey);
+        if (!res) return;
+        const iow = res.iows.find(x => x.iowKey === iowKey);
+        if (!iow) return;
+
+        iow.wbsList = iow.wbsList.filter(x => x.wbsKey !== wbsKey);
+        recalculateAndRefreshResource(rowKey);
+        renderWbsRows(res, iow);
+    }
+
+    function renderWbsRows(res, iow) {
+        const $tbody = $(`#wbs_body_${iow.iowKey}`).empty();
+
+        if (iow.wbsList.length === 0) {
+            $tbody.append(`
+                <tr>
+                    <td colspan="5" class="text-center py-3 text-slate-400 text-xs">
+                        No WBS locations assigned. Click <button type="button" onclick="openWbsPickerModal('${res.rowKey}', '${iow.iowKey}')" class="text-sky-600 dark:text-sky-400 font-bold hover:underline cursor-pointer"><i class="fas fa-layer-group mr-0.5"></i> Select WBS (Multi)</button> or <button type="button" onclick="addWbsToIow('${res.rowKey}', '${iow.iowKey}')" class="text-emerald-600 font-bold hover:underline cursor-pointer">+ Add Row</button>.
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+
+        iow.wbsList.forEach((wbs, wbsIdx) => {
+            const rowHtml = `
+                <tr id="wbs_row_${wbs.wbsKey}" class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                    <td class="text-center px-2 py-1.5 font-bold text-slate-400">${wbsIdx + 1}</td>
+                    
+                    <!-- WBS Dropdown with Select2 -->
+                    <td class="px-3 py-1.5">
+                        <select id="sel_wbs_${wbs.wbsKey}" class="select2-wbs w-full text-xs">
+                            <option value="">-- Select WBS / Location --</option>
+                        </select>
+                    </td>
+
+                    <!-- WBS Qty (Triggers real-time calculation) -->
+                    <td class="px-3 py-1.5 text-right">
+                        <input type="number" step="0.01" min="0" value="${wbs.qty > 0 ? parseFloat(wbs.qty).toFixed(2) : ''}" placeholder="0.00" oninput="onWbsQtyInput('${res.rowKey}', '${iow.iowKey}', '${wbs.wbsKey}', this.value)" class="w-full text-right font-bold text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500 erp-input shadow-2xs font-mono" />
+                    </td>
+
+                    <!-- WBS Remarks -->
+                    <td class="px-3 py-1.5">
+                        <input type="text" value="${wbs.remarks || ''}" placeholder="Location remarks..." onchange="onWbsRemarksChanged('${res.rowKey}', '${iow.iowKey}', '${wbs.wbsKey}', this.value)" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-sky-500 erp-input shadow-2xs" />
+                    </td>
+
+                    <!-- Action -->
+                    <td class="px-1 py-1.5 text-center">
+                        <button type="button" onclick="removeWbsFromIow('${res.rowKey}', '${iow.iowKey}', '${wbs.wbsKey}')" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-rose-100 dark:hover:bg-rose-950/50 text-rose-500 transition cursor-pointer mx-auto" title="Remove this WBS">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            $tbody.append(rowHtml);
+
+            // Populate WBS Select2 dropdown
+            initWbsSelect2(wbs);
+        });
+    }
+
+    // Initialize WBS Select2
+    function initWbsSelect2(wbs) {
+        const $sel = $(`#sel_wbs_${wbs.wbsKey}`);
+        $sel.empty().append('<option value="">-- Select WBS / Location --</option>');
+
+        wbsList.forEach(w => {
+            const isSel = (w.wbsId.toString() === wbs.wbsId.toString()) ? 'selected' : '';
+            $sel.append(`<option value="${w.wbsId}" ${isSel}>${w.wbsName}</option>`);
+        });
+
+        if ($.fn.select2) {
+            $sel.select2({
+                placeholder: "-- Select WBS / Location --",
+                allowClear: true,
+                width: '100%'
+            }).on('change', function () {
+                const val = $(this).val();
+                const name = $(this).find('option:selected').text();
+                wbs.wbsId = val || '';
+                wbs.wbsName = name || '';
+            });
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // REAL-TIME QUANTITY CALCULATIONS
+    // "the main qty calculate from wbs qty...this is my need"
+    // ─────────────────────────────────────────────────────────────────────────
+    function onWbsQtyInput(rowKey, iowKey, wbsKey, valStr) {
+        const res = indentResources.find(x => x.rowKey === rowKey);
+        if (!res) return;
+        const iow = res.iows.find(x => x.iowKey === iowKey);
+        if (!iow) return;
+        const wbs = iow.wbsList.find(x => x.wbsKey === wbsKey);
+        if (!wbs) return;
+
+        const num = parseFloat(valStr) || 0;
+        wbs.qty = num >= 0 ? num : 0;
+
+        // 1. Calculate IOW Subtotal
+        const iowTotal = calculateIowSubtotal(iow);
+        $(`#badge_iow_qty_${iowKey}`).text(iowTotal.toFixed(2));
+
+        // 2. Calculate Main Resource Total Qty
+        const resTotal = calculateTotalResourceQty(res);
+        res.qty = resTotal;
+        $(`#txt_main_qty_${rowKey}`).val(resTotal.toFixed(2));
+        $(`#lbl_drawer_total_${rowKey}`).text(resTotal.toFixed(2));
+
+        // 3. Update sticky summary bar live chips
+        updateSummaryBarTotals();
+    }
+
+    function calculateIowSubtotal(iow) {
+        let sum = 0;
+        if (iow && iow.wbsList) {
+            iow.wbsList.forEach(w => {
+                sum += (parseFloat(w.qty) || 0);
+            });
+        }
+        return sum;
+    }
+
+    function calculateTotalResourceQty(res) {
+        let total = 0;
+        if (res && res.iows) {
+            res.iows.forEach(iow => {
+                total += calculateIowSubtotal(iow);
+            });
+        }
+        return total;
+    }
+
+    function recalculateAndRefreshResource(rowKey) {
+        const res = indentResources.find(x => x.rowKey === rowKey);
+        if (!res) return;
+        const resTotal = calculateTotalResourceQty(res);
+        res.qty = resTotal;
+        $(`#txt_main_qty_${rowKey}`).val(resTotal.toFixed(2));
+        $(`#lbl_drawer_total_${rowKey}`).text(resTotal.toFixed(2));
+
+        if (res.iows) {
+            res.iows.forEach(iow => {
+                const sub = calculateIowSubtotal(iow);
+                $(`#badge_iow_qty_${iow.iowKey}`).text(sub.toFixed(2));
+            });
+        }
+
+        updateSummaryBarTotals();
+    }
+
+    function onResourceBrandChanged(rowKey, val) {
+        const res = indentResources.find(x => x.rowKey === rowKey);
+        if (res) res.brand = val;
+    }
+
+    function onResourceReqDateChanged(rowKey, val) {
+        const res = indentResources.find(x => x.rowKey === rowKey);
+        if (res) res.requiredDate = val;
+    }
+
+    function onResourceRemarksChanged(rowKey, val) {
+        const res = indentResources.find(x => x.rowKey === rowKey);
+        if (res) res.remarks = val;
+    }
+
+    function onWbsRemarksChanged(rowKey, iowKey, wbsKey, val) {
+        const res = indentResources.find(x => x.rowKey === rowKey);
+        if (!res) return;
+        const iow = res.iows.find(x => x.iowKey === iowKey);
+        if (!iow) return;
+        const wbs = iow.wbsList.find(x => x.wbsKey === wbsKey);
+        if (wbs) wbs.remarks = val;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 5. RESOURCE PICKER MODAL (Search & Multi-Select)
+    // ═══════════════════════════════════════════════════════════════════════
+    function openResourcePickerModal() {
+        $('#txtResourceSearch').val('');
+        $('#ddlResourceGroupFilter').val('').trigger('change.select2');
+        selectedResourceIds.clear();
+        $('#chkSelectAllResources').prop('checked', false);
+        renderResourcePickerTable();
+        $('#modalResourcePicker').fadeIn(150);
+    }
+
+    function closeResourcePickerModal() {
+        $('#modalResourcePicker').fadeOut(150);
+    }
+
+    function renderResourcePickerTable() {
+        const $body = $('#tblResourcePickerBody').empty();
+        const search = ($('#txtResourceSearch').val() || '').toLowerCase().trim();
+        const groupFilter = $('#ddlResourceGroupFilter').val() || '';
+
+        let visible = 0;
+        resourceList.forEach(r => {
+            const matchesSearch = !search ||
+                r.resourceName.toLowerCase().includes(search) ||
+                (r.resourceGroupName && r.resourceGroupName.toLowerCase().includes(search));
+
+            const matchesGroup = !groupFilter ||
+                (r.resourceGroupName && r.resourceGroupName.trim() === groupFilter.trim());
+
+            if (!matchesSearch || !matchesGroup) return;
+
+            visible++;
+            const isChecked = selectedResourceIds.has(r.resourceId.toString()) ? 'checked' : '';
+            const rowClass = isChecked ? 'bg-sky-50/50 dark:bg-sky-950/20' : '';
+            const uName = (r.unitName && r.unitName !== '?' && !r.unitName.includes('?')) ? r.unitName : 'Nos';
+
+            $body.append(`
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors ${rowClass}">
+                    <td class="text-center px-3 py-2">
+                        <input type="checkbox" value="${r.resourceId}" data-unit="${uName}" data-name="${r.resourceName}" onchange="onResourceCheckboxChange(this)" class="w-4 h-4 rounded text-sky-600 cursor-pointer chk-resource" ${isChecked} />
+                    </td>
+                    <td class="px-3 py-2 font-medium text-slate-700 dark:text-slate-300">${r.resourceGroupName || '—'}</td>
+                    <td class="px-3 py-2 font-bold text-slate-800 dark:text-slate-100">${r.resourceName}</td>
+                    <td class="px-3 py-2 font-bold text-slate-600 dark:text-slate-300">${uName}</td>
+                </tr>
+            `);
+        });
+
+        $('#lblResourceCountInfo').text(`Showing ${visible} of ${resourceList.length} resources`);
+        updateSelectedCounter();
+    }
+
+    function filterResourceListTable() {
+        renderResourcePickerTable();
+    }
+
+    function onResourceCheckboxChange(chk) {
+        const id = $(chk).val();
+        if (chk.checked) {
+            selectedResourceIds.add(id);
+            $(chk).closest('tr').addClass('bg-sky-50/50 dark:bg-sky-950/20');
+        } else {
+            selectedResourceIds.delete(id);
+            $(chk).closest('tr').removeClass('bg-sky-50/50 dark:bg-sky-950/20');
+        }
+        updateSelectedCounter();
+    }
+
+    function toggleSelectAllResources(masterChk) {
+        const isChecked = masterChk.checked;
+        $('.chk-resource').each(function () {
+            this.checked = isChecked;
+            const id = $(this).val();
+            if (isChecked) {
+                selectedResourceIds.add(id);
+                $(this).closest('tr').addClass('bg-sky-50/50 dark:bg-sky-950/20');
+            } else {
+                selectedResourceIds.delete(id);
+                $(this).closest('tr').removeClass('bg-sky-50/50 dark:bg-sky-950/20');
+            }
+        });
+        updateSelectedCounter();
+    }
+
+    function updateSelectedCounter() {
+        const count = selectedResourceIds.size;
+        $('#numSelectedResources').text(count);
+        $('#numSelectedResourcesPill').text(count);
+    }
+
+    function applySelectedResources() {
+        if (selectedResourceIds.size === 0) {
+            Swal.fire({ icon: 'warning', title: 'No Selection', text: 'Please select at least one material.' });
+            return;
+        }
+
+        const itemsToAdd = [];
+        selectedResourceIds.forEach(id => {
+            const alreadyExists = indentResources.some(x => x.resourceId.toString() === id.toString());
+            if (!alreadyExists) {
+                const r = resourceList.find(x => x.resourceId.toString() === id.toString());
+                if (r) itemsToAdd.push(r);
+            }
+        });
+
+        if (itemsToAdd.length > 0) {
+            addResourcesFromPicker(itemsToAdd);
+        }
+
+        closeResourcePickerModal();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 5B. WBS PICKER MODAL (Search & Multi-Select from WBSMaster)
+    // ═══════════════════════════════════════════════════════════════════════
+    let activeWbsTarget = { rowKey: '', iowKey: '' };
+    let selectedWbsIds = new Set();
+
+    function openWbsPickerModal(rowKey, iowKey) {
+        activeWbsTarget = { rowKey, iowKey };
+        const res = indentResources.find(x => x.rowKey === rowKey);
+        const iow = res ? res.iows.find(x => x.iowKey === iowKey) : null;
+
+        const resName = res ? (res.resourceName || 'Selected Material') : 'Material';
+        const iowName = iow ? (iow.iowSpecification || ('IOW #' + iow.iowId)) : 'Item of Work';
+
+        $('#lblWbsTargetContext').text(`${resName} ➔ ${iowName}`);
+        $('#txtWbsSearch').val('');
+        selectedWbsIds.clear();
+
+        // Pre-check any WBS already added to this IOW
+        if (iow && iow.wbsList) {
+            iow.wbsList.forEach(w => {
+                if (w.wbsId) selectedWbsIds.add(w.wbsId.toString());
+            });
+        }
+
+        renderWbsPickerTable();
+        $('#modalWbsPicker').fadeIn(150);
+    }
+
+    function closeWbsPickerModal() {
+        $('#modalWbsPicker').fadeOut(150);
+    }
+
+    function updateWbsSelectedCounter() {
+        const count = selectedWbsIds.size;
+        $('#numSelectedWbs').text(count);
+        $('#numSelectedWbsPill').text(count);
+    }
+
+    function renderWbsPickerTable() {
+        const $body = $('#tblWbsPickerBody').empty();
+        const search = ($('#txtWbsSearch').val() || '').toLowerCase().trim();
+        let visible = 0;
+
+        wbsList.forEach(w => {
+            const matches = !search || w.wbsName.toLowerCase().includes(search) || (w.wbsId && w.wbsId.toString().includes(search));
+            if (!matches) return;
+            visible++;
+            const isChecked = selectedWbsIds.has(w.wbsId.toString()) ? 'checked' : '';
+            const rowClass = isChecked ? 'bg-sky-50/50 dark:bg-sky-950/20' : '';
+
+            $body.append(`
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors ${rowClass}">
+                    <td class="text-center px-3 py-2">
+                        <input type="checkbox" value="${w.wbsId}" data-name="${w.wbsName}" onchange="onWbsCheckboxChange(this)" class="w-4 h-4 rounded text-sky-600 cursor-pointer chk-wbs" ${isChecked} />
+                    </td>
+                    <td class="px-3 py-2 font-bold text-slate-800 dark:text-slate-100">${w.wbsName}</td>
+                    <td class="px-3 py-2 text-slate-500 font-mono text-[11px]">${w.wbsId}</td>
+                </tr>
+            `);
+        });
+
+        $('#lblWbsCountInfo').text(`Showing ${visible} of ${wbsList.length} WBS locations`);
+        updateWbsSelectedCounter();
+        $('#chkSelectAllWbs').prop('checked', visible > 0 && selectedWbsIds.size >= visible);
+    }
+
+    function filterWbsPickerTable() {
+        renderWbsPickerTable();
+    }
+
+    function onWbsCheckboxChange(chk) {
+        const id = $(chk).val();
+        if (chk.checked) {
+            selectedWbsIds.add(id);
+            $(chk).closest('tr').addClass('bg-sky-50/50 dark:bg-sky-950/20');
+        } else {
+            selectedWbsIds.delete(id);
+            $(chk).closest('tr').removeClass('bg-sky-50/50 dark:bg-sky-950/20');
+        }
+        updateWbsSelectedCounter();
+    }
+
+    function toggleSelectAllWbs(masterChk) {
+        const isChecked = masterChk.checked;
+        $('.chk-wbs').each(function () {
+            this.checked = isChecked;
+            const id = $(this).val();
+            if (isChecked) {
+                selectedWbsIds.add(id);
+                $(this).closest('tr').addClass('bg-sky-50/50 dark:bg-sky-950/20');
+            } else {
+                selectedWbsIds.delete(id);
+                $(this).closest('tr').removeClass('bg-sky-50/50 dark:bg-sky-950/20');
+            }
+        });
+        updateWbsSelectedCounter();
+    }
+
+    function applySelectedWbs() {
+        if (selectedWbsIds.size === 0) {
+            Swal.fire({ icon: 'warning', title: 'No Selection', text: 'Please select at least one WBS location.' });
+            return;
+        }
+
+        const { rowKey, iowKey } = activeWbsTarget;
+        const res = indentResources.find(x => x.rowKey === rowKey);
+        if (!res) return;
+        const iow = res.iows.find(x => x.iowKey === iowKey);
+        if (!iow) return;
+
+        selectedWbsIds.forEach(id => {
+            const alreadyExists = iow.wbsList.some(w => w.wbsId.toString() === id.toString());
+            if (!alreadyExists) {
+                const wObj = wbsList.find(w => w.wbsId.toString() === id.toString());
+                const wName = wObj ? wObj.wbsName : ('WBS #' + id);
+                const wbsKey = 'wbs_' + iowKey + '_' + (iow.wbsList.length + 1) + '_' + Date.now().toString().slice(-4);
+                iow.wbsList.push({
+                    wbsKey: wbsKey,
+                    wbsId: id.toString(),
+                    wbsName: wName,
+                    qty: 0,
+                    remarks: ''
+                });
+            }
+        });
+
+        renderWbsRows(res, iow);
+        closeWbsPickerModal();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 6. TRANSACTIONAL SAVE: MULTI-ROW WBS ALLOCATION SAVING
+    // ═══════════════════════════════════════════════════════════════════════
+    function saveIndentRequest() {
+        const projectId = $('#ddlProject').val();
+        if (!projectId) {
+            Swal.fire({ icon: 'warning', title: 'Validation Warning', text: 'Please select a Cost Centre / Project.' });
+            $('#ddlProject').focus();
+            return;
+        }
+
+        if (indentResources.length === 0) {
+            Swal.fire({ icon: 'warning', title: 'Validation Warning', text: 'Please add at least one material/resource to this requisition.' });
+            return;
+        }
+
+        const itemsToSave = [];
+        let hasValidationError = false;
+        let validationMsg = '';
+
+        indentResources.forEach((res, resIdx) => {
+            if (hasValidationError) return;
+
+            if (!res.resourceId) {
+                hasValidationError = true;
+                validationMsg = `Row #${resIdx + 1}: Please select a Resource / Material.`;
+                return;
+            }
+
+            // Check if resource has IOWs with WBS allocations
+            let hasWbsAllocations = false;
+
+            if (res.iows && res.iows.length > 0) {
+                res.iows.forEach((iow, iowIdx) => {
+                    if (hasValidationError) return;
+
+                    if (!iow.iowId) {
+                        hasValidationError = true;
+                        validationMsg = `Row #${resIdx + 1} (${res.resourceName}), IOW #${iowIdx + 1}: Please select an Item of Work (IOW).`;
+                        return;
+                    }
+
+                    if (iow.wbsList && iow.wbsList.length > 0) {
+                        iow.wbsList.forEach((wbs, wbsIdx) => {
+                            if (hasValidationError) return;
+
+                            if (!wbs.wbsId) {
+                                hasValidationError = true;
+                                validationMsg = `Row #${resIdx + 1} (${res.resourceName}), IOW #${iowIdx + 1}, WBS Line #${wbsIdx + 1}: Please select a WBS Location.`;
+                                return;
+                            }
+
+                            const wbsQty = parseFloat(wbs.qty) || 0;
+                            if (wbsQty <= 0) {
+                                hasValidationError = true;
+                                validationMsg = `Row #${resIdx + 1} (${res.resourceName}), IOW #${iowIdx + 1}, WBS Line #${wbsIdx + 1}: Please enter a valid quantity greater than 0.`;
+                                return;
+                            }
+
+                            hasWbsAllocations = true;
+
+                            // Push as its OWN entry row into Project_IndentRequestEntry!
+                            itemsToSave.push({
+                                indentId: 0,
+                                resourceId: res.resourceId,
+                                resourceName: res.resourceName,
+                                unit: res.unit || 'Nos',
+                                qty: wbsQty.toFixed(2),
+                                requiredDate: res.requiredDate || $('#txtMasterRequiredDate').val(),
+                                workGroupId: "", // excluded as requested
+                                wbsId: wbs.wbsId,
+                                project_WBSId: wbs.wbsId,
+                                wbsName: wbs.wbsName,
+                                iowId: iow.iowId,
+                                project_IOWId: iow.iowId,
+                                iowSpecification: iow.iowSpecification,
+                                remarks: wbs.remarks || res.remarks || ''
+                            });
+                        });
+                    }
+                });
+            }
+
+            // If no WBS allocation was added, push resource row with 0 IOW/WBS if qty > 0
+            if (!hasWbsAllocations && !hasValidationError) {
+                const mainQty = parseFloat(res.qty || 0);
+                itemsToSave.push({
+                    indentId: 0,
+                    resourceId: res.resourceId,
+                    resourceName: res.resourceName,
+                    unit: res.unit || 'Nos',
+                    qty: mainQty.toFixed(2),
+                    requiredDate: res.requiredDate || $('#txtMasterRequiredDate').val(),
+                    workGroupId: "",
+                    wbsId: "0",
+                    iowId: "0",
+                    remarks: res.remarks || ''
+                });
+            }
+        });
+
+        if (hasValidationError) {
+            Swal.fire({ icon: 'warning', title: 'Validation Warning', text: validationMsg });
+            return;
+        }
+
+        const indentMasId = parseInt($('#hdnIndentMasId').val() || '0');
+        const payload = {
+            Header: {
+                IndentMasId: indentMasId,
+                CostcenterId: $('#hdnCostcenterId').val() || '',
+                ProectKickOfId: projectId,
+                RequestType: $('#ddlRequestType').val() || 'Material',
+                RequestDatetime: $('#txtMasterRequiredDate').val(),
+                RequestNo: $('#txtRequestNo').val() || '',
+                Remarks: $('#txtMainRemarks').val() || ''
+            },
+            Items: itemsToSave
+        };
+
+        const isUpdate = indentMasId > 0;
+        const confirmTitle = isUpdate ? 'Update Indent Request?' : 'Submit Indent Request?';
+        const confirmText = `This will save ${itemsToSave.length} allocation entries for ${indentResources.length} materials into the database.`;
+
+        Swal.fire({
+            title: confirmTitle,
+            text: confirmText,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#0088cc',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: isUpdate ? 'Yes, Update' : 'Yes, Save'
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            $('#btnSaveBottom').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Saving...');
+
+            $.ajax({
+                url: '/IndentRequest/SaveIndentRequest',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                success: function (res) {
+                    $('#btnSaveBottom').prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Save Indent Request');
+                    if (res && res.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: res.message || 'Indent Request saved successfully!',
+                            confirmButtonColor: '#0088cc'
+                        }).then(() => {
+                            switchToIndentList();
+                        });
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Save Failed', text: res ? res.message : 'An error occurred while saving.' });
+                    }
+                },
+                error: function (xhr) {
+                    $('#btnSaveBottom').prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Save Indent Request');
+                    Swal.fire({ icon: 'error', title: 'Server Error', text: xhr.responseText || 'A server communication error occurred.' });
+                }
+            });
+        });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 7. EDIT & FETCH INDENT DETAILS (Reconstructs Resource -> IOW -> WBS Hierarchy)
+    // ═══════════════════════════════════════════════════════════════════════
+    function editIndent(id) {
+        if (!id) return;
+        resetIndentForm();
+        $('#lblIndentFormTitle').text('Edit Indent Request #' + id);
+        $('#badgeEditMode').removeClass('hidden');
+
+        $.get('/IndentRequest/GetIndentById', { id: id }, function (res) {
+            if (!res || !res.success || !res.header) {
+                Swal.fire({ icon: 'error', title: 'Not Found', text: res ? res.message : 'Could not fetch Indent details.' });
+                return;
+            }
+
+            const h = res.header;
+            $('#hdnIndentMasId').val(h.indentMasId);
+            $('#txtRequestNo').val(h.requestNo || ('IND-' + h.indentMasId));
+            $('#txtMainRemarks').val(h.remarks || '');
+            if (h.proectKickOfId) {
+                $('#ddlProject').val(h.proectKickOfId).trigger('change.select2');
+            }
+            if (h.requestType) {
+                $('#ddlRequestType').val(h.requestType).trigger('change.select2');
+            }
+            if (h.requestDatetime) {
+                const datePart = h.requestDatetime.split(' ')[0];
+                $('#txtMasterRequiredDate').val(datePart);
+            }
+
+            // Reconstruct Resource -> IOW -> WBS hierarchy from flat DB entries
+            indentResources = [];
+            rowSequence = 0;
+
+            if (res.items && res.items.length > 0) {
+                // Group items by ResourceId
+                const resourceMap = new Map();
+
+                res.items.forEach(item => {
+                    const rId = (item.resourceId || '').toString();
+                    if (!resourceMap.has(rId)) {
+                        resourceMap.set(rId, []);
+                    }
+                    resourceMap.get(rId).push(item);
+                });
+
+                resourceMap.forEach((itemList, rId) => {
+                    rowSequence++;
+                    const firstItem = itemList[0];
+                    const rowKey = 'res_' + rowSequence;
+                    const reqDate = firstItem.requiredDate ? firstItem.requiredDate.split('T')[0] : $('#txtMasterRequiredDate').val();
+
+                    const resObj = {
+                        rowKey: rowKey,
+                        resourceId: rId,
+                        resourceName: firstItem.resourceName || '',
+                        brand: '',
+                        unit: firstItem.unit || 'Nos',
+                        qty: 0,
+                        requiredDate: reqDate,
+                        remarks: firstItem.remarks || '',
+                        isExpanded: false,
+                        iows: []
+                    };
+
+                    // Group items by IOWId under this resource
+                    const iowMap = new Map();
+                    itemList.forEach(it => {
+                        const iId = (it.iowId || '0').toString();
+                        if (!iowMap.has(iId)) {
+                            iowMap.set(iId, []);
+                        }
+                        iowMap.get(iId).push(it);
+                    });
+
+                    let iowSeq = 0;
+                    iowMap.forEach((wbsItems, iId) => {
+                        if (iId !== '0' || wbsItems.some(x => x.wbsId && x.wbsId !== '0')) {
+                            iowSeq++;
+                            const firstWbs = wbsItems[0];
+                            const iowKey = 'iow_' + rowKey + '_' + iowSeq;
+
+                            const iowObj = {
+                                iowKey: iowKey,
+                                iowId: iId !== '0' ? iId : '',
+                                iowSpecification: firstWbs.iowSpecification || '',
+                                wbsList: []
+                            };
+
+                            let wbsSeq = 0;
+                            wbsItems.forEach(wItem => {
+                                wbsSeq++;
+                                const wbsKey = 'wbs_' + iowKey + '_' + wbsSeq;
+                                iowObj.wbsList.push({
+                                    wbsKey: wbsKey,
+                                    wbsId: (wItem.wbsId || '').toString(),
+                                    wbsName: wItem.wbsName || '',
+                                    qty: parseFloat(wItem.qty) || 0,
+                                    remarks: wItem.remarks || ''
+                                });
+                            });
+
+                            resObj.iows.push(iowObj);
+                        } else {
+                            // Single line without IOW/WBS
+                            resObj.qty = parseFloat(firstItem.qty) || 0;
+                        }
+                    });
+
+                    if (resObj.iows && resObj.iows.length > 0) {
+                        resObj.qty = calculateTotalResourceQty(resObj);
+                    }
+
+                    indentResources.push(resObj);
+                });
+            }
+
+            renderResourceRows();
+
+            $('#viewIndentList').slideUp(200);
+            $('#viewIndentForm').slideDown(200);
+        });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 8. QUICK VIEW MODAL
+    // ═══════════════════════════════════════════════════════════════════════
+    function quickViewIndent(id) {
+        if (!id) return;
+        $.get('/IndentRequest/GetIndentById', { id: id }, function (res) {
+            if (!res || !res.success || !res.header) {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Could not load details.' });
+                return;
+            }
+
+            const h = res.header;
+            $('#modalReqNo').text(h.requestNo || ('IND-' + h.indentMasId));
+            $('#modalProject').text(h.projectName || '—');
+            $('#modalType').text(h.requestType || 'Material');
+            $('#modalDate').text(h.requestDatetime || '—');
+            $('#modalRemarks').text(h.remarks || 'No remarks provided.');
+
+            const $b = $('#modalItemsBody').empty();
+            if (res.items && res.items.length > 0) {
+                res.items.forEach((item, idx) => {
+                    const reqD = item.requiredDate ? item.requiredDate.split('T')[0] : '—';
+                    $b.append(`
+                        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                            <td class="px-3 py-2 text-center font-bold text-slate-400">${idx + 1}</td>
+                            <td class="px-3 py-2 font-bold text-slate-800 dark:text-slate-100">${item.resourceName || '—'}</td>
+                            <td class="px-3 py-2 text-slate-600 dark:text-slate-300 font-medium">${item.iowSpecification || '—'}</td>
+                            <td class="px-3 py-2 text-slate-600 dark:text-slate-300">${item.wbsName || '—'}</td>
+                            <td class="px-3 py-2 text-right font-black text-sky-600 dark:text-sky-400">${parseFloat(item.qty || 0).toFixed(2)}</td>
+                            <td class="px-3 py-2 font-bold text-slate-500">${item.unit || 'Nos'}</td>
+                            <td class="px-3 py-2 text-slate-500">${reqD}</td>
+                            <td class="px-3 py-2 text-slate-500">${item.remarks || '—'}</td>
+                        </tr>
+                    `);
+                });
+            } else {
+                $b.append('<tr><td colspan="8" class="text-center py-4 text-slate-400">No line items found.</td></tr>');
+            }
+
+            $('#modalQuickView').fadeIn(150);
+        });
+    }
+
+    function closeQuickViewModal() {
+        $('#modalQuickView').fadeOut(150);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 9. DELETE INDENT
+    // ═══════════════════════════════════════════════════════════════════════
+    function deleteIndentItem(id, reqNo) {
+        if (!id) return;
+        Swal.fire({
+            title: 'Delete Indent Request?',
+            text: `Are you sure you want to delete Requisition ${reqNo || ('IND-' + id)}? This action will deactivate all associated allocation entries.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e11d48',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, Delete'
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            $.ajax({
+                url: `/IndentRequest/DeleteIndent?id=${id}`,
+                type: 'POST',
+                success: function (res) {
+                    if (res && res.success) {
+                        Swal.fire({ icon: 'success', title: 'Deleted!', text: res.message || 'Indent Request deleted successfully.' });
+                        loadIndentGrid();
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Error', text: res ? res.message : 'Could not delete Indent Request.' });
+                    }
+                },
+                error: function (xhr) {
+                    Swal.fire({ icon: 'error', title: 'Error', text: xhr.responseText || 'A server communication error occurred.' });
+                }
+            });
+        });
+    }
+</script>

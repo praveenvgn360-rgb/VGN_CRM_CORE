@@ -1,0 +1,688 @@
+/* ==========================================================================
+   VGN 360 - ENTERPRISE REALISTIC NIGHT-MODE GALAXY TRAVEL & LOGIN
+   ========================================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    height: 100%;
+    background: #020104;
+    color: #f8fafc;
+    font-family: Inter, "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    overflow: hidden;
+}
+
+button, input, select {
+    font: inherit;
+}
+
+button, a, input, select {
+    touch-action: manipulation;
+}
+
+button:focus-visible, a:focus-visible {
+    outline: 2px solid #d10000;
+    outline-offset: 4px;
+}
+
+/* Master Login Card Layout */
+.login-card {
+    height: 100dvh;
+    min-height: 0;
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 420px;
+    margin: auto;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   LEFT PANEL: REALISTIC NIGHT MODE 3D GALAXY SPACE TRAVEL
+   ========================================================================== */
+.panel-left {
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: radial-gradient(ellipse at 50% 50%, #06020c 0%, #020105 70%, #000001 100%);
+}
+
+.panel-left::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.25;
+    background-image: 
+        radial-gradient(1px 1px at 35px 45px, #ffffff 90%, transparent),
+        radial-gradient(1.2px 1.2px at 160px 180px, #bae6fd 80%, transparent),
+        radial-gradient(1px 1px at 280px 110px, #fef08a 80%, transparent);
+    background-size: 280px 260px, 380px 360px, 460px 420px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Header inside galaxy - Clean SVG logo */
+.galaxy-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 24px 34px;
+    z-index: 10;
+    flex: none;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.brand-svg-logo {
+    display: block;
+    height: 38px;
+    width: auto;
+    max-width: 160px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.7));
+}
+
+.galaxy-intro {
+    display: none;
+}
+
+/* Galaxy 3D Viewport */
+.galaxy-viewport {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    perspective: 1100px;
+    perspective-origin: 50% 50%;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    isolation: isolate;
+}
+
+/* Galaxy Travel Canvas (Warp starfield & nebula streaks) */
+.galaxy-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.galaxy-stage {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    transform-style: preserve-3d;
+}
+
+/* Deep Space Night Nebula Glow */
+.nebula {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(20, 30, 65, 0.18) 0%, rgba(15, 10, 35, 0.10) 45%, transparent 75%);
+    filter: blur(50px);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Center VGN 360 logo, floating directly in deep space. */
+.galaxy-core {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 88px;
+    height: 88px;
+    transform: translate(-50%, -50%);
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    z-index: 200;
+    /* Layered red bloom gives the mark presence without a planet or white disc. */
+    filter:
+        drop-shadow(0 0 12px rgba(209, 0, 0, 0.75))
+        drop-shadow(0 0 32px rgba(209, 0, 0, 0.45));
+}
+
+.galaxy-core::before {
+    content: "";
+    position: absolute;
+    inset: -9px;
+    z-index: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.96) 0 46%, rgba(255, 255, 255, 0.58) 57%, rgba(255, 255, 255, 0.12) 72%, transparent 75%);
+    box-shadow: 0 0 16px rgba(255, 255, 255, 0.55), 0 0 44px rgba(209, 0, 0, 0.42);
+}
+
+.galaxy-center-logo {
+    position: relative;
+    z-index: 2;
+    display: block;
+    width: 76px;
+    height: auto;
+    object-fit: contain;
+    /* Keep the actual logo visible above the live star field. */
+    filter:
+        drop-shadow(0 2px 5px rgba(0, 0, 0, 0.8));
+}
+
+.galaxy-brand-logo, .core-sphere, .core-name {
+    display: none !important;
+}
+
+/* ==========================================================================
+   DEPARTMENTS: 3D "COMES FRONT AND GO BACK" TRAVEL
+   ========================================================================== */
+.departments {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    pointer-events: none;
+}
+
+.department {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    cursor: pointer;
+    text-decoration: none;
+    user-select: none;
+    transform-origin: center center;
+    will-change: transform, opacity;
+    transition: filter 0.25s ease;
+}
+
+/* Realistic Night-Mode Planetary World */
+.planet {
+    display: block;
+    position: relative;
+    width: var(--size, 26px);
+    height: var(--size, 26px);
+    border-radius: 50%;
+    background: radial-gradient(circle at var(--sun-light-x, 32%) var(--sun-light-y, 28%), #ffffff 0%, var(--planet, #38bdf8) 42%, #020104 88%);
+    box-shadow: 
+        0 0 22px var(--planet-glow, rgba(56, 189, 248, 0.55)),
+        inset -6px -5px 10px rgba(0, 0, 0, 0.92),
+        inset 2px 2px 4px rgba(255, 255, 255, 0.7);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+
+.planet::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: repeating-linear-gradient(155deg, transparent 0 6%, rgba(255,255,255,0.18) 9%, transparent 15%, rgba(0,0,0,0.35) 21%, transparent 28%);
+    background-size: 220% 100%;
+    animation: planet-spin 12s linear infinite;
+    animation-delay: var(--delay, 0s);
+}
+
+.planet-1 .planet::after {
+    content: "";
+    position: absolute;
+    inset: -4px -8px;
+    border: 2px solid color-mix(in srgb, var(--planet) 65%, rgba(255, 255, 255, 0.8));
+    border-radius: 50%;
+    transform: rotate(-28deg) scaleY(0.35);
+    opacity: 0.75;
+    pointer-events: none;
+    box-shadow: 0 0 10px var(--planet-glow);
+}
+
+@keyframes planet-spin {
+    from { background-position: 0% 50%; }
+    to { background-position: 220% 50%; }
+}
+
+/* Holographic Uppercase Department Badge */
+.planet-label {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase !important;
+    text-align: center;
+    white-space: nowrap;
+    color: #f8fafc;
+    background: rgba(6, 6, 14, 0.72);
+    border: 1px solid color-mix(in srgb, var(--planet, #38bdf8) 45%, rgba(255, 255, 255, 0.3));
+    border-radius: 20px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.70);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+    transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+    pointer-events: auto;
+}
+
+/* Hover & Focus Interaction */
+.department:hover,
+.department:focus-visible {
+    z-index: 190 !important;
+    filter: brightness(1.3);
+}
+
+.department:hover .planet,
+.department:focus-visible .planet {
+    transform: scale(1.18);
+    box-shadow: 0 0 30px var(--planet-glow), inset -4px -3px 8px rgba(0, 0, 0, 0.7);
+}
+
+.department:hover .planet-label,
+.department:focus-visible .planet-label {
+    background: color-mix(in srgb, var(--planet) 45%, #08030b);
+    border-color: #ffffff;
+    box-shadow: 0 0 22px var(--planet-glow), 0 6px 22px rgba(0, 0, 0, 0.9);
+    transform: scale(1.06);
+}
+
+/* Galaxy Footer - Clean Bottom-Right Pause Toggle */
+.galaxy-footer {
+    display: flex;
+    position: relative;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 34px 20px;
+    z-index: 10;
+    flex: none;
+}
+
+#motionToggle {
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    backdrop-filter: blur(4px);
+}
+
+#motionToggle:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
+#motionToggle span {
+    margin-left: 6px;
+}
+
+/* Motion paused state */
+.motion-paused .department,
+.motion-paused .nebula,
+.motion-paused .planet::before {
+    animation-play-state: paused !important;
+}
+
+/* ==========================================================================
+   RIGHT PANEL: LOGIN FORM WITH PROMINENT TOP LOGO
+   ========================================================================== */
+.panel-right {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 42px 46px;
+    border-left: 1px solid rgba(255, 255, 255, 0.06);
+    background: radial-gradient(ellipse at 100% 0, rgba(209, 0, 0, 0.04), transparent 60%), #ffffff;
+    color: #172033;
+    overflow-y: auto;
+}
+
+/* Brand Logo Container - Distinct top placement above "Welcome back" */
+.brand-logo-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.brand-logo-img {
+    display: block !important;
+    height: 52px;
+    width: auto;
+    max-width: 155px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.06));
+}
+
+/* Welcome Heading */
+.welcome-heading {
+    margin-bottom: 30px;
+}
+
+.welcome-title {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.8px;
+    color: #0f172a;
+    line-height: 1.15;
+    margin: 0;
+}
+
+.welcome-sub {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #64748b;
+    margin: 8px 0 0;
+    max-width: 320px;
+}
+
+/* Form Fields */
+.field-wrap {
+    margin-bottom: 20px;
+}
+
+.field-label {
+    display: block;
+    color: #475569;
+    font-size: 11px;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.input-shell {
+    display: flex;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.input-shell:focus-within {
+    background: #ffffff;
+    border-color: #d10000;
+    box-shadow: 0 0 0 3px rgba(209, 0, 0, 0.12);
+}
+
+.input-icon {
+    padding: 0 14px;
+    color: #94a3b8;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
+
+.input-shell input,
+.input-shell select {
+    width: 100%;
+    min-width: 0;
+    background: transparent;
+    border: 0;
+    outline: none;
+    color: #0f172a;
+    padding: 13px 14px 13px 0;
+    font-size: 13px;
+    min-height: 46px;
+    color-scheme: light;
+}
+
+.input-shell input::placeholder {
+    color: #94a3b8;
+}
+
+.input-shell select {
+    appearance: none;
+    cursor: pointer;
+}
+
+.input-shell select option {
+    background: #ffffff;
+    color: #0f172a;
+}
+
+.pos-rel {
+    position: relative;
+}
+
+.eye-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 0;
+    background: none;
+    color: #94a3b8;
+    padding: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: color 0.2s;
+}
+
+.eye-btn:hover {
+    color: #475569;
+}
+
+/* Sign In Button */
+.btn-signin {
+    width: 100%;
+    padding: 14px 12px;
+    border: 1px solid rgba(209, 0, 0, 0.3);
+    border-radius: 10px;
+    background: linear-gradient(135deg, #e60000, #b50000);
+    color: #ffffff;
+    box-shadow: 0 4px 18px rgba(209, 0, 0, 0.28);
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: filter 0.2s, transform 0.2s, box-shadow 0.2s;
+    margin-top: 10px;
+}
+
+.btn-signin:hover {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 22px rgba(209, 0, 0, 0.35);
+}
+
+.btn-signin:active {
+    transform: translateY(0);
+}
+
+.err-msg {
+    display: block;
+    font-size: 11px;
+    color: #b91c1c;
+    margin-top: 6px;
+    font-weight: 500;
+}
+
+.alert-box {
+    padding: 12px 14px;
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    border-radius: 8px;
+    color: #b91c1c;
+    font-size: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Font Awesome Icon Helpers */
+.bi {
+    display: inline-block;
+    font-style: normal;
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "FontAwesome";
+    font-weight: 900;
+}
+
+.bi-person:before { content: "\f007"; }
+.bi-lock:before { content: "\f023"; }
+.bi-eye:before { content: "\f06e"; }
+.bi-eye-slash:before { content: "\f070"; }
+.bi-people:before { content: "\f0c0"; }
+.bi-chevron-down:before { content: "\f078"; }
+.bi-box-arrow-in-right:before { content: "\f2f6"; }
+.bi-exclamation-triangle-fill:before { content: "\f071"; }
+.bi-shield-check:before { content: "\f3ed"; }
+
+/* ==========================================================================
+   RESPONSIVE DESIGN
+   ========================================================================== */
+@media (max-width: 1100px) {
+    .login-card {
+        grid-template-columns: minmax(0, 1fr) 370px;
+    }
+    .panel-right {
+        padding: 32px 30px;
+    }
+    .galaxy-header {
+        padding: 18px 24px;
+    }
+    .galaxy-footer {
+        padding: 0 24px 16px;
+    }
+}
+
+@media (max-height: 740px) and (min-width: 601px) {
+    .panel-right {
+        padding: 24px 34px;
+    }
+    .brand-logo-container {
+        margin-bottom: 16px;
+    }
+    .brand-logo-img {
+        height: 42px !important;
+        display: block !important;
+    }
+    .welcome-heading {
+        margin-bottom: 20px;
+    }
+    .welcome-title {
+        font-size: 27px;
+    }
+    .welcome-sub {
+        margin-top: 4px;
+        font-size: 12px;
+    }
+    .field-wrap {
+        margin-bottom: 14px;
+    }
+}
+
+@media (max-width: 600px) {
+    .login-card {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(160px, 1fr) auto;
+    }
+    .galaxy-header {
+        padding: 14px 18px;
+    }
+    .brand-svg-logo {
+        height: 32px;
+    }
+    .galaxy-footer {
+        display: none;
+    }
+    .panel-right {
+        padding: 26px 22px;
+    }
+    .brand-logo-container {
+        display: flex !important;
+        margin-bottom: 16px;
+    }
+    .brand-logo-img {
+        display: block !important;
+        height: 40px !important;
+    }
+    .welcome-heading {
+        margin-bottom: 18px;
+    }
+    .welcome-title {
+        font-size: 24px;
+    }
+    .welcome-sub {
+        font-size: 12px;
+        margin-top: 4px;
+    }
+    .field-wrap {
+        margin-bottom: 12px;
+    }
+    .input-shell input,
+    .input-shell select {
+        min-height: 42px;
+        font-size: 15px;
+    }
+    .btn-signin {
+        padding: 12px;
+    }
+}
+
+@media (max-height: 620px) {
+    .panel-right {
+        padding: 18px 24px;
+    }
+    .brand-logo-container {
+        display: flex !important;
+        margin-bottom: 12px;
+    }
+    .brand-logo-img {
+        display: block !important;
+        height: 34px !important;
+    }
+    .welcome-heading {
+        margin-bottom: 14px;
+    }
+    .welcome-title {
+        font-size: 22px;
+    }
+    .welcome-sub {
+        font-size: 11px;
+        margin-top: 2px;
+    }
+    .field-wrap {
+        margin-bottom: 10px;
+    }
+    .input-shell input,
+    .input-shell select {
+        min-height: 38px;
+    }
+    .btn-signin {
+        padding: 11px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .planet::before,
+    .galaxy-center-logo {
+        animation: none !important;
+    }
+    .department {
+        transition: none !important;
+    }
+}

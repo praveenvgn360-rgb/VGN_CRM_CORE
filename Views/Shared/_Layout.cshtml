@@ -36,6 +36,92 @@
                 ActionName = "Index"
             });
         }
+        if (!dynamicMenus.Any(m => m.ControllerName == "IndentRequest"))
+        {
+            dynamicMenus.Add(new VGN_CRM_CORE.Models.MenuModel
+            {
+                Department = boqMenu != null ? boqMenu.Department : "PROJECTS",
+                ModuleType = boqMenu != null ? boqMenu.ModuleType : "MASTER",
+                ModuleCaptionName = "Indent Request",
+                ControllerName = "IndentRequest",
+                ActionName = "Index"
+            });
+        }
+        var vmItem = dynamicMenus.FirstOrDefault(m => m.ControllerName == "VendorMaster");
+        if (vmItem != null)
+        {
+            vmItem.Department = boqMenu != null ? boqMenu.Department : "PROJECTS";
+            vmItem.ModuleType = boqMenu != null ? boqMenu.ModuleType : "MASTER";
+            vmItem.ModuleCaptionName = "Vendor Creation";
+            vmItem.ActionName = "Index";
+        }
+        else
+        {
+            dynamicMenus.Add(new VGN_CRM_CORE.Models.MenuModel
+            {
+                Department = boqMenu != null ? boqMenu.Department : "PROJECTS",
+                ModuleType = boqMenu != null ? boqMenu.ModuleType : "MASTER",
+                ModuleCaptionName = "Vendor Creation",
+                ControllerName = "VendorMaster",
+                ActionName = "Index"
+            });
+        }
+        if (dynamicMenus.Any(m => m.Department == "FRG") && !dynamicMenus.Any(m => m.Department == "FRG" && m.ControllerName == "VendorMaster"))
+        {
+            dynamicMenus.Add(new VGN_CRM_CORE.Models.MenuModel
+            {
+                Department = "FRG",
+                ModuleType = "MASTER",
+                ModuleCaptionName = "Vendor Creation",
+                ControllerName = "VendorMaster",
+                ActionName = "Index"
+            });
+        }
+        if (!dynamicMenus.Any(m => m.ControllerName == "QualifierTDSSetting"))
+        {
+            dynamicMenus.Add(new VGN_CRM_CORE.Models.MenuModel
+            {
+                Department = boqMenu != null ? boqMenu.Department : "PROJECTS",
+                ModuleType = boqMenu != null ? boqMenu.ModuleType : "MASTER",
+                ModuleCaptionName = "Qualifier TDS Setting",
+                ControllerName = "QualifierTDSSetting",
+                ActionName = "Index"
+            });
+        }
+        if (dynamicMenus.Any(m => m.Department == "FRG") && !dynamicMenus.Any(m => m.Department == "FRG" && m.ControllerName == "QualifierTDSSetting"))
+        {
+            dynamicMenus.Add(new VGN_CRM_CORE.Models.MenuModel
+            {
+                Department = "FRG",
+                ModuleType = "MASTER",
+                ModuleCaptionName = "Qualifier TDS Setting",
+                ControllerName = "QualifierTDSSetting",
+                ActionName = "Index"
+            });
+        }
+        if (!dynamicMenus.Any(m => m.ControllerName == "TDSEntry"))
+        {
+            dynamicMenus.Add(new VGN_CRM_CORE.Models.MenuModel
+            {
+                Department = boqMenu != null ? boqMenu.Department : "PROJECTS",
+                ModuleType = boqMenu != null ? boqMenu.ModuleType : "MASTER",
+                ModuleCaptionName = "TDS Entry",
+                ControllerName = "TDSEntry",
+                ActionName = "Index"
+            });
+        }
+        if (dynamicMenus.Any(m => m.Department == "FRG") && !dynamicMenus.Any(m => m.Department == "FRG" && m.ControllerName == "TDSEntry"))
+        {
+            dynamicMenus.Add(new VGN_CRM_CORE.Models.MenuModel
+            {
+                Department = "FRG",
+                ModuleType = "MASTER",
+                ModuleCaptionName = "TDS Entry",
+                ControllerName = "TDSEntry",
+                ActionName = "Index"
+            });
+        }
+        VGN_CRM_CORE.CommonFunctions.SessionHelper.SetMenuList(Context.Session, dynamicMenus);
     }
 }
 <!DOCTYPE html>
@@ -52,12 +138,14 @@
                 var html = document.documentElement;
                 html.dataset.sidebar = 'hidden';
 
+                var primaryColor = html.dataset.primary || '#a82024';
                 var raw = localStorage.getItem('vgn_prefs');
                 if (raw) {
                     var p = JSON.parse(raw);
                     if (p.ThemeMode) html.dataset.theme = p.ThemeMode === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : p.ThemeMode;
                     if (p.Contrast) html.dataset.contrast = p.Contrast;
                     if (p.MenuView) html.dataset.sidebarView = p.MenuView;
+                    if (p.ThemeColor || p.themeColor) primaryColor = p.ThemeColor || p.themeColor;
                     // Always keep sidebar closed on load
                     html.dataset.sidebar = 'hidden';
                     if (p.FontSize || p.fontSize) {
@@ -67,6 +155,12 @@
                         html.style.setProperty('--font-size-grid', (Math.round(basePx * 0.857 * 10)/10) + 'px');
                         html.style.setProperty('--font-size-grid-header', (Math.round(basePx * 0.893 * 10)/10) + 'px');
                     }
+                }
+                html.style.setProperty('--primary', primaryColor);
+                var hexClean = primaryColor.replace('#', '');
+                if (hexClean.length === 6) {
+                    var rCol = parseInt(hexClean.slice(0, 2), 16), gCol = parseInt(hexClean.slice(2, 4), 16), bCol = parseInt(hexClean.slice(4, 6), 16);
+                    html.style.setProperty('--primary-rgb', rCol + ',' + gCol + ',' + bCol);
                 }
             } catch(e) {}
         })();
@@ -657,26 +751,225 @@
             background-color: rgba(255, 255, 255, 0.06) !important;
         }
 
-        .btn-grid-edit {
+        /* ══════════════════════════════════════════════════════════════════
+           GLOBAL MASTER SCREEN ACTION BUTTONS (SYSTEM-WIDE STANDARD STYLES)
+           View = Teal (#0d9488), Edit = Blue (#2563eb), Delete = Rose (#e11d48)
+           Commonly used across all Master screens, Grids, and TreeLists
+           ══════════════════════════════════════════════════════════════════ */
+        .btn-grid-action {
+            width: 28px !important;
+            height: 28px !important;
+            border-radius: 8px !important;
             display: inline-flex !important;
             align-items: center !important;
-            gap: 5px !important;
-            padding: 4px 10px !important;
-            font-size: 0.74rem !important;
-            font-weight: 700 !important;
-            border-radius: 6px !important;
-            color: var(--primary) !important;
-            background-color: rgba(var(--primary-rgb), 0.1) !important;
-            border: 1px solid rgba(var(--primary-rgb), 0.25) !important;
-            transition: all 0.2s ease !important;
-            text-decoration: none !important;
+            justify-content: center !important;
+            font-size: 0.78rem !important;
+            transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
             cursor: pointer !important;
+            border: 1px solid transparent !important;
+            text-decoration: none !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+            line-height: 1 !important;
+            padding: 0 !important;
         }
-        .btn-grid-edit:hover {
-            background-color: var(--primary) !important;
-            color: #ffffff !important;
-            transform: scale(1.04) !important;
-            box-shadow: 0 2px 6px rgba(var(--primary-rgb), 0.35) !important;
+
+        .btn-grid-action:hover {
+            transform: translateY(-1.5px) !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        .btn-grid-action:active {
+            transform: translateY(0) !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        /* ── VIEW BUTTON: Teal Theme ── */
+        .btn-action-view, .btn-grid-view {
+            background-color: #f0fdfa !important; /* teal-50 */
+            color: #0d9488 !important;            /* teal-600 */
+            border-color: #99f6e4 !important;      /* teal-200 */
+        }
+        .btn-action-view:hover, .btn-grid-view:hover {
+            background-color: #ccfbf1 !important; /* teal-100 */
+            color: #0f766e !important;            /* teal-700 */
+            border-color: #5eead4 !important;      /* teal-300 */
+        }
+        .dark .btn-action-view, [data-theme="dark"] .btn-action-view,
+        .dark .btn-grid-view, [data-theme="dark"] .btn-grid-view {
+            background-color: rgba(13, 148, 136, 0.18) !important;
+            color: #2dd4bf !important;
+            border-color: rgba(45, 212, 191, 0.35) !important;
+        }
+        .dark .btn-action-view:hover, [data-theme="dark"] .btn-action-view:hover,
+        .dark .btn-grid-view:hover, [data-theme="dark"] .btn-grid-view:hover {
+            background-color: rgba(13, 148, 136, 0.3) !important;
+            color: #5eead4 !important;
+            border-color: rgba(45, 212, 191, 0.6) !important;
+        }
+
+        /* ── EDIT BUTTON: Blue Theme ── */
+        .btn-action-edit, .btn-grid-edit, .btn-tree-edit {
+            background-color: #eff6ff !important; /* blue-50 */
+            color: #2563eb !important;            /* blue-600 */
+            border-color: #bfdbfe !important;      /* blue-200 */
+        }
+        .btn-action-edit:hover, .btn-grid-edit:hover, .btn-tree-edit:hover {
+            background-color: #dbeafe !important; /* blue-100 */
+            color: #1d4ed8 !important;            /* blue-700 */
+            border-color: #93c5fd !important;      /* blue-300 */
+        }
+        .dark .btn-action-edit, [data-theme="dark"] .btn-action-edit,
+        .dark .btn-grid-edit, [data-theme="dark"] .btn-grid-edit,
+        .dark .btn-tree-edit, [data-theme="dark"] .btn-tree-edit {
+            background-color: rgba(37, 99, 235, 0.18) !important;
+            color: #60a5fa !important;
+            border-color: rgba(96, 165, 250, 0.35) !important;
+        }
+        .dark .btn-action-edit:hover, [data-theme="dark"] .btn-action-edit:hover,
+        .dark .btn-grid-edit:hover, [data-theme="dark"] .btn-grid-edit:hover,
+        .dark .btn-tree-edit:hover, [data-theme="dark"] .btn-tree-edit:hover {
+            background-color: rgba(37, 99, 235, 0.3) !important;
+            color: #93c5fd !important;
+            border-color: rgba(96, 165, 250, 0.6) !important;
+        }
+
+        /* ── DELETE BUTTON: Rose Theme ── */
+        .btn-action-delete, .btn-grid-del, .btn-grid-delete, .btn-tree-del {
+            background-color: #fff1f2 !important; /* rose-50 */
+            color: #e11d48 !important;            /* rose-600 */
+            border-color: #fecdd3 !important;      /* rose-200 */
+        }
+        .btn-action-delete:hover, .btn-grid-del:hover, .btn-grid-delete:hover, .btn-tree-del:hover {
+            background-color: #ffe4e6 !important; /* rose-100 */
+            color: #be123c !important;            /* rose-700 */
+            border-color: #fda4af !important;      /* rose-300 */
+        }
+        .dark .btn-action-delete, [data-theme="dark"] .btn-action-delete,
+        .dark .btn-grid-del, [data-theme="dark"] .btn-grid-del,
+        .dark .btn-grid-delete, [data-theme="dark"] .btn-grid-delete,
+        .dark .btn-tree-del, [data-theme="dark"] .btn-tree-del {
+            background-color: rgba(225, 29, 72, 0.18) !important;
+            color: #fb7185 !important;
+            border-color: rgba(251, 113, 133, 0.35) !important;
+        }
+        .dark .btn-action-delete:hover, [data-theme="dark"] .btn-action-delete:hover,
+        .dark .btn-grid-del:hover, [data-theme="dark"] .btn-grid-del:hover,
+        .dark .btn-grid-delete:hover, [data-theme="dark"] .btn-grid-delete:hover,
+        .dark .btn-tree-del:hover, [data-theme="dark"] .btn-tree-del:hover {
+            background-color: rgba(225, 29, 72, 0.3) !important;
+            color: #fda4af !important;
+            border-color: rgba(251, 113, 133, 0.6) !important;
+        }
+
+        /* ── DevExtreme Native Command Action Links ── */
+        .dx-datagrid .dx-command-edit .dx-link,
+        .dx-datagrid .dx-link-icon {
+            width: 28px !important;
+            height: 28px !important;
+            border-radius: 8px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 0.8rem !important;
+            margin: 0 2px !important;
+            text-decoration: none !important;
+            border: 1px solid transparent !important;
+            transition: all 0.18s ease !important;
+        }
+        .dx-datagrid .dx-link.dx-link-edit,
+        .dx-datagrid .dx-link.dx-icon-edit {
+            background-color: #eff6ff !important;
+            color: #2563eb !important;
+            border-color: #bfdbfe !important;
+        }
+        .dx-datagrid .dx-link.dx-link-edit:hover,
+        .dx-datagrid .dx-link.dx-icon-edit:hover {
+            background-color: #dbeafe !important;
+            color: #1d4ed8 !important;
+            border-color: #93c5fd !important;
+            transform: translateY(-1px);
+        }
+        .dx-datagrid .dx-link.dx-link-delete,
+        .dx-datagrid .dx-link.dx-icon-trash {
+            background-color: #fff1f2 !important;
+            color: #e11d48 !important;
+            border-color: #fecdd3 !important;
+        }
+        .dx-datagrid .dx-link.dx-link-delete:hover,
+        .dx-datagrid .dx-link.dx-icon-trash:hover {
+            background-color: #ffe4e6 !important;
+            color: #be123c !important;
+            border-color: #fda4af !important;
+            transform: translateY(-1px);
+        }
+
+        /* ══════════════════════════════════════════════════════════════════
+           FULL PAGE LOADER (PROJECT STANDARD DESIGN SYSTEM COMPONENT)
+           ══════════════════════════════════════════════════════════════════ */
+        #full-page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 999999;
+            transition: opacity 0.35s ease, visibility 0.35s ease;
+        }
+
+        #full-page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .loader-spinner {
+            width: 54px;
+            height: 54px;
+            border: 4px solid rgba(255, 255, 255, 0.12);
+            border-top: 4px solid var(--primary, #4680FF);
+            border-radius: 50%;
+            animation: spinLoader 0.75s linear infinite;
+        }
+
+        .loader-progress-bar {
+            width: 240px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 9999px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .loader-progress-bar .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary, #4680FF), #38bdf8);
+            border-radius: 9999px;
+            animation: progressAnim 1.8s ease-in-out infinite;
+        }
+
+        .loader-text {
+            color: #f1f5f9;
+            font-size: 0.84rem;
+            margin-top: 14px;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+        }
+
+        @@keyframes spinLoader {
+            to { transform: rotate(360deg); }
+        }
+
+        @@keyframes progressAnim {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
         }
 
         /* ── Form Inputs, Selects & Labels ── */
@@ -700,16 +993,28 @@
             padding: 0 12px !important;
             font-size: 0.82rem !important;
             color: var(--text) !important;
-            background-color: var(--bg) !important;
-            border: 1px solid var(--border) !important;
+            background-color: var(--surface) !important;
+            border: 1.5px solid #94a3b8 !important;
             border-radius: 8px !important;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease !important;
             outline: none !important;
+        }
+        .form-input-core:hover:not(:focus), .form-select-core:hover:not(:focus) {
+            border-color: #475569 !important;
         }
         .form-input-core:focus, .form-select-core:focus {
             border-color: var(--primary) !important;
             background-color: var(--surface) !important;
-            box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15) !important;
+            box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.22) !important;
+        }
+        [data-theme="dark"] .form-input-core, [data-theme="dark"] .form-select-core {
+            border-color: #64748b !important;
+            background-color: #1e293b !important;
+            color: #f1f5f9 !important;
+        }
+        [data-theme="dark"] .form-input-core:hover:not(:focus), [data-theme="dark"] .form-select-core:hover:not(:focus) {
+            border-color: #94a3b8 !important;
         }
 
         .input-icon-wrap {
@@ -5171,10 +5476,14 @@
                             string modType = modGroup.Key ?? "OTHER";
                             <!-- FIX #4: module-type sub-header now rendered in LIST view too -->
                             <div class="nav-section-sub list-only-item"><span class="nav-label-sub">@modType</span></div>
-                            @foreach (var item in modGroup.OrderBy(m => m.ModuleCaptionName))
+                            @foreach (var item in modGroup.OrderBy(m => {
+                                if (m.ControllerName == "ProjectIOW" || m.ControllerName == "FRG_Bill_Of_Qty") return "Bill of quantity_0";
+                                if (m.ControllerName == "VendorMaster") return "Bill of quantity_1";
+                                return m.ModuleCaptionName ?? "";
+                            }))
                             {
                                 string url = Url.Action(string.IsNullOrEmpty(item.ActionName) ? "Index" : item.ActionName, item.ControllerName);
-                                string caption = item.ControllerName == "ProjectIOW" ? "Bill of quantity" : item.ModuleCaptionName;
+                                string caption = item.ControllerName == "ProjectIOW" ? "Bill of quantity" : (item.ControllerName == "VendorMaster" ? "Vendor Creation" : item.ModuleCaptionName);
                                 <a class="nav-link list-only-item" href="@url" style="padding: 0.4rem 1rem 0.4rem 2rem">
                                     <span>@caption</span>
                                 </a>
@@ -5232,10 +5541,14 @@
                             {
                                 string modType = modGroup.Key ?? "OTHER";
                                 <div class="nav-section"><span class="nav-label">@modType</span></div>
-                                @foreach (var item in modGroup.OrderBy(m => m.ModuleCaptionName))
+                                @foreach (var item in modGroup.OrderBy(m => {
+                                    if (m.ControllerName == "ProjectIOW" || m.ControllerName == "FRG_Bill_Of_Qty") return "Bill of quantity_0";
+                                    if (m.ControllerName == "VendorMaster") return "Bill of quantity_1";
+                                    return m.ModuleCaptionName ?? "";
+                                }))
                                 {
                                     string url = Url.Action(string.IsNullOrEmpty(item.ActionName) ? "Index" : item.ActionName, item.ControllerName);
-                                    string caption = item.ControllerName == "ProjectIOW" ? "Bill of quantity" : item.ModuleCaptionName;
+                                    string caption = item.ControllerName == "ProjectIOW" ? "Bill of quantity" : (item.ControllerName == "VendorMaster" ? "Vendor Creation" : item.ModuleCaptionName);
                                     <a class="nav-link" href="@url">
                                         <i class="fas fa-circle" style="font-size:0.4rem;opacity:0.5"></i>
                                         <span>@caption</span>
@@ -7168,6 +7481,34 @@
             });
         })();
     </script>
+    <!-- ══════════════════════════════════════════════════════════════════
+         SYSTEM-WIDE FULL PAGE LOADER (PROJECT STANDARD COMPONENT)
+         ══════════════════════════════════════════════════════════════════ -->
+    <div id="full-page-loader" class="hidden">
+        <div class="loader-spinner"></div>
+        <div class="loader-progress-bar"><div class="progress-fill"></div></div>
+        <p class="loader-text">Loading...</p>
+    </div>
+
+    <script>
+        window.showFullPageLoader = function (text) {
+            var loader = document.getElementById('full-page-loader');
+            if (loader) {
+                if (text) {
+                    var txt = loader.querySelector('.loader-text');
+                    if (txt) txt.textContent = text;
+                }
+                loader.classList.remove('hidden');
+            }
+        };
+        window.hideFullPageLoader = function () {
+            var loader = document.getElementById('full-page-loader');
+            if (loader) {
+                loader.classList.add('hidden');
+            }
+        };
+    </script>
+
     <!-- Global JS Components -->
     @RenderSection("Scripts", required: false)
 
